@@ -1,6 +1,6 @@
 {
   "name": "orphan-reaper",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Kill orphan dev processes left by AI agent sessions. Auto-cleans on Claude Code session end.",
   "bin": {
     "orphan-reaper": "cli.sh"

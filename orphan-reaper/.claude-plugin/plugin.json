@@ -1,7 +1,7 @@
 {
   "name": "orphan-reaper",
   "description": "Kill orphan dev processes left by AI agent sessions",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": {
     "name": "tombelieber"
   },

@@ -3,7 +3,7 @@
 # https://github.com/tombelieber/tomstack
 set -euo pipefail
 
-VERSION="0.1.1"
+VERSION="0.1.2"
 
 # ── Output helpers ──────────────────────────────────────────────────────────
 
@@ -64,16 +64,18 @@ CONFIG_DIR="${HOME}/.orphan-reaper"
 CUSTOM_PATTERNS_FILE="${CONFIG_DIR}/patterns.conf"
 
 load_patterns() {
-  local patterns=("${DEFAULT_PATTERNS[@]}")
+  # Print one pattern per line — never space-join (patterns contain spaces).
+  for p in "${DEFAULT_PATTERNS[@]}"; do
+    echo "$p"
+  done
   if [ -f "$CUSTOM_PATTERNS_FILE" ]; then
     while IFS= read -r line; do
       # Skip comments and blank lines
       [[ "$line" =~ ^[[:space:]]*# ]] && continue
       [[ -z "${line// }" ]] && continue
-      patterns+=("$line")
+      echo "$line"
     done < "$CUSTOM_PATTERNS_FILE"
   fi
-  echo "${patterns[@]}"
 }
 
 # ── Core: find orphans ─────────────────────────────────────────────────────
@@ -83,11 +85,10 @@ load_patterns() {
 # 3. Is not this script or its parent
 
 find_orphans() {
-  local -a patterns
-  read -ra patterns <<< "$(load_patterns)"
-
+  local -A seen_pids  # associative array for dedup
   local found=()
-  for pattern in "${patterns[@]}"; do
+
+  while IFS= read -r pattern; do
     local pids
     pids="$(pgrep -f "$pattern" 2>/dev/null || true)"
     [ -z "$pids" ] && continue
@@ -96,9 +97,13 @@ find_orphans() {
       # Skip self and parent
       [ "$pid" = "$$" ] || [ "$pid" = "$PPID" ] && continue
 
+      # Dedup: skip if already seen from another pattern
+      [ -n "${seen_pids[$pid]+x}" ] && continue
+      seen_pids[$pid]=1
+
       # Only orphans: no controlling terminal
       local tty
-      tty="$(ps -p "$pid" -o tty= 2>/dev/null || echo '?')"
+      tty="$(ps -p "$pid" -o tty= 2>/dev/null | tr -d ' ' || echo '?')"
       if [ "$tty" != "??" ] && [ "$tty" != "?" ]; then
         continue
       fi
@@ -112,7 +117,7 @@ find_orphans() {
 
       found+=("${pid}|${rss}|${cmd}")
     done
-  done
+  done < <(load_patterns)
 
   printf '%s\n' "${found[@]}"
 }
