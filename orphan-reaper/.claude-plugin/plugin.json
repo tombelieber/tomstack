@@ -1,0 +1,21 @@
+{
+  "name": "orphan-reaper",
+  "description": "Kill orphan dev processes left by AI agent sessions",
+  "version": "0.1.0",
+  "author": {
+    "name": "tombelieber"
+  },
+  "repository": "https://github.com/tombelieber/claude-tools",
+  "hooks": {
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/cli.sh kill --quiet --json 2>/dev/null || true",
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
+}

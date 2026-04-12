@@ -1,0 +1,40 @@
+{
+  "name": "orphan-reaper",
+  "version": "0.1.0",
+  "description": "Kill orphan dev processes left by AI agent sessions. Auto-cleans on Claude Code session end.",
+  "bin": {
+    "orphan-reaper": "cli.sh"
+  },
+  "files": [
+    "cli.sh",
+    ".claude-plugin/",
+    "skills/"
+  ],
+  "keywords": [
+    "claude",
+    "claude-code",
+    "ai",
+    "agent",
+    "orphan",
+    "process",
+    "cleanup",
+    "devtools",
+    "storybook",
+    "vite",
+    "esbuild",
+    "developer-tools",
+    "cli",
+    "bash"
+  ],
+  "homepage": "https://github.com/tombelieber/claude-tools#orphan-reaper",
+  "bugs": {
+    "url": "https://github.com/tombelieber/claude-tools/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tombelieber/claude-tools.git",
+    "directory": "orphan-reaper"
+  },
+  "author": "tombelieber",
+  "license": "MIT"
+}

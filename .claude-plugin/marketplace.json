@@ -1,0 +1,21 @@
+{
+  "name": "claude-tools",
+  "owner": {
+    "name": "tombelieber"
+  },
+  "plugins": [
+    {
+      "name": "claude-backup",
+      "source": {
+        "source": "github",
+        "repo": "tombelieber/claude-backup"
+      },
+      "description": "Back up and restore your Claude Code environment"
+    },
+    {
+      "name": "orphan-reaper",
+      "source": "./orphan-reaper",
+      "description": "Kill orphan dev processes left by AI agent sessions"
+    }
+  ]
+}

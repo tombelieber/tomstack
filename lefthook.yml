@@ -1,0 +1,8 @@
+pre-commit:
+  commands:
+    orphan-reaper-sync:
+      run: bash orphan-reaper/test/skill-sync.sh
+      glob: "orphan-reaper/{cli.sh,skills/**,package.json,.claude-plugin/**}"
+    orphan-reaper-syntax:
+      run: bash -n orphan-reaper/cli.sh
+      glob: "orphan-reaper/cli.sh"
