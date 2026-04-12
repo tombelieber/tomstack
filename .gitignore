@@ -2,3 +2,4 @@ node_modules/
 .claude/
 CLAUDE.md
 docs/plans/
+.tmp/
