@@ -5,7 +5,7 @@
   "author": {
     "name": "tombelieber"
   },
-  "repository": "https://github.com/tombelieber/claude-tools",
+  "repository": "https://github.com/tombelieber/tomstack",
   "hooks": {
     "SessionEnd": [
       {

@@ -1,18 +1,18 @@
-# claude-tools
+# tomstack
 
 Claude Code plugins by [tombelieber](https://github.com/tombelieber).
 
 ## Install
 
 ```bash
-/plugin marketplace add tombelieber/claude-tools
+/plugin marketplace add tombelieber/tomstack
 ```
 
 Then install any plugin:
 
 ```bash
-/plugin install claude-backup@claude-tools
-/plugin install orphan-reaper@claude-tools
+/plugin install claude-backup@tomstack
+/plugin install orphan-reaper@tomstack
 ```
 
 ## Plugins

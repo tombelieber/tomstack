@@ -15,7 +15,7 @@ Always pass `--json` to get structured output. Never parse human-readable output
 
 The CLI ships with this plugin. Resolve it in order:
 
-1. `bash ~/.claude/plugins/marketplaces/claude-tools/orphan-reaper/cli.sh` (plugin install)
+1. `bash ~/.claude/plugins/marketplaces/tomstack/orphan-reaper/cli.sh` (plugin install)
 2. `orphan-reaper` (global npm install)
 
 On first invocation, try option 1. If the file doesn't exist, fall back to option 2.

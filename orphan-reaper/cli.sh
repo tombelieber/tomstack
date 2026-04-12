@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # orphan-reaper — kill orphan dev processes left by AI agent sessions
-# https://github.com/tombelieber/claude-tools
+# https://github.com/tombelieber/tomstack
 set -euo pipefail
 
 VERSION="0.1.0"

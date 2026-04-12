@@ -26,13 +26,13 @@
     "cli",
     "bash"
   ],
-  "homepage": "https://github.com/tombelieber/claude-tools#orphan-reaper",
+  "homepage": "https://github.com/tombelieber/tomstack#orphan-reaper",
   "bugs": {
-    "url": "https://github.com/tombelieber/claude-tools/issues"
+    "url": "https://github.com/tombelieber/tomstack/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tombelieber/claude-tools.git",
+    "url": "git+https://github.com/tombelieber/tomstack.git",
     "directory": "orphan-reaper"
   },
   "author": "tombelieber",
