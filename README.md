@@ -25,6 +25,7 @@ claude plugin marketplace add tombelieber/tomstack
 |--------|-----|-------------|
 | **[orphan-reaper](./orphan-reaper/)** | [![npm](https://img.shields.io/npm/v/orphan-reaper.svg)](https://www.npmjs.com/package/orphan-reaper) | Kill orphan dev processes left by AI agent sessions |
 | **[claude-backup](https://github.com/tombelieber/claude-backup)** | [![npm](https://img.shields.io/npm/v/claude-backup.svg)](https://www.npmjs.com/package/claude-backup) | Back up and restore your Claude Code environment |
+| **[chatgpt-share-dump](https://github.com/tombelieber/chatgpt-share-dump)** | [GitHub](https://github.com/tombelieber/chatgpt-share-dump) | Dump ChatGPT share links into agent-readable transcript archives |
 
 ---
 
@@ -41,6 +42,7 @@ claude plugin marketplace add tombelieber/tomstack
 ```bash
 claude plugin install orphan-reaper@tomstack
 claude plugin install claude-backup@tomstack
+claude plugin install chatgpt-share-dump@tomstack
 ```
 
 Each plugin also works standalone via npx — no marketplace required:
@@ -48,6 +50,7 @@ Each plugin also works standalone via npx — no marketplace required:
 ```bash
 npx orphan-reaper scan
 npx claude-backup sync
+npx github:tombelieber/chatgpt-share-dump --url "https://chatgpt.com/share/..."
 ```
 
 ---
@@ -56,6 +59,7 @@ npx claude-backup sync
 
 - **[claude-view](https://github.com/tombelieber/claude-view)** — Mission Control for Claude Code. Monitor every agent session, costs, and tools in one dashboard.
 - **[claude-backup](https://github.com/tombelieber/claude-backup)** — Claude Code deletes sessions after 30 days. This saves them.
+- **[chatgpt-share-dump](https://github.com/tombelieber/chatgpt-share-dump)** — Convert ChatGPT share links into agent-readable archives.
 - **[orphan-reaper](./orphan-reaper/)** — Kill orphan dev processes left by AI agent sessions.
 
 ---

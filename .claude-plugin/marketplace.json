@@ -13,6 +13,14 @@
       "description": "Back up and restore your Claude Code environment"
     },
     {
+      "name": "chatgpt-share-dump",
+      "source": {
+        "source": "github",
+        "repo": "tombelieber/chatgpt-share-dump"
+      },
+      "description": "Dump ChatGPT share links into agent-readable transcript archives"
+    },
+    {
       "name": "orphan-reaper",
       "source": "./orphan-reaper",
       "description": "Kill orphan dev processes left by AI agent sessions"
