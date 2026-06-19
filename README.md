@@ -53,6 +53,12 @@ npx claude-backup sync
 npx github:tombelieber/chatgpt-share-dump --url "https://chatgpt.com/share/..."
 ```
 
+`chatgpt-share-dump` also has a tracked global installer:
+
+```bash
+curl -fsSL https://chatgpt-share-dump.tomtang3.ai/install.sh | sh
+```
+
 ---
 
 ## Related
