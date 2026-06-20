@@ -21,6 +21,14 @@
       "description": "Dump ChatGPT share links into agent-readable transcript archives"
     },
     {
+      "name": "pain-point-mining-agent",
+      "source": {
+        "source": "github",
+        "repo": "tombelieber/pain-point-mining-agent"
+      },
+      "description": "Mine real transcripts into ranked product pain points and requirements"
+    },
+    {
       "name": "orphan-reaper",
       "source": "./orphan-reaper",
       "description": "Kill orphan dev processes left by AI agent sessions"
