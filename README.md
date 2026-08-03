@@ -2,9 +2,9 @@
 
 # tomstack
 
-**Claude Code plugins by [tombelieber](https://github.com/tombelieber)**
+**Codex and Claude Code plugins by [tombelieber](https://github.com/tombelieber)**
 
-A curated plugin marketplace for Claude Code. Install the marketplace once, then pick any plugin you need.
+A curated plugin marketplace for coding agents. Install the marketplace once, then pick any plugin you need.
 
 <p>
   <a href="https://github.com/tombelieber/tomstack"><img src="https://img.shields.io/github/stars/tombelieber/tomstack?style=social" alt="GitHub stars"></a>
@@ -12,6 +12,10 @@ A curated plugin marketplace for Claude Code. Install the marketplace once, then
 </p>
 
 ```bash
+# Codex
+codex plugin marketplace add tombelieber/tomstack
+
+# Claude Code
 claude plugin marketplace add tombelieber/tomstack
 ```
 
@@ -19,7 +23,20 @@ claude plugin marketplace add tombelieber/tomstack
 
 ---
 
-## Plugins
+## Codex plugins
+
+| Plugin | Description |
+|--------|-------------|
+| **[codex-auto-pilot](https://github.com/tombelieber/codex-auto-pilot)** | Turn an approved plan into a production-ready PR or an explicitly requested release, with isolated implementers, frontier reviews, and a machine-checkable receipt |
+
+```bash
+codex plugin marketplace add tombelieber/tomstack
+codex plugin add codex-auto-pilot@tomstack
+```
+
+`$auto-pilot` is explicit-only. PR mode is the default; release mode requires an explicit `release`, `auto ship`, or equivalent production-deploy instruction in the same invocation.
+
+## Claude Code plugins
 
 | Plugin | npm | Description |
 |--------|-----|-------------|
@@ -30,7 +47,7 @@ claude plugin marketplace add tombelieber/tomstack
 
 ---
 
-## Install
+## Claude Code install
 
 **Step 1 — Add the marketplace:**
 
@@ -67,6 +84,7 @@ curl -fsSL https://pain-point-mining.tomtang3.ai/install.sh | sh
 
 ## Related
 
+- **[codex-auto-pilot](https://github.com/tombelieber/codex-auto-pilot)** — Execute an approved plan through implementation, independent review, PR, and optional release.
 - **[claude-view](https://github.com/tombelieber/claude-view)** — Mission Control for Claude Code. Monitor every agent session, costs, and tools in one dashboard.
 - **[claude-backup](https://github.com/tombelieber/claude-backup)** — Claude Code deletes sessions after 30 days. This saves them.
 - **[chatgpt-share-dump](https://github.com/tombelieber/chatgpt-share-dump)** — Convert ChatGPT share links into agent-readable archives.
