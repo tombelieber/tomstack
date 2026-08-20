@@ -27,7 +27,7 @@ claude plugin marketplace add tombelieber/tomstack
 
 | Plugin | Description |
 |--------|-------------|
-| **[codex-auto-pilot](https://github.com/tombelieber/codex-auto-pilot)** | Turn an approved plan into a production-ready PR or an explicitly requested release, with isolated implementers, frontier reviews, and a machine-checkable receipt |
+| **[codex-auto-pilot](https://github.com/tombelieber/codex-auto-pilot)** | Turn an approved goal into a verified PR or explicitly authorized release, with one accountable owner, optional terminal leaf workers, and machine-checkable evidence |
 
 ```bash
 codex plugin marketplace add tombelieber/tomstack
@@ -84,7 +84,7 @@ curl -fsSL https://pain-point-mining.tomtang3.ai/install.sh | sh
 
 ## Related
 
-- **[codex-auto-pilot](https://github.com/tombelieber/codex-auto-pilot)** — Execute an approved plan through implementation, independent review, PR, and optional release.
+- **[codex-auto-pilot](https://github.com/tombelieber/codex-auto-pilot)** — Execute an approved goal through an owner-decided implementation shape, verified PR, and optional release.
 - **[claude-view](https://github.com/tombelieber/claude-view)** — Mission Control for Claude Code. Monitor every agent session, costs, and tools in one dashboard.
 - **[claude-backup](https://github.com/tombelieber/claude-backup)** — Claude Code deletes sessions after 30 days. This saves them.
 - **[chatgpt-share-dump](https://github.com/tombelieber/chatgpt-share-dump)** — Convert ChatGPT share links into agent-readable archives.
