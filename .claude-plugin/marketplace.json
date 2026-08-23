@@ -3,7 +3,13 @@
   "owner": {
     "name": "tombelieber"
   },
+  "description": "Tom Tang's managed agent skills and standalone coding-agent tools.",
   "plugins": [
+    {
+      "name": "tomstack-skills",
+      "source": "./",
+      "description": "Tom Tang's maintained agent skills for engineering and product work"
+    },
     {
       "name": "claude-backup",
       "source": {

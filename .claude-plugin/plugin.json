@@ -1,0 +1,28 @@
+{
+  "name": "tomstack-skills",
+  "version": "0.1.0",
+  "description": "Tom Tang's maintained agent skills for engineering and product work.",
+  "author": {
+    "name": "Tom Tang",
+    "url": "https://github.com/tombelieber"
+  },
+  "homepage": "https://github.com/tombelieber/tomstack",
+  "repository": "https://github.com/tombelieber/tomstack",
+  "license": "MIT",
+  "keywords": [
+    "agent-skills",
+    "claude-code",
+    "codex",
+    "engineering",
+    "productivity"
+  ],
+  "skills": [
+    "./skills/engineering/auto-pilot",
+    "./skills/engineering/impact-aware-qa",
+    "./skills/productivity/backup",
+    "./skills/productivity/chatgpt-share-dump",
+    "./skills/productivity/cleanup",
+    "./skills/productivity/first-principles-xy-problems",
+    "./skills/productivity/pain-point-mining"
+  ]
+}

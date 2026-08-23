@@ -1,0 +1,4 @@
+interface:
+  display_name: "ChatGPT Share Dump"
+  short_description: "Archive ChatGPT shares for agents."
+  default_prompt: "Use $chatgpt-share-dump to archive this ChatGPT share link into agent-readable context."

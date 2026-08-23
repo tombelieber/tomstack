@@ -1,5 +1,8 @@
 pre-commit:
   commands:
+    tomstack-skills-check:
+      run: npm run check
+      glob: "{skills/**,docs/**,.agents/**,.claude-plugin/**,scripts/**,package.json,package-lock.json,README.md,AGENTS.md,CLAUDE.md}"
     orphan-reaper-sync:
       run: bash orphan-reaper/test/skill-sync.sh
       glob: "orphan-reaper/{cli.sh,skills/**,package.json,.claude-plugin/**}"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Claude Backup"
+  short_description: "Manage and restore Claude Code backups"
+  default_prompt: "Use $backup to check my Claude Code backup status and explain the safest next action."

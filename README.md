@@ -1,61 +1,78 @@
-<div align="center">
+# Tomstack
 
-# tomstack
+Tom Tang's canonical collection of reusable agent skills, plus the public
+marketplace for standalone agent tools.
 
-**Codex and Claude Code plugins by [tombelieber](https://github.com/tombelieber)**
+Skills are maintained together here so invocation metadata, documentation,
+release versions, and install paths do not drift one repository at a time.
+Standalone products keep their own repositories when they have a CLI, runtime,
+MCP server, or independent release lifecycle.
 
-A curated plugin marketplace for coding agents. Install the marketplace once, then pick any plugin you need.
+## Install the skills
 
-<p>
-  <a href="https://github.com/tombelieber/tomstack"><img src="https://img.shields.io/github/stars/tombelieber/tomstack?style=social" alt="GitHub stars"></a>
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-</p>
-
-```bash
-# Codex
-codex plugin marketplace add tombelieber/tomstack
-
-# Claude Code
-claude plugin marketplace add tombelieber/tomstack
-```
-
-</div>
-
----
-
-## Codex plugins
-
-| Plugin | Description |
-|--------|-------------|
-| **[codex-auto-pilot](https://github.com/tombelieber/codex-auto-pilot)** | Turn an approved goal into a verified PR or explicitly authorized release, with one accountable owner, optional terminal leaf workers, and machine-checkable evidence |
-
-```bash
-codex plugin marketplace add tombelieber/tomstack
-codex plugin add codex-auto-pilot@tomstack
-```
-
-`$auto-pilot` is explicit-only. PR mode is the default; release mode requires an explicit `release`, `auto ship`, or equivalent production-deploy instruction in the same invocation.
-
-## Claude Code plugins
-
-| Plugin | npm | Description |
-|--------|-----|-------------|
-| **[orphan-reaper](./orphan-reaper/)** | [![npm](https://img.shields.io/npm/v/orphan-reaper.svg)](https://www.npmjs.com/package/orphan-reaper) | Kill orphan dev processes left by AI agent sessions |
-| **[claude-backup](https://github.com/tombelieber/claude-backup)** | [![npm](https://img.shields.io/npm/v/claude-backup.svg)](https://www.npmjs.com/package/claude-backup) | Back up and restore your Claude Code environment |
-| **[chatgpt-share-dump](https://github.com/tombelieber/chatgpt-share-dump)** | [GitHub](https://github.com/tombelieber/chatgpt-share-dump) | Dump ChatGPT share links into agent-readable transcript archives |
-| **[pain-point-mining-agent](https://github.com/tombelieber/pain-point-mining-agent)** | [GitHub](https://github.com/tombelieber/pain-point-mining-agent) | Mine real transcripts into ranked product pain points and requirements |
-
----
-
-## Claude Code install
-
-**Step 1 — Add the marketplace:**
+### Claude Code managed bundle
 
 ```bash
 claude plugin marketplace add tombelieber/tomstack
+claude plugin install tomstack-skills@tomstack
 ```
 
-**Step 2 — Install any plugin:**
+The plugin is a managed, read-only bundle of every promoted skill.
+
+### Codex and other agents
+
+```bash
+npx skills@latest add tombelieber/tomstack
+```
+
+Choose the skills and target agents you want. Installing both the Claude bundle
+and copied Claude skills creates duplicates, so use one Claude route.
+
+## Skills
+
+### Engineering
+
+**User-invoked**
+
+- **[auto-pilot](./skills/engineering/auto-pilot/SKILL.md):** Deliver an approved plan through a verified PR and an explicitly authorized release boundary.
+
+**Model-invoked**
+
+- **[impact-aware-qa](./skills/engineering/impact-aware-qa/SKILL.md):** Choose the smallest sufficient repository verification without losing correctness.
+
+### Productivity
+
+**User-invoked**
+
+- **[first-principles-xy-problems](./skills/productivity/first-principles-xy-problems/SKILL.md):** Deep, design-only problem discovery before choosing a solution.
+
+**Model-invoked**
+
+- **[backup](./skills/productivity/backup/SKILL.md):** Manage and restore Claude Code backups.
+- **[chatgpt-share-dump](./skills/productivity/chatgpt-share-dump/SKILL.md):** Archive ChatGPT share links into agent-readable context.
+- **[cleanup](./skills/productivity/cleanup/SKILL.md):** Find and clean orphaned development processes safely.
+- **[pain-point-mining](./skills/productivity/pain-point-mining/SKILL.md):** Turn real interaction history into ranked product pain points and requirements.
+
+Draft, retained, and retired skills live in `skills/in-progress`, `skills/misc`,
+and `skills/deprecated`; they are not shipped in the managed plugin.
+
+[Source map and compatibility boundaries](./docs/SOURCES.md)
+
+## Standalone tools marketplace
+
+These products retain independent repositories and releases because they ship
+more than a skill:
+
+| Product | Distribution | Purpose |
+|---|---|---|
+| [codex-auto-pilot](https://github.com/tombelieber/codex-auto-pilot) | Codex marketplace, GitHub | Verified PR and release execution |
+| [claude-backup](https://github.com/tombelieber/claude-backup) | Claude marketplace, npm | Claude Code backup and restore CLI |
+| [chatgpt-share-dump](https://github.com/tombelieber/chatgpt-share-dump) | Claude marketplace, GitHub | ChatGPT share archive CLI |
+| [pain-point-mining-agent](https://github.com/tombelieber/pain-point-mining-agent) | Claude marketplace, GitHub | Product-signal mining workflow |
+| [orphan-reaper](./orphan-reaper/) | Claude marketplace, npm | Orphan development-process cleanup CLI |
+
+Install individual plugins from the same marketplace when you need their
+bundled executable or hooks:
 
 ```bash
 claude plugin install orphan-reaper@tomstack
@@ -64,37 +81,21 @@ claude plugin install chatgpt-share-dump@tomstack
 claude plugin install pain-point-mining-agent@tomstack
 ```
 
-Each plugin also works standalone via npx — no marketplace required:
+## Maintainer workflow
 
 ```bash
-npx orphan-reaper scan
-npx claude-backup sync
-npx github:tombelieber/chatgpt-share-dump --url "https://chatgpt.com/share/..."
-npx github:tombelieber/pain-point-mining-agent --version
+npm install
+npm run check
+claude plugin validate . --strict
 ```
 
-These standalone tools also have tracked global installers:
+Add new work under `skills/in-progress`. Promotion into `engineering` or
+`productivity` requires root and bucket README entries, a human-facing docs
+page, `agents/openai.yaml`, and an explicit Claude plugin manifest path.
 
-```bash
-curl -fsSL https://chatgpt-share-dump.tomtang3.ai/install.sh | sh
-curl -fsSL https://pain-point-mining.tomtang3.ai/install.sh | sh
-```
+For local development, `scripts/link-skills.sh` links repository skills into
+the maintainer's Claude and Codex skill homes. It refuses to replace existing
+directories unless `--replace` is provided, in which case it moves them to
+timestamped backups first.
 
----
-
-## Related
-
-- **[codex-auto-pilot](https://github.com/tombelieber/codex-auto-pilot)** — Execute an approved goal through an owner-decided implementation shape, verified PR, and optional release.
-- **[claude-view](https://github.com/tombelieber/claude-view)** — Mission Control for Claude Code. Monitor every agent session, costs, and tools in one dashboard.
-- **[claude-backup](https://github.com/tombelieber/claude-backup)** — Claude Code deletes sessions after 30 days. This saves them.
-- **[chatgpt-share-dump](https://github.com/tombelieber/chatgpt-share-dump)** — Convert ChatGPT share links into agent-readable archives.
-- **[pain-point-mining-agent](https://github.com/tombelieber/pain-point-mining-agent)** — Mine real transcripts into ranked product pain points and requirements.
-- **[orphan-reaper](./orphan-reaper/)** — Kill orphan dev processes left by AI agent sessions.
-
----
-
-<div align="center">
-
-MIT &copy; 2026
-
-</div>
+MIT © 2026 Tom Tang

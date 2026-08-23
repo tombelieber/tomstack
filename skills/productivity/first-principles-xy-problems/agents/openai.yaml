@@ -1,0 +1,6 @@
+interface:
+  display_name: "First Principles & XY Problems"
+  short_description: "Deep problem discovery before solution design"
+  default_prompt: "Use $first-principles-xy-problems to examine this problem deeply before choosing a solution."
+policy:
+  allow_implicit_invocation: false

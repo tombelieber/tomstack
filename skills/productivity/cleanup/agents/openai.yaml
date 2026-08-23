@@ -1,0 +1,4 @@
+interface:
+  display_name: "Orphan Reaper"
+  short_description: "Find and clean orphaned dev processes"
+  default_prompt: "Use $cleanup to scan for orphaned development processes before proposing any kill action."

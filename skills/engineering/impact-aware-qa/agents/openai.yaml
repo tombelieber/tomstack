@@ -1,0 +1,4 @@
+interface:
+  display_name: "Impact-Aware QA"
+  short_description: "Choose the smallest sufficient repository checks"
+  default_prompt: "Use $impact-aware-qa to verify this change with the smallest sufficient evidence."

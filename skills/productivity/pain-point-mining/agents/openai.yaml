@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pain Point Mining"
+  short_description: "Mine transcripts into ranked pain points."
+  default_prompt: "Use $pain-point-mining to analyze real user history, rank pain points by frequency x value, and update PRD/E2E docs."

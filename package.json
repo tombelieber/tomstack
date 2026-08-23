@@ -1,0 +1,32 @@
+{
+  "name": "tomstack-skills",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tom Tang's canonical monorepo for maintained agent skills.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tombelieber/tomstack"
+  },
+  "license": "MIT",
+  "files": [
+    ".agents/",
+    ".claude-plugin/",
+    "docs/",
+    "skills/",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "changeset": "changeset",
+    "version": "changeset version && node scripts/sync-plugin-version.mjs",
+    "check-plugin-version": "node scripts/sync-plugin-version.mjs --check",
+    "check": "node scripts/check-repo.mjs && npm run pack:dry",
+    "pack:dry": "npm pack --dry-run --json"
+  },
+  "devDependencies": {
+    "@changesets/changelog-github": "^0.7.0",
+    "@changesets/cli": "^2.30.0"
+  },
+  "packageManager": "npm@10.9.4"
+}
