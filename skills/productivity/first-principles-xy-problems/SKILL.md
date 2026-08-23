@@ -1,6 +1,6 @@
 ---
 name: first-principles-xy-problems
-description: Deeply examine an ambiguous product, business, strategy, architecture, or workflow problem before choosing a solution. Use when the user explicitly asks for first-principles reasoning, XY-problem analysis, a deep dive, or deep research and comparison before strategy. Do not use for quick factual questions, ordinary tactical help, or implementation work.
+description: Deeply examine an ambiguous product, business, strategy, architecture, or workflow problem before choosing a solution.
 disable-model-invocation: true
 ---
 

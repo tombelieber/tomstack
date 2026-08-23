@@ -1,6 +1,6 @@
 ---
 name: auto-pilot
-description: "Deliver one approved software goal through a production-ready PR and, when explicitly requested, continue in one fresh production-release task. Invoke explicitly with $auto-pilot at the start of the prompt. Use pr for PR-only delivery, ship or a clear current release imperative for automatic PR-to-release continuation, and release for an existing PR. Keep one accountable Sol owner, let that owner choose direct work or optional fresh stages and leaf workers, prohibit leaf-to-child delegation, and preserve deterministic delivery evidence."
+description: "Deliver one approved software goal through a production-ready PR, with an optional explicitly authorized release in a fresh task."
 disable-model-invocation: true
 ---
 

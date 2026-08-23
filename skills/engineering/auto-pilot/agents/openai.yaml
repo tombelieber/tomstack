@@ -1,6 +1,6 @@
 interface:
   display_name: "Auto Pilot"
-  short_description: "Build a verified PR, then optionally auto-start its fresh release task"
-  default_prompt: "$auto-pilot pr <approved-plan-path>. Use ship instead of pr when I explicitly want one-command PR-to-production delivery: finish the PR, then create one fresh $auto-pilot release <PR> task unless that exact continuation already exists. Never mutate production in the PR controller."
+  short_description: "Deliver a verified PR and optional fresh release"
+  default_prompt: "Use $auto-pilot in pr mode for this approved plan; use ship only when I explicitly authorize production release."
 policy:
   allow_implicit_invocation: false

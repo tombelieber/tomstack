@@ -10,4 +10,15 @@ which cannot safely exclude `in-progress`, `misc`, and `deprecated` buckets.
 
 The Claude plugin lists every promoted skill explicitly. Codex and other Agent
 Skills-compatible harnesses use `npx skills@latest add tombelieber/tomstack`
-to select skills. Do not create a duplicated flattened promoted directory.
+to select skills. The installer writes Agent Skills-compatible copies under
+`.agents/skills`; the maintainer linker mirrors that convention. Do not create
+a duplicated flattened promoted directory.
+
+## Validation boundary
+
+Cross-harness validation requires both real distribution paths. Claude strict
+plugin validation owns Claude-only frontmatter such as
+`disable-model-invocation`; the Agent Skills installer owns Codex discovery and
+copying, while `agents/openai.yaml` owns Codex invocation policy. A Codex-only
+frontmatter validator may reject that Claude extension on user-invoked skills,
+so it is not sufficient evidence for the shared bundle by itself.

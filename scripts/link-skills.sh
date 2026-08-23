@@ -5,7 +5,7 @@ set -euo pipefail
 # or `npx skills@latest add tombelieber/tomstack`.
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
-DESTS=("$HOME/.claude/skills" "$HOME/.codex/skills")
+DESTS=("$HOME/.claude/skills" "$HOME/.agents/skills")
 REPLACE=0
 
 if [[ "${1:-}" == "--replace" ]]; then

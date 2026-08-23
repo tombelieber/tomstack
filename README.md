@@ -28,6 +28,13 @@ npx skills@latest add tombelieber/tomstack
 Choose the skills and target agents you want. Installing both the Claude bundle
 and copied Claude skills creates duplicates, so use one Claude route.
 
+Install or update one skill:
+
+```bash
+npx skills@latest add tombelieber/tomstack --skill=<name>
+npx skills@latest update <name>
+```
+
 ## Skills
 
 ### Engineering
@@ -94,8 +101,8 @@ Add new work under `skills/in-progress`. Promotion into `engineering` or
 page, `agents/openai.yaml`, and an explicit Claude plugin manifest path.
 
 For local development, `scripts/link-skills.sh` links repository skills into
-the maintainer's Claude and Codex skill homes. It refuses to replace existing
-directories unless `--replace` is provided, in which case it moves them to
-timestamped backups first.
+`~/.claude/skills` and the Agent Skills-compatible `~/.agents/skills` root. It
+refuses to replace existing directories unless `--replace` is provided, in
+which case it moves them to timestamped backups first.
 
 MIT © 2026 Tom Tang

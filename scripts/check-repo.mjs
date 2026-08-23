@@ -19,6 +19,13 @@ const read = (path) => readFileSync(join(repo, path), "utf8");
 const json = (path) => JSON.parse(read(path));
 const fail = (message) => errors.push(message);
 
+function yamlQuotedValue(source, key) {
+  const match = source.match(
+    new RegExp(`^\\s*${key}:\\s*"([^"]*)"\\s*$`, "m"),
+  );
+  return match?.[1];
+}
+
 function skillDirs(bucket) {
   const root = join(repo, "skills", bucket);
   if (!existsSync(root)) return [];
@@ -80,6 +87,13 @@ for (const bucket of allBuckets) {
       continue;
     }
 
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name) || name.length > 64) {
+      fail(`${path}/SKILL.md has an invalid cross-harness skill name (${name})`);
+    }
+    if (!/^description:\s*(?:.+|>)\s*$/m.test(frontmatter[1])) {
+      fail(`${path}/SKILL.md has no description`);
+    }
+
     if (name !== dir.split("/").at(-1)) {
       fail(`${path} directory and skill name differ (${name})`);
     }
@@ -93,14 +107,50 @@ for (const bucket of allBuckets) {
       fail(`missing ${openaiPath}`);
     } else {
       const openai = read(openaiPath);
+      const hasClaudePolicy = /^disable-model-invocation:\s*.+$/m.test(
+        frontmatter[1],
+      );
       const claudeExplicit = /^disable-model-invocation:\s*true\s*$/m.test(
         frontmatter[1],
       );
+      const hasCodexPolicy = /^policy:\s*$/m.test(openai);
       const codexExplicit = /^\s*allow_implicit_invocation:\s*false\s*$/m.test(
         openai,
       );
+
+      if (hasClaudePolicy && !claudeExplicit) {
+        fail(`${path} must omit disable-model-invocation or set it to true`);
+      }
       if (claudeExplicit !== codexExplicit) {
         fail(`${path} has inconsistent Claude/Codex invocation policy`);
+      }
+      if (!claudeExplicit && hasCodexPolicy) {
+        fail(`${openaiPath} must omit policy for a model-invoked skill`);
+      }
+
+      const displayName = yamlQuotedValue(openai, "display_name");
+      const shortDescription = yamlQuotedValue(openai, "short_description");
+      const defaultPrompt = yamlQuotedValue(openai, "default_prompt");
+      if (!displayName) fail(`${openaiPath} needs a quoted display_name`);
+      if (!shortDescription) {
+        fail(`${openaiPath} needs a quoted short_description`);
+      } else if (
+        shortDescription.length < 25 ||
+        shortDescription.length > 64
+      ) {
+        fail(`${openaiPath} short_description must be 25-64 characters`);
+      }
+      if (!defaultPrompt) {
+        fail(`${openaiPath} needs a quoted default_prompt`);
+      } else if (!defaultPrompt.includes(`$${name}`)) {
+        fail(`${openaiPath} default_prompt must mention $${name}`);
+      }
+
+      if (
+        claudeExplicit &&
+        /\b(?:Use when|Invoke explicitly|Use if)\b/i.test(frontmatter[1])
+      ) {
+        fail(`${path} user-invoked description must be human-facing`);
       }
     }
 

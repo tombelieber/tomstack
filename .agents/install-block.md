@@ -13,5 +13,12 @@ claude plugin install tomstack-skills@tomstack
 npx skills@latest add tombelieber/tomstack
 ```
 
+For one skill:
+
+```bash
+npx skills@latest add tombelieber/tomstack --skill=<name>
+npx skills@latest update <name>
+```
+
 Choose only the skills and target agents you want. Do not install the Claude
 bundle and copied Claude skills together because that creates duplicates.
