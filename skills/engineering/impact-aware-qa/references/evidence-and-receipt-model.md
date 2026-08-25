@@ -3,7 +3,10 @@
 A receipt records a QA decision. It does not grant merge, release, deployment,
 migration, or other production authority.
 
-## Minimal shape
+## Minimal compatible shape
+
+Schema v1 remains valid for existing integrations. Use schema v2 when measuring
+selection, shadow outcomes, cache reuse, retries, or red-baseline ownership.
 
 ```json
 {
@@ -43,10 +46,82 @@ migration, or other production authority.
 }
 ```
 
+## Measurable v2 shape
+
+V2 retains the v1 candidate, impact, skipped, release, and outcome fields, and
+adds explicit gate identity plus richer selected/shadow checks:
+
+```json
+{
+  "schema_version": 2,
+  "lane": "affected",
+  "gate": {
+    "version": "repo-gate-v3",
+    "environment": "local",
+    "toolchain_digest": "sha256:lock+runtime"
+  },
+  "candidate": {
+    "repository": "https://example.invalid/owner/repo",
+    "base": "full-base-sha",
+    "head": "full-head-sha",
+    "tree": "candidate-tree",
+    "dirty_digest": null
+  },
+  "impact": {
+    "classes": ["isolated-leaf"],
+    "unknown": false,
+    "reasons": ["one leaf and its graph-selected tests changed"]
+  },
+  "checks": [
+    {
+      "id": "leaf-tests",
+      "command": "repository-defined command",
+      "status": "passed",
+      "evidence": "bounded log or immutable result",
+      "duration_ms": 1200,
+      "attempts": 1,
+      "freshness": "executed",
+      "cache": {"status": "miss", "key": null},
+      "baseline": {"classification": "passed", "reference": null}
+    }
+  ],
+  "shadow_checks": [
+    {
+      "id": "full-relevant",
+      "command": "repository full relevant command",
+      "status": "passed",
+      "evidence": "bounded shadow log",
+      "duration_ms": 10000,
+      "attempts": 1,
+      "freshness": "executed",
+      "cache": {"status": "not_used", "key": null},
+      "baseline": {"classification": "passed", "reference": null}
+    }
+  ],
+  "skipped": [],
+  "metrics": {
+    "selected_duration_ms": 1200,
+    "shadow_duration_ms": 10000,
+    "false_negative": false,
+    "false_escalation": false,
+    "cache_hits": 0,
+    "retries": 0
+  },
+  "release": {"authorized": false, "performed": false},
+  "outcome": "passed"
+}
+```
+
 Validate a receipt with:
 
 ```bash
 node <skill-dir>/scripts/validate-receipt.mjs <receipt.json>
+```
+
+Summarize one or more v2 shadow receipts with:
+
+```bash
+node <skill-dir>/scripts/summarize-receipts.mjs <receipt-v2.json> [...]
 ```
 
 ## Candidate identity
@@ -81,6 +156,11 @@ Reuse a result only when its candidate, declared inputs, dependencies,
 toolchain, environment class, and gate version still match. Record cache reuse
 separately from the check outcome.
 
+`freshness: reused` requires a cache hit with a stable key. The key must bind the
+candidate, relevant dependency/config inputs, toolchain, gate version, and
+environment class. A warm dependency download with a freshly executed test is
+still `freshness: executed`.
+
 Pre-merge and release qualification may require fresh execution even when safe
 dependency/download caches remain warm. Follow the repository contract.
 
@@ -89,6 +169,11 @@ dependency/download caches remain warm. Follow the repository contract.
 - `passed`: every selected check passed and no unresolved unknown remains.
 - `failed`: at least one selected check failed.
 - `blocked`: required evidence or a decision prerequisite is unavailable.
+
+A failed check is `new_failure` or `known_failure`. A known failure needs an
+immutable baseline reference and still produces a failed candidate outcome; it
+is diagnostic ownership, not a waiver. In shadow mode, selected green plus full
+red is a false negative and cannot produce a passing receipt.
 
 `release.performed` may never be true when `release.authorized` is false. Even
 an authorized release is outside this skill unless another owner workflow

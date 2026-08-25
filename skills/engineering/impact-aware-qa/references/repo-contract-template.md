@@ -91,3 +91,10 @@ Before trusting selection to skip an established check:
 3. Record misses, false escalation, wall time, and flaky ownership.
 4. Promote selection only after there are no unexplained false negatives.
 5. Keep periodic or sampled shadow runs and fail closed when the contract drifts.
+
+Include at least docs-only, isolated leaf, graph-gap fallback, shared contract,
+dynamic/native discovery, authentication or persisted-data boundary,
+cross-runtime consumer, unknown path, and pre-existing red-baseline scenarios.
+Store expected selection in the repository's executable harness rather than in
+agent prose. Summarize v2 receipts to compare selected and full wall time; do not
+claim savings from scenarios that did not run a comparable full proof.

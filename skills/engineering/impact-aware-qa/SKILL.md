@@ -14,6 +14,11 @@ adopting this skill or when repository ownership is unclear. Read
 [evidence model](references/evidence-and-receipt-model.md) before reusing old
 results or issuing a machine-readable receipt.
 
+The repository owns its classifier, dependency graph, commands, and QA runner.
+Integrate this decision model through that existing owner; do not install a
+second public QA skill or copy repository-specific path maps into this portable
+skill.
+
 ## Select the proof
 
 1. Read the applicable agent instructions, repository QA contract, package or
@@ -29,6 +34,12 @@ results or issuing a machine-readable receipt.
 5. Run the selected checks locally. Use the repository's affected gate when it
    exists; do not recreate its classifier in prose or ad hoc shell commands.
 6. Report what passed, what was skipped and why, and what remains unproved.
+
+When adopting or changing selection logic, run representative candidates in
+shadow mode: execute both the selected proof and the established full relevant
+proof, then measure misses and time saved. A pre-existing red baseline remains
+red; classify it as known versus candidate-new, attach its reference, and do
+not convert it into a passing outcome.
 
 ## Escalate without guessing
 
