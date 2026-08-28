@@ -2,10 +2,21 @@
 """Validate an Auto Pilot version 7 completion receipt."""
 
 import json
+import hashlib
 import re
 import sys
+from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse
+
+
+CONTRACT_FILES = (
+    "SKILL.md",
+    "references/automatic-promotion.md",
+    "references/release-promotion.md",
+    "references/receipt-schema.md",
+    "scripts/validate_receipt.py",
+)
 
 
 def die(message):
@@ -37,6 +48,25 @@ def full_git_sha(value, name):
     if not re.fullmatch(r"[0-9a-fA-F]{40}", value):
         die(f"{name} must be a full 40 character hexadecimal Git id")
     return value.lower()
+
+
+def sha256_digest(value, name):
+    value = text(value, name)
+    if not re.fullmatch(r"[0-9a-fA-F]{64}", value):
+        die(f"{name} must be a full 64 character hexadecimal SHA-256 digest")
+    return value.lower()
+
+
+def release_contract_sha256():
+    skill_root = Path(__file__).resolve().parents[1]
+    digest = hashlib.sha256()
+    for relative in CONTRACT_FILES:
+        path = skill_root / relative
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
 
 
 def web_url(value, name):
@@ -77,6 +107,120 @@ def validate_items(value, kind, require_pass):
             passed += 1
     if require_pass and passed == 0:
         die(f"{kind} must contain at least one passed item")
+    return value
+
+
+def aware_timestamp(value, name):
+    value = text(value, name)
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        die(f"{name} must be an ISO 8601 timestamp")
+    if parsed.tzinfo is None:
+        die(f"{name} must include a timezone")
+    return parsed
+
+
+def validate_release_control_budget(checks, require_success):
+    matches = [
+        check for check in checks if check.get("name") == "release-control-budget"
+    ]
+    if len(matches) != 1:
+        die("release mode requires exactly one release-control-budget check")
+
+    check = matches[0]
+    budget = check.get("budget_seconds")
+    elapsed = check.get("elapsed_seconds")
+    if not isinstance(budget, int) or isinstance(budget, bool) or budget <= 0:
+        die("release-control-budget.budget_seconds must be a positive integer")
+    if not isinstance(elapsed, int) or isinstance(elapsed, bool) or elapsed < 0:
+        die("release-control-budget.elapsed_seconds must be a non-negative integer")
+
+    started = aware_timestamp(
+        check.get("live_pr_bound_at"), "release-control-budget.live_pr_bound_at"
+    )
+    ended = aware_timestamp(check.get("ended_at"), "release-control-budget.ended_at")
+    if ended < started:
+        die("release-control-budget.ended_at must not precede live_pr_bound_at")
+    measured = round((ended - started).total_seconds())
+    if abs(measured - elapsed) > 1:
+        die("release-control-budget.elapsed_seconds must match the recorded timestamps")
+
+    if check.get("end_kind") not in {"terminal", "safe_boundary"}:
+        die("release-control-budget.end_kind must be terminal or safe_boundary")
+    expected_outcome = "passed" if elapsed <= budget else "exhausted"
+    if check.get("outcome") != expected_outcome:
+        die(f"release-control-budget.outcome must be {expected_outcome}")
+    expected_status = "passed" if expected_outcome == "passed" else "failed"
+    if check.get("status") != expected_status:
+        die(f"release-control-budget.status must be {expected_status}")
+    if require_success and expected_outcome != "passed":
+        die("successful release mode must finish within release-control-budget")
+    return check
+
+
+def validate_release_contract_binding(checks, promotion=None, require_success=False):
+    matches = [
+        check for check in checks if check.get("name") == "release-contract-binding"
+    ]
+    if len(matches) != 1:
+        die("release mode requires exactly one release-contract-binding check")
+
+    check = matches[0]
+    if check.get("status") != "passed":
+        die("release-contract-binding.status must be passed")
+    if check.get("single_use") is not True:
+        die("release-contract-binding.single_use must be true")
+
+    contract = sha256_digest(
+        check.get("contract_sha256"), "release-contract-binding.contract_sha256"
+    )
+    if contract != release_contract_sha256():
+        die("release-contract-binding.contract_sha256 does not match the installed contract")
+    candidate = full_git_sha(
+        check.get("candidate_head_sha"),
+        "release-contract-binding.candidate_head_sha",
+    )
+
+    source_digest = check.get("source_receipt_sha256")
+    if source_digest is not None:
+        sha256_digest(
+            source_digest, "release-contract-binding.source_receipt_sha256"
+        )
+    if promotion is not None:
+        if candidate != promotion.get("candidate_head_sha").lower():
+            die("release-contract-binding candidate must equal promotion candidate head")
+        if promotion.get("source") == "pr_ready_receipt" and source_digest is None:
+            die("pr_ready_receipt promotion requires source_receipt_sha256")
+        if promotion.get("source") == "live_pr" and source_digest is not None:
+            die("live_pr promotion requires null source_receipt_sha256")
+        if require_success and promotion.get("source") != "pr_ready_receipt":
+            die("successful release mode requires a pr_ready_receipt source")
+        if promotion.get("source") == "pr_ready_receipt":
+            source_path = Path(promotion.get("source_receipt")).expanduser()
+            if not source_path.is_absolute():
+                die("promotion.source_receipt must be an absolute local path")
+            try:
+                source_bytes = source_path.read_bytes()
+            except OSError:
+                die("promotion.source_receipt must be a readable local receipt file")
+            if hashlib.sha256(source_bytes).hexdigest() != source_digest:
+                die("source_receipt_sha256 does not match promotion.source_receipt")
+            try:
+                source_root = obj(json.loads(source_bytes), "promotion.source_receipt")
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                die("promotion.source_receipt must contain valid JSON")
+            if source_root.get("mode") != "pr" or source_root.get("terminal_state") != "pr_ready":
+                die("promotion.source_receipt must be a pr_ready receipt")
+            if validate(source_path) != "pr_ready":
+                die("promotion.source_receipt must validate as pr_ready")
+            source_git = validate_git(source_root.get("git"))
+            source_commits = {
+                str(commit).lower() for commit in source_git.get("commits", [])
+            }
+            if candidate not in source_commits:
+                die("promotion candidate must appear in the source pr_ready receipt")
+    return check
 
 
 def validate_pull_request(value):
@@ -240,22 +384,29 @@ def validate_capability_reachability(value, require_success):
 
 def validate_optional_blocked(root):
     git_value = None
+    checks = None
+    promotion = None
     if "git" in root:
         git_value = validate_git(root["git"])
     if "criteria" in root:
         validate_items(root["criteria"], "criteria", False)
     if "checks" in root:
-        validate_items(root["checks"], "checks", False)
+        checks = validate_items(root["checks"], "checks", False)
     if "pull_request" in root:
         validate_pull_request(root["pull_request"])
     if "release" in root:
         validate_release(root["release"], True)
     if "promotion" in root:
-        validate_promotion(root["promotion"], git_value)
+        promotion = validate_promotion(root["promotion"], git_value)
     if "cleanup" in root:
         validate_cleanup(root["cleanup"], False)
     if "capability_reachability" in root:
         validate_capability_reachability(root["capability_reachability"], False)
+    if root.get("mode") == "release":
+        if checks is None:
+            die("release-mode blocked receipt requires checks")
+        validate_release_contract_binding(checks, promotion, False)
+        validate_release_control_budget(checks, False)
 
 
 def validate(path):
@@ -298,7 +449,7 @@ def validate(path):
 
     git_value = validate_git(root.get("git"))
     validate_items(root.get("criteria"), "criteria", True)
-    validate_items(root.get("checks"), "checks", True)
+    checks = validate_items(root.get("checks"), "checks", True)
     pull_request = validate_pull_request(root.get("pull_request"))
     release = validate_release(root.get("release"))
 
@@ -326,7 +477,9 @@ def validate(path):
 
     if mode != "release":
         die("merged_main and released require mode release")
-    validate_promotion(root.get("promotion"), git_value)
+    validate_release_control_budget(checks, True)
+    promotion = validate_promotion(root.get("promotion"), git_value)
+    validate_release_contract_binding(checks, promotion, True)
     validate_cleanup(root.get("cleanup"), True)
     if pull_request.get("merged") is not True or pull_request.get("status") != "merged":
         die("release mode requires a merged PR/MR")
@@ -356,6 +509,9 @@ def validate(path):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        die("usage: validate_receipt.py RECEIPT.json")
-    print(f"valid Auto Pilot receipt: {validate(Path(sys.argv[1]).expanduser())}")
+    if len(sys.argv) == 2 and sys.argv[1] == "--contract-sha256":
+        print(release_contract_sha256())
+    elif len(sys.argv) == 2:
+        print(f"valid Auto Pilot receipt: {validate(Path(sys.argv[1]).expanduser())}")
+    else:
+        die("usage: validate_receipt.py RECEIPT.json | --contract-sha256")

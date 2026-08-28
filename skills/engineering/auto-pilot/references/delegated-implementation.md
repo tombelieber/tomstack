@@ -102,8 +102,14 @@ The accountable PR owner must:
 3. perform one consolidated correctness, architecture, security, performance,
    and test-quality review;
 4. patch findings without creating a review ping-pong loop; and
-5. run exact-candidate gates, create the PR, validate a `pr_ready` receipt, and
-   stop without merging or mutating production.
+5. use focused evidence while the head is moving, then run the complete
+   exact-candidate gate for the final live PR head, validate `pr_ready` only
+   from promotable PASS evidence, and stop without merging or mutating
+   production.
+
+Keep directly causal in-scope fixes on that same PR before `pr_ready`. Do not
+defer a known deterministic release-readiness defect to the release task, and
+do not create intermediate PRs merely to run another full promotion cycle.
 
 Emit `::created-thread{threadId="<REF>"}` (or `clientThreadId`) for every
 user-visible stage task. Record the actual primary implementation lane in the

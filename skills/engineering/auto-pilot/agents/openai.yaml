@@ -1,6 +1,6 @@
 interface:
   display_name: "Auto Pilot"
-  short_description: "Deliver a verified PR and optional fresh release"
-  default_prompt: "Use $auto-pilot in pr mode for this approved plan; use ship only when I explicitly authorize production release."
+  short_description: "Build a verified PR, then start one safe release task"
+  default_prompt: "$auto-pilot pr <approved-plan-path>. Use ship instead of pr when I explicitly want one-command PR-to-production delivery: finish one fully qualified PR, then create one fresh single-use $auto-pilot release <PR> task. Bind the task to the live head, source-receipt SHA-256, and installed release-contract SHA-256; never resume it after a terminal result. The release task must treat the candidate as immutable, never edit code or open another PR, and stop blocked rather than exceed its default 10-minute whole-task wall-clock budget to implement repairs."
 policy:
   allow_implicit_invocation: false
