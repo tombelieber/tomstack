@@ -39,7 +39,7 @@ Create a temporary JSON document with this version 7 shape. It records delivery 
 
 Successful receipts require an approved plan, non-empty summary, at least one commit, one passed criterion, one evidenced check, a valid PR/MR URL, and no blockers.
 
-- `pr_ready`: mode `pr`; PR is open or ready, unmerged, release is `not_requested`, and `promotion` is absent.
+- `pr_ready`: mode `pr`; PR is open or ready, unmerged, release is `not_requested`, and `promotion` is absent. When the repository defines exact-candidate or pre-merge qualification, the receipt's evidenced checks must include a current promotable PASS for the live head. FAIL, BYPASS, missing, stale, reconciled-but-unpromotable, or scope-mismatched evidence requires `blocked`.
 - `merged_main`: mode `release`; PR is merged with a merge SHA, no deployment mechanism exists, release is `no_mechanism`, and task-worktree cleanup passed.
 - `released`: mode `release`; PR is merged, release is `passed`, release and canonical-notes URLs exist, the exact final-response release message links those notes, exact capability reachability is proven for the deployed merge commit, and task-worktree cleanup passed.
 - `blocked`: at least one blocker with `reason` and `evidence`; delivery sections may be omitted.
@@ -56,7 +56,16 @@ A successful release-mode receipt must add this object:
 }
 ```
 
-`source` is `live_pr` or `pr_ready_receipt`. For `pr_ready_receipt`, set `source_receipt` to the receipt path or immutable receipt identity; otherwise it must be null. `candidate_head_sha` must be the full live pre-merge PR head and must appear in `git.commits`. A receipt is evidence only: `authority_evidence` must identify the fresh current promotion invocation.
+`source` is `live_pr` or `pr_ready_receipt`. Successful `merged_main` and
+`released` results require `pr_ready_receipt`; `live_pr` is retained only so a
+release task that cannot establish readiness can describe a blocked admission.
+For `pr_ready_receipt`, set `source_receipt` to a readable absolute local receipt path
+kept through final validation; otherwise it must be null. Its SHA-256 must
+match `release-contract-binding.source_receipt_sha256`, it must itself say
+`pr_ready`, and it must contain the promotion candidate. `candidate_head_sha`
+must be the full live pre-merge PR head and must appear in `git.commits`. A receipt is
+evidence only: `authority_evidence` must identify the fresh current promotion
+invocation.
 
 A successful release-mode receipt must also record automatic closeout:
 
@@ -158,6 +167,51 @@ the normal production integration; do not hard-code account IDs or require a
 duplicate provider app merely for test isolation.
 
 Record migrations, backfills, E2E, rollout, rollback, and post-release verification as normal `checks` when applicable. Extra evidence fields are allowed. Do not add model names, agent counts, reviewer identities, effort routing, or parallelism requirements.
+
+Every release-mode result must record exactly one current contract binding:
+
+```json
+{
+  "name": "release-contract-binding",
+  "status": "passed",
+  "contract_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source_receipt_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "candidate_head_sha": "0123456789abcdef0123456789abcdef01234567",
+  "single_use": true,
+  "evidence": "Recomputed before mutation from the installed contract and exact source receipt"
+}
+```
+
+Get the installed fingerprint with `python3
+<skill-dir>/scripts/validate_receipt.py --contract-sha256`. The validator
+recomputes it and rejects an old contract. `candidate_head_sha` must equal the
+promotion candidate. `source_receipt_sha256` is required for
+`promotion.source: pr_ready_receipt` and must be null for `live_pr`. A terminal
+release task is sealed; this check cannot be reused to resume it.
+
+For `merged_main`, `released`, or a release-mode `blocked` result, record one
+`release-control-budget` check in this exact shape:
+
+```json
+{
+  "name": "release-control-budget",
+  "status": "passed",
+  "budget_seconds": 600,
+  "live_pr_bound_at": "2026-08-28T09:00:00+08:00",
+  "ended_at": "2026-08-28T09:08:30+08:00",
+  "end_kind": "terminal",
+  "elapsed_seconds": 510,
+  "outcome": "passed",
+  "evidence": "Measured from live PR binding through the complete release task"
+}
+```
+
+`budget_seconds` is the declared whole-task wall-clock budget. `end_kind` is
+`terminal` or `safe_boundary`. The timestamps must be timezone-aware, and
+`elapsed_seconds` must match them. When elapsed time exceeds the budget, use
+`status: failed` and `outcome: exhausted`; a successful release-mode receipt
+cannot exceed its budget. This is timing evidence, not permission to interrupt
+an unsafe in-flight mutation.
 
 ## Hand the receipt to local history
 

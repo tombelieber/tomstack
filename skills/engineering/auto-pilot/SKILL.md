@@ -1,6 +1,6 @@
 ---
 name: auto-pilot
-description: "Deliver one approved software goal through a production-ready PR, with an optional explicitly authorized release in a fresh task."
+description: "Deliver one approved software goal through a production-ready PR and, when explicitly requested, continue in one fresh production-release task. Supports PR-only delivery, automatic PR-to-release continuation, and release of an existing PR. Release tasks are single-use, bind the current contract and immutable candidate, and fail closed instead of implementing repairs or opening follow-up PRs."
 disable-model-invocation: true
 ---
 
@@ -16,7 +16,11 @@ $auto-pilot ship /path/to/approved-plan.md
 $auto-pilot release <PR URL or number>
 ```
 
-Put the command at the start of the prompt so private run history records only real executions. `pr` ends at a production-ready PR. `ship` completes that PR, then creates one fresh release task automatically unless the exact continuation already exists. `release` starts directly from an existing candidate. Never merge or mutate production inside the PR controller.
+Put the command at the start of the prompt so private run history records only real executions. `pr` ends at a production-ready PR. `ship` completes that PR, then creates one fresh single-use release task automatically, unless that exact attempt is already active. `release` starts directly from an existing candidate. Never merge or mutate production inside the PR controller.
+
+A release stage is not another implementation loop. It may promote the one
+qualified candidate or return `blocked`; it must not edit source, create a
+commit or branch, open another PR, or repair CI/release tooling.
 
 Read [receipt schema](references/receipt-schema.md) before declaring a terminal result. In the PR stage, read [owner-directed execution](references/delegated-implementation.md) completely before choosing an execution shape. For `ship`, read [automatic promotion](references/automatic-promotion.md) before dispatching the continuation. In the release stage, read [release promotion](references/release-promotion.md) completely before any merge or external mutation.
 
@@ -48,20 +52,23 @@ State the resolved owner model/thinking, executor preference, leaf-worker prefer
 
 1. Refresh only the repository truth needed to own the goal and choose an execution shape. Avoid deeply reading the implementation surface twice.
 2. Batch deterministic inventory, status, and verification work. Follow [owner-directed execution](references/delegated-implementation.md) whether the owner works directly or chooses optional fresh stages or leaf workers.
-3. After implementation is integrated, let the accountable owner perform one consolidated review, patch findings without review ping-pong, run exact-candidate gates, clean task-owned runtime resources, commit, push, and create the final PR/MR. Keep the delivery worktree and branch while the PR is open.
-4. Once the open PR reaches `pr_ready`, stop PR writes. Do not merge, deploy, migrate, rotate secrets, or mutate production in this session.
-5. For `ship`, dispatch one fresh release task or reuse the exact existing task for the exact PR head by following [automatic promotion](references/automatic-promotion.md). Do not wait in a second controller loop.
+3. After implementation is integrated, let the accountable owner perform one consolidated review and patch findings without review ping-pong. Use focused edit/affected evidence while the head is moving. Commit, push, and open one final PR/MR, then run the repository's complete exact-candidate gate only when that head is intended to merge. If it fails, patch that same PR and rerun only the evidence invalidated by the new final head; do not create intermediate PRs merely to discover the next failure. Keep the delivery worktree and branch while the PR is open.
+4. An open PR reaches `pr_ready` only when every repository-required exact-candidate qualification and current required CI check is PASS for its live head. FAIL, BYPASS, missing, stale, reconciled-but-unpromotable, or scope-mismatched evidence is `blocked`, not `pr_ready`. Once `pr_ready`, stop PR writes. Do not merge, deploy, migrate, rotate secrets, or mutate production in this session.
+5. For `ship`, dispatch one fresh single-use release task by following [automatic promotion](references/automatic-promotion.md). If that exact attempt is already active, identify it without sending another prompt; never resume a terminal release task. Do not wait in a second controller loop.
 6. Only after the continuation outcome is known, validate the final `pr_ready` receipt with either the created/reused task evidence or the exact unavailable-task fallback. Then end the PR controller.
 
 ## Release stage
 
-1. Start from the live existing PR, not a remembered branch. Bind its exact base SHA, head SHA, current checks, reviews, mergeability, and release scope.
-2. Reuse unchanged deterministic evidence by hash. Re-run only repository-required candidate and release gates; do not repeat implementation or create another implementer.
-3. Keep one controller as release owner. A release task generated by `ship` uses the resolved release model and thinking preference. Conditional leaf workers remain terminal leaves and never receive merge, deploy, migration, rollback, or production authority. Use repository harnesses for dry-runs and evidence.
-4. Merge through the normal protected path, then use the repository release owner for approved migrations, backfills, deploys, recovery, rollback decisions, and real post-release verification.
-5. Publish the canonical release note for the exact released candidate and prepare the compact release message that will end the final visible response. A draft, generated changelog with no concrete outcome, or deployment-only message is not release completion.
-6. After merge or release, automatically clean the task-owned local worktree and delivery branch. First persist the receipt outside that worktree and prove the PR merged, the worktree is clean and unlocked, every task commit is pushed and reachable from the remote base, and no other task owns it. Run removal from the primary checkout, never from inside the target worktree; use `git worktree remove`, prune stale metadata, safe-delete the local branch, and delete the remote branch when repository policy permits. Never force removal. If any check or cleanup step fails, retain the evidence and report `blocked`, not success.
-7. If no deployment mechanism exists, stop at `merged_main`; otherwise stop only at `released`. Follow [release promotion](references/release-promotion.md).
+1. At the start of every release turn, reload this installed `SKILL.md`, [release promotion](references/release-promotion.md), and [receipt schema](references/receipt-schema.md). A terminal `blocked`, `merged_main`, or `released` response permanently seals that release task against further mutation; later turns are read-only discussion and must never resume it.
+2. Start from the live existing PR, not a remembered branch. Before any mutation, require a promotable `pr_ready` receipt and bind its SHA-256 plus the exact live base SHA, head SHA, current checks, reviews, mergeability, release scope, and installed release-contract SHA-256. Treat that source candidate as immutable for this single-use release task. A missing receipt, changed head, stale receipt, or contract mismatch returns `blocked`.
+3. Reuse unchanged deterministic evidence by hash. Re-run only repository-required candidate and release gates; do not repeat implementation, edit source, create commits or branches, open another PR, or create another implementer.
+4. Before merge, complete one bounded admission packet: promotable exact-candidate PASS, current required CI, requested impact scope, required credential presence, release lock/draft state, and the repository dry-run plan. A missing or failed item returns `blocked` before merge.
+5. Unless the user or repository declared a different bound before promotion began, use a 10-minute whole-task wall-clock release-control budget from live-PR binding to terminal result. Never silently extend it. Do not interrupt an unsafe in-flight mutation; reach its next repository-defined safe boundary, then return `blocked`.
+6. Keep one controller as release owner. A release task generated by `ship` uses the resolved release model and thinking preference. Conditional leaf workers remain terminal leaves and never receive merge, deploy, migration, rollback, or production authority. Use repository harnesses for dry-runs and evidence.
+7. Merge through the normal protected path, then run the repository release owner once for approved migrations, backfills, deploys, recovery, rollback decisions, and real post-release verification. Use at most one repository-declared bounded resume inside this still-active attempt for an unchanged candidate; deterministic qualification, authorization, credential, contract, or source-integrity failures are not retryable.
+8. Publish the canonical release note for the exact released candidate and prepare the compact release message that will end the final visible response. A draft, generated changelog with no concrete outcome, or deployment-only message is not release completion.
+9. After merge or release, automatically clean the task-owned local worktree and delivery branch. First persist the receipt outside that worktree and prove the PR merged, the worktree is clean and unlocked, every task commit is pushed and reachable from the remote base, and no other task owns it. Run removal from the primary checkout, never from inside the target worktree; use `git worktree remove`, prune stale metadata, safe-delete the local branch, and delete the remote branch when repository policy permits. Never force removal. If any check or cleanup step fails, retain the evidence and report `blocked`, not success.
+10. If no deployment mechanism exists, stop at `merged_main`; otherwise stop only at `released`. Follow [release promotion](references/release-promotion.md).
 
 ## Prove completion
 
