@@ -77,8 +77,25 @@ export async function materializeRun(directory, manifest, {schemaVersion, now = 
   )
   const finalMessage = messageMatches ? parsed.last_assistant_message : null
   const agents = await materializeAgents(directory, schemaVersion)
-  const completion = collectCompletionReceipt(finalMessage, manifest.mode, directory)
+  const invocationSchemaVersion = Number.isInteger(manifest.invocation_schema_version)
+    ? manifest.invocation_schema_version
+    : manifest.schema_version
+  const expectedReceiptMode = invocationSchemaVersion >= 5 && manifest.continuation === 'release'
+    ? 'release'
+    : manifest.mode
   const routing = auditRouting({message: finalMessage, manifest, subagents: agents.length})
+  const collectedCompletion = collectCompletionReceipt(
+    finalMessage,
+    expectedReceiptMode,
+    directory,
+    {validatorPath: archivedValidatorPath(directory, manifest)},
+  )
+  const completion = enforceReleaseRouting(
+    collectedCompletion,
+    routing,
+    manifest,
+    invocationSchemaVersion,
+  )
   const endedAt = validDate(terminal.ended_at) || now()
   const collectionComplete = Boolean(
     transcriptPath && parsed.token_usage_observed && messageMatches && parsed.parse_errors === 0,
@@ -136,7 +153,8 @@ export async function materializeRun(directory, manifest, {schemaVersion, now = 
   writePrivateJson(join(directory, 'manifest.json'), {
     ...manifest,
     schema_version: schemaVersion,
-    collector_version: schemaVersion,
+    invocation_schema_version: invocationSchemaVersion,
+    collector_version: manifest.collector_version ?? invocationSchemaVersion,
     status: 'finished',
     terminal_state: terminalState,
     ended_at: endedAt.toISOString(),
@@ -151,6 +169,41 @@ export async function materializeRun(directory, manifest, {schemaVersion, now = 
     materialized_at: now().toISOString(),
   })
   return {collectionComplete, runId: manifest.run_id}
+}
+
+export function enforceReleaseRouting(completion, routing, manifest, invocationSchemaVersion = manifest.schema_version) {
+  if (invocationSchemaVersion < 5 || completion.terminal_state !== 'released') return completion
+  const expectedLane = manifest.mode === 'release'
+    ? 'current_release_task'
+    : manifest.continuation === 'release'
+      ? 'current_ship_task'
+      : null
+  if (!expectedLane) return completion
+  const lane = routing.declared?.continuation?.lane
+  if (['passed', 'fallback'].includes(routing.status) && lane === expectedLane) return completion
+  return {
+    terminal_state: 'unknown',
+    evidence: {
+      ...completion.evidence,
+      status: 'routing_mismatch',
+      expected_lane: expectedLane,
+      observed_lane: lane || null,
+    },
+  }
+}
+
+function archivedValidatorPath(directory, manifest) {
+  const hash = manifest.skill_bundle_sha256
+  if (!/^[a-f0-9]{64}$/.test(hash || '')) return undefined
+  const candidate = join(
+    dirname(dirname(directory)),
+    'versions',
+    hash,
+    'bundle',
+    'scripts',
+    'validate_receipt.py',
+  )
+  return regularFile(candidate) ? candidate : null
 }
 
 export async function parseCodexTranscript(path, {startBytes = 0, endBytes, turnId = null} = {}) {

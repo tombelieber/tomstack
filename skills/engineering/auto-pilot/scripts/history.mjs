@@ -19,8 +19,8 @@ import {materializePendingRuns} from './history-materialize.mjs'
 import {snapshotCompletionReceipt} from './history-receipt.mjs'
 import {resolveAutoPilotConfig} from './resolve_config.mjs'
 
-export const AUTO_PILOT_VERSION = '0.11.0'
-export const HISTORY_SCHEMA_VERSION = 4
+export const AUTO_PILOT_VERSION = '0.12.0'
+export const HISTORY_SCHEMA_VERSION = 5
 export const DEFAULT_RAW_RETENTION_DAYS = 90
 
 const SELECTED_SKILL = /^\s*\[\$auto-pilot\]\([^\r\n)]*[/\\]auto-pilot[/\\]SKILL\.md(?:#[^\r\n)]*)?\)(?=\s|$)/i
@@ -28,7 +28,7 @@ const LEADING_SKILL = /^\s*\$auto-pilot(?=\s|$)/i
 const GOAL_MARKER = /<!--\s*auto-pilot-goal:\s*(apg_[A-Za-z0-9_-]{12,80})\s*-->/i
 const NON_EXECUTION_REQUEST = /(?:do not|don't|dont|never)\s+(?:start|run|execute)|(?:just|only)\s+(?:confirm|answer|advise|explain|review|analyse|analyze)|what\s+do\s+you\s+think|how\s+(?:do|can|should|would)\b[^\r\n]{0,80}\b(?:improve|optimise|optimize|design)|\b(?:improve|optimise|optimize|review|analyse|analyze)\b[^\r\n]{0,80}\b(?:skill|auto[ -]?pilot)|(?:優化|改善|檢討)[^\r\n]{0,40}(?:skill|auto[ -]?pilot)|不要(?:開始|執行)|唔好(?:開始|執行)|只(?:需|要)?[^\r\n]{0,12}(?:確認|回答|建議|解釋|分析)|有冇足夠[^\r\n]{0,40}(?:開始|執行)/i
 const NO_RELEASE_CONTINUATION = /(?:do not|don't|dont|never|without)\s+(?:merge|release|deploy|ship|go\s+live)|(?:不要|唔好|不用|唔使|毋須)[^\r\n]{0,20}(?:release|deploy|ship|merge|發布|發佈|上線)/i
-const RELEASE_CONTINUATION = /--then-release\b|(?:finish|complete|implement|build|fix|do)\b[^\r\n]{0,100}\b(?:and|then)\b[^\r\n]{0,30}\b(?:merge|release|deploy|ship|go\s+live)\b|(?:after|once|when)\b[^\r\n]{0,100}\b(?:release|deploy|ship|go\s+live)\b|(?:merge)\b[^\r\n]{0,30}\b(?:and|then)\b[^\r\n]{0,20}\b(?:release|deploy|ship|go\s+live)\b|(?:完成|做完|搞掂)[^\r\n]{0,60}(?:之後|後|然后|然後|並|同埋|再|就)[^\r\n]{0,30}(?:release|deploy|ship|發布|發佈|上線)|(?:直接|自動)[^\r\n]{0,20}(?:release|deploy|ship|發布|發佈|上線)/i
+const RELEASE_CONTINUATION = /--then-release\b|(?:finish|complete|implement|build|fix|do)\b[^\r\n]{0,100}\b(?:and|then)\b[^\r\n]{0,30}\b(?:merge|release|deploy|ship|go\s+live)\b|(?:after|once|when)\b[^\r\n]{0,100}\b(?:release|deploy|ship|go\s+live)\b|(?:merge)\b[^\r\n]{0,30}\b(?:and|then)\b[^\r\n]{0,20}\b(?:release|deploy|ship|go\s+live)\b|\b(?:ship|deploy|release)\s+(?:it|this|that)\b|\bgo\s+live\b|(?:完成|做完|搞掂)[^\r\n]{0,60}(?:之後|後|然后|然後|並|同埋|再|就)[^\r\n]{0,30}(?:release|deploy|ship|發布|發佈|上線)|(?:直接|自動|幫我|請)[^\r\n]{0,20}(?:release|deploy|ship|發布|發佈|上線)/i
 const AMBIGUOUS_RELEASE_CONTINUATION = [
   /[?？]\s*$/,
   /\b(?:can|could|should|would|may|might|whether)\b[^\r\n]{0,100}\b(?:merge|release|deploy|ship|go\s+live)\b/i,
@@ -61,8 +61,11 @@ export function parseAutoPilotInvocation(prompt) {
   const subcommand = argument.match(/^(pr|release|promote|ship)(?=\s|$)/i)?.[1]?.toLowerCase() || null
   const releaseMode = subcommand === 'release' || subcommand === 'promote'
   const explicitContinuation = subcommand === 'ship' || /--then-release\b/i.test(argument)
-  const continuation = !releaseMode && !NO_RELEASE_CONTINUATION.test(argument)
-    && (explicitContinuation || (!ambiguousReleaseContinuation(argument) && RELEASE_CONTINUATION.test(argument)))
+  const continuation = !releaseMode && (
+    subcommand === 'ship'
+    || (!NO_RELEASE_CONTINUATION.test(argument)
+      && (explicitContinuation || (!ambiguousReleaseContinuation(argument) && RELEASE_CONTINUATION.test(argument))))
+  )
     ? 'release'
     : null
   return {
@@ -116,6 +119,7 @@ function startRun(event, {dataRoot, now, invocation, env}) {
   })
   const manifest = {
     schema_version: HISTORY_SCHEMA_VERSION,
+    invocation_schema_version: HISTORY_SCHEMA_VERSION,
     auto_pilot_version: AUTO_PILOT_VERSION,
     collector_version: HISTORY_SCHEMA_VERSION,
     skill_sha256: installedSkillHash(),
@@ -297,9 +301,10 @@ export async function historyRuns({dataRoot = resolveHistoryRoot(), sinceDays = 
       continuation: run.manifest.continuation ?? null,
       terminal_state: run.manifest.terminal_state,
       completion_receipt_status: run.outcome?.completion_receipt?.status ?? 'legacy_unverified',
-      benchmark_eligible: run.outcome?.completion_receipt?.status === 'valid'
-        && (run.manifest.schema_version < 4 || run.metrics?.collection_complete === true)
-        && (run.metrics?.subagents === 0 || run.metrics?.subagent_token_accounting_complete === true),
+      delivery_benchmark_eligible: deliveryBenchmarkEligible(run),
+      benchmark_eligible: deliveryBenchmarkEligible(run)
+        && runRoutingStatus(run) === 'passed'
+        && Boolean(runSkillBundle(run)),
       total_tokens: run.metrics?.token_usage_observed === false ? null : (run.metrics?.token_usage?.total_tokens ?? null),
       lifecycle_total_tokens: (
         run.metrics?.subagents === 0
@@ -309,7 +314,7 @@ export async function historyRuns({dataRoot = resolveHistoryRoot(), sinceDays = 
       cached_input_tokens: run.metrics?.token_usage?.cached_input_tokens ?? null,
       tool_calls: run.metrics?.tool_calls ?? null,
       subagents: run.metrics?.subagents ?? null,
-      orchestration_status: run.metrics?.routing?.status ?? run.manifest.orchestration_status ?? 'legacy_unobserved',
+      orchestration_status: runRoutingStatus(run),
       goal_id: run.manifest.goal_id ?? run.manifest.run_id,
       goal_id_source: run.manifest.goal_id_source ?? 'legacy_unlinked',
       goal_id_sources: run.manifest.goal_id_sources ?? [run.manifest.goal_id_source ?? 'legacy_unlinked'],
@@ -327,6 +332,17 @@ export async function historyReport(options = {}) {
   const medianTokens = percentile(totals, 0.5)
   const threshold = medianTokens === null ? null : medianTokens * 2
   const benchmark = runs.filter((run) => run.benchmark_eligible)
+  const deliveryBenchmark = runs.filter((run) => run.delivery_benchmark_eligible)
+  const benchmarkBundles = new Map()
+  for (const run of benchmark) {
+    if (!benchmarkBundles.has(run.skill_bundle_sha256)) benchmarkBundles.set(run.skill_bundle_sha256, [])
+    benchmarkBundles.get(run.skill_bundle_sha256).push(run)
+  }
+  const benchmarkBundleCohorts = Object.fromEntries(
+    [...benchmarkBundles.entries()]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([hash, items]) => [hash, summarizeRuns(items)]),
+  )
   const versions = {}
   for (const run of runs) {
     const version = run.auto_pilot_version || 'unknown'
@@ -337,6 +353,7 @@ export async function historyReport(options = {}) {
   const benchmarkGoals = goals.filter((goal) => goal.benchmark_eligible)
   return {
     runs: runs.length,
+    delivery_benchmark_runs: deliveryBenchmark.length,
     benchmark_runs: benchmark.length,
     excluded_unverified_runs: runs.length - benchmark.length,
     terminal_states: countValues(runs.map((run) => run.terminal_state || 'unknown')),
@@ -351,6 +368,8 @@ export async function historyReport(options = {}) {
     version_bundles: Object.fromEntries(Object.entries(versions).map(([version, hashes]) => [version, [...hashes].sort()])),
     version_drift: Object.entries(versions).filter(([, hashes]) => hashes.size > 1).map(([version]) => version),
     benchmark: summarizeRuns(benchmark),
+    benchmark_cross_bundle_comparable: benchmarkBundles.size === 1,
+    benchmark_bundle_cohorts: benchmarkBundleCohorts,
     goals: goals.length,
     benchmark_goals: benchmarkGoals.length,
     excluded_unverified_goals: goals.length - benchmarkGoals.length,
@@ -401,6 +420,8 @@ function summarizeGoals(runs) {
     const allTokensKnown = sorted.every((run) => Number.isFinite(run.lifecycle_total_tokens))
     const allDurationsKnown = sorted.every((run) => Number.isFinite(run.duration_ms))
     const allCompactionsKnown = sorted.every((run) => Number.isFinite(run.compactions))
+    const bundleHashes = new Set(sorted.map((run) => run.skill_bundle_sha256).filter(Boolean))
+    const exactBundle = bundleHashes.size === 1 && sorted.every((run) => Boolean(run.skill_bundle_sha256))
     return {
       goal_id: goalId,
       lineage_status: lineageStatus,
@@ -421,11 +442,27 @@ function summarizeGoals(runs) {
         ? Math.max(...sorted.map((run) => run.topology.max_observed_depth))
         : null,
       terminal_states: countValues(sorted.map((run) => run.terminal_state || 'unknown')),
+      skill_bundle_sha256: exactBundle ? [...bundleHashes][0] : null,
       benchmark_eligible: ['linked', 'single_run'].includes(lineageStatus)
         && sorted.every((run) => run.benchmark_eligible)
-        && allTokensKnown,
+        && allTokensKnown
+        && exactBundle,
     }
   }).sort((left, right) => (left.started_at || '').localeCompare(right.started_at || ''))
+}
+
+function deliveryBenchmarkEligible(run) {
+  return run.outcome?.completion_receipt?.status === 'valid'
+    && (run.manifest.schema_version < 4 || run.metrics?.collection_complete === true)
+    && (run.metrics?.subagents === 0 || run.metrics?.subagent_token_accounting_complete === true)
+}
+
+function runRoutingStatus(run) {
+  return run.metrics?.routing?.status ?? run.manifest.orchestration_status ?? 'legacy_unobserved'
+}
+
+function runSkillBundle(run) {
+  return run.manifest.skill_bundle_sha256 ?? run.manifest.skill_sha256 ?? null
 }
 
 function summarizeGoalCohort(goals) {

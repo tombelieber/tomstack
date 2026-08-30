@@ -24,23 +24,36 @@ const releaseMessage = `### Release
 
 function receipt(state = 'pr_ready') {
   const released = state === 'released'
-  const merged = state === 'merged_main' || released
+  const merged = released
   const value = {
-    schema_version: 7,
+    schema_version: 8,
     mode: merged ? 'release' : 'pr',
     terminal_state: state,
     plan: {source: 'docs/plan.md', approved: true},
     summary: 'Implemented and verified the approved plan.',
     git: {base_branch: 'main', delivery_branch: 'feature/test', commits: [headSha]},
     criteria: [{id: 'AC-1', status: 'passed', evidence: 'The exact acceptance path reached its expected terminal state'}],
-    checks: [{name: released ? 'post-release E2E' : 'test', status: 'passed', evidence: 'Exact candidate command and bounded artifact reference'}],
+    checks: [{
+      name: 'exact-candidate',
+      status: 'passed',
+      candidate_base_sha: baseSha,
+      candidate_head_sha: headSha,
+      pull_request_url: 'https://github.com/owner/repo/pull/1',
+      promotable: true,
+      required_ci_status: 'passed',
+      evidence: 'Exact live head and base passed the repository admission gate.',
+    }],
     pull_request: {url: 'https://github.com/owner/repo/pull/1', status: merged ? 'merged' : 'open', merged, merge_sha: merged ? mergeSha : null},
     release: released
       ? {status: 'passed', url: notesUrl, notes_url: notesUrl, message: releaseMessage, evidence: 'Production deployment and post-release E2E passed'}
-      : merged
-        ? {status: 'no_mechanism', url: null, notes_url: null, message: null, evidence: 'Repository has no deployment mechanism'}
-        : {status: 'not_requested', url: null, notes_url: null, message: null, evidence: 'PR stage; production was not changed'},
+      : {status: 'not_requested', url: null, notes_url: null, message: null, evidence: 'PR stage; production was not changed'},
     blockers: [],
+  }
+  if (released) {
+    value.checks.push({
+      name: 'post-release E2E', status: 'passed',
+      evidence: 'Production canary reached its terminal capability outcome.',
+    })
   }
   if (merged) {
     value.promotion = {
@@ -55,20 +68,11 @@ function receipt(state = 'pr_ready') {
       status: 'passed',
       contract_sha256: contractSha,
       source_receipt_sha256: '__SOURCE_SHA__',
+      candidate_base_sha: baseSha,
       candidate_head_sha: headSha,
+      pull_request_url: 'https://github.com/owner/repo/pull/1',
       single_use: true,
       evidence: 'Recomputed before mutation from the installed contract and exact source receipt',
-    })
-    value.checks.push({
-      name: 'release-control-budget',
-      status: 'passed',
-      budget_seconds: 600,
-      live_pr_bound_at: '2026-08-28T09:00:00+08:00',
-      ended_at: '2026-08-28T09:08:30+08:00',
-      end_kind: 'terminal',
-      elapsed_seconds: 510,
-      outcome: 'passed',
-      evidence: 'Measured from live PR binding through the complete release task',
     })
     value.cleanup = {
       status: 'passed',
@@ -91,8 +95,9 @@ function receipt(state = 'pr_ready') {
         runtime_principal: 'production edge runtime database role',
         representative_data_case: 'legacy blank author identity and valid provider reply target',
         expected_terminal_outcome: 'provider reply identifier observed',
-        deterministic: {status: 'passed', evidence: 'Isolated API-to-worker-to-fake-provider E2E passed'},
-        production: {status: 'passed', evidence: 'Bounded canary reached the terminal provider reply'},
+        observed_terminal_outcome: 'provider reply identifier observed',
+        deterministic: {status: 'passed', artifact_ref: 'test:provider-e2e#reply-comment', evidence: 'Isolated API-to-worker-to-fake-provider E2E passed'},
+        production: {status: 'passed', artifact_ref: 'probe:production/reply-comment/run-123', evidence: 'Bounded canary reached the terminal provider reply'},
         authorization_changed: true,
         authorized: {status: 'passed', decision: 'allowed', effective_binding_count: 1, evidence: 'Scoped runtime credential was allowed'},
         unauthorized: {status: 'passed', decision: 'denied', effective_binding_count: 0, evidence: 'Out-of-scope credential was denied'},
@@ -128,7 +133,7 @@ test('prints the current release-contract SHA-256', () => {
   assert.match(contractSha, /^[0-9a-f]{64}$/)
 })
 
-for (const state of ['pr_ready', 'merged_main', 'released']) {
+for (const state of ['pr_ready', 'released']) {
   test(`accepts a valid ${state} receipt without orchestration metadata`, () => {
     const value = receipt(state)
     assert.equal('orchestration' in value, false)
@@ -140,7 +145,7 @@ for (const state of ['pr_ready', 'merged_main', 'released']) {
 test('accepts a minimal blocked receipt', () => {
   const value = receipt()
   value.terminal_state = 'blocked'
-  value.blockers = [{reason: 'credential missing', evidence: 'CLI output'}]
+  value.blockers = [{phase: 'pre_mutation', category: 'credential', reason: 'credential missing', evidence: 'CLI output'}]
   delete value.git
   delete value.criteria
   delete value.checks
@@ -222,39 +227,105 @@ test('rejects a contract binding for another candidate', () => {
   assert.equal(run(value).status, 1)
 })
 
-test('rejects a successful release that exceeds its whole-task budget', () => {
-  const value = receipt('released')
-  const budget = value.checks.find(check => check.name === 'release-control-budget')
-  budget.status = 'failed'
-  budget.ended_at = '2026-08-28T09:11:00+08:00'
-  budget.elapsed_seconds = 660
-  budget.outcome = 'exhausted'
+test('rejects exact-candidate evidence without the bound base and promotability', () => {
+  const value = receipt()
+  const exact = value.checks.find(check => check.name === 'exact-candidate')
+  delete exact.candidate_base_sha
+  delete exact.promotable
   assert.equal(run(value).status, 1)
 })
 
-test('accepts an exhausted budget only as a blocked release result', () => {
+test('rejects a release binding for another candidate base', () => {
   const value = receipt('released')
-  value.terminal_state = 'blocked'
-  value.blockers = [{reason: 'release-control budget exhausted', evidence: 'Reached the repository-defined safe boundary'}]
-  const budget = value.checks.find(check => check.name === 'release-control-budget')
-  budget.status = 'failed'
-  budget.ended_at = '2026-08-28T09:11:00+08:00'
-  budget.end_kind = 'safe_boundary'
-  budget.elapsed_seconds = 660
-  budget.outcome = 'exhausted'
+  value.checks.find(check => check.name === 'release-contract-binding').candidate_base_sha = 'd'.repeat(40)
+  assert.equal(run(value).status, 1)
+})
+
+test('accepts a long-running release without a wall-clock budget check', () => {
+  const value = receipt('released')
   assert.equal(run(value).status, 0)
 })
 
-test('rejects merged completion without automatic worktree cleanup evidence', () => {
-  const value = receipt('merged_main')
-  delete value.cleanup
+test('rejects merge-only completion as a release result', () => {
+  const value = receipt('released')
+  value.terminal_state = 'merged_main'
   assert.equal(run(value).status, 1)
 })
 
-test('rejects released completion with a retained worktree', () => {
+test('rejects a blocked result when production is already proven live', () => {
   const value = receipt('released')
+  value.terminal_state = 'blocked'
+  value.cleanup.status = 'failed'
   value.cleanup.worktree = 'retained'
+  value.cleanup.local_branch = 'retained'
+  value.cleanup.remote_branch = 'retained'
+  value.blockers = [{
+    phase: 'post_mutation', category: 'other',
+    reason: 'local cleanup failed', evidence: 'Production proof passed before local closeout.',
+  }]
   assert.equal(run(value).status, 1)
+})
+
+test('rejects a post-merge blocker without admission binding', () => {
+  const value = receipt('released')
+  value.terminal_state = 'blocked'
+  value.blockers = [{
+    phase: 'post_mutation', category: 'provider',
+    reason: 'production rollout failed', evidence: 'The deploy owner returned a terminal failure.',
+  }]
+  value.release = {status: 'failed', url: null, notes_url: null, message: null, evidence: 'Production rollout failed.'}
+  delete value.promotion
+  delete value.checks
+  delete value.cleanup
+  delete value.capability_reachability
+  assert.equal(run(value).status, 1)
+})
+
+test('rejects incoherent merged PR evidence without a merge SHA', () => {
+  const value = receipt('released')
+  value.terminal_state = 'blocked'
+  value.blockers = [{
+    phase: 'post_mutation', category: 'remote_state',
+    reason: 'merge identity unavailable', evidence: 'The PR reports merged but no merge SHA.',
+  }]
+  value.pull_request.merge_sha = null
+  assert.equal(run(value).status, 1)
+})
+
+test('accepts a proven live release with retained local cleanup', () => {
+  const value = receipt('released')
+  value.cleanup.status = 'failed'
+  value.cleanup.worktree = 'retained'
+  value.cleanup.local_branch = 'retained'
+  value.cleanup.remote_branch = 'retained'
+  value.cleanup.evidence = 'Production is proven live; local closeout was retained for a separate safe cleanup.'
+  assert.equal(run(value).status, 0)
+})
+
+test('accepts ship as the current release authority', () => {
+  const value = receipt('released')
+  value.promotion.authority_evidence = 'Explicit current invocation: $auto-pilot ship docs/plan.md'
+  assert.equal(run(value).status, 0)
+})
+
+test('accepts a release without a separately published notes URL', () => {
+  const value = receipt('released')
+  value.release.url = null
+  value.release.notes_url = null
+  value.release.message = '### Release\n\n**v1** — Live in production\n\n- Verification: Exact production capability proof passed.'
+  assert.equal(run(value).status, 0)
+})
+
+test('accepts a release-mode blocker before candidate binding exists', () => {
+  const value = {
+    schema_version: 8,
+    mode: 'release',
+    terminal_state: 'blocked',
+    plan: {source: 'docs/plan.md', approved: true},
+    summary: 'Production delivery could not start.',
+    blockers: [{phase: 'pre_mutation', category: 'release_path', reason: 'no production release path', evidence: 'Repository inventory found no deploy or distribution owner.'}],
+  }
+  assert.equal(run(value).status, 0)
 })
 
 test('rejects cleanup evidence in PR mode', () => {
@@ -275,18 +346,6 @@ test('rejects release candidate not bound to commits', () => {
   assert.equal(run(value).status, 1)
 })
 
-test('rejects released state without release URL', () => {
-  const value = receipt('released')
-  value.release.url = null
-  assert.equal(run(value).status, 1)
-})
-
-test('rejects released state without canonical release notes', () => {
-  const value = receipt('released')
-  value.release.notes_url = null
-  assert.equal(run(value).status, 1)
-})
-
 test('rejects a final release message that does not link canonical notes', () => {
   const value = receipt('released')
   value.release.message = '### Release\n\nReleased without a link.'
@@ -302,6 +361,18 @@ test('rejects a release URL passed off as the final release message', () => {
 test('rejects released state without exact capability reachability', () => {
   const value = receipt('released')
   delete value.capability_reachability
+  assert.equal(run(value).status, 1)
+})
+
+test('rejects capability proof without an observed terminal outcome', () => {
+  const value = receipt('released')
+  delete value.capability_reachability.cases[0].observed_terminal_outcome
+  assert.equal(run(value).status, 1)
+})
+
+test('rejects production proof without an artifact reference', () => {
+  const value = receipt('released')
+  delete value.capability_reachability.cases[0].production.artifact_ref
   assert.equal(run(value).status, 1)
 })
 
@@ -332,7 +403,7 @@ test('rejects reachability without the observed runtime principal', () => {
 test('validates included delivery evidence on blocked receipts', () => {
   const value = receipt()
   value.terminal_state = 'blocked'
-  value.blockers = [{reason: 'CI unavailable', evidence: 'Provider status'}]
+  value.blockers = [{phase: 'qualification', category: 'ci', reason: 'CI unavailable', evidence: 'Provider status'}]
   value.pull_request.url = 'invalid'
   assert.equal(run(value).status, 1)
 })

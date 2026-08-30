@@ -46,13 +46,21 @@ configuration but never creates or rewrites it.
 ```
 
 These are preferences, not mandatory topology. `auto` leaves the active Sol
-owner responsible for choosing direct work, an optional fresh owner stage, or
-optional leaf workers. It does not actively recommend multi-agent execution.
+owner responsible for direct work and optional terminal leaf workers. It does
+not actively recommend multi-agent execution, and it never creates a release
+handoff.
 
 `implementation.substantive_executor` accepts `task`, `direct`, `subagent`, or
 `auto`. `tiny` and `substantive` remain advisory scope labels; only an explicit
 executor preference constrains the route. `implementation.model` and
-`implementation.thinking` apply when Auto Pilot creates a fresh owner stage.
+`implementation.thinking` apply to an explicitly selected implementation
+context. A `ship` owner still remains accountable in the current task.
+
+`release.model` and `release.thinking` describe the preferred owner for a task
+that was itself started as `release`. They cannot switch the current task's
+model and never cause `ship` to create another task. Disclose an unavailable or
+different current model, then continue in place when it still meets the task's
+capability floor.
 
 `collaboration.policy` accepts `auto` or `off`. `auto` makes collaboration
 available when an owner independently chooses it. `off` forbids both helper
@@ -89,9 +97,9 @@ substitution.
 
 Configuration cannot change these rules:
 
-- the PR owner never merges or mutates production;
-- a generated release continuation is a fresh user-visible task, never a
-  collaboration subagent or fork;
+- `pr` never merges or mutates production;
+- `ship` keeps implementation and production delivery in the current
+  accountable task and never generates a continuation task;
 - leaf workers never delegate, while a fresh stage owner may choose leaves;
 - Git write work uses an isolated worktree unless it remains directly in its
   owning session's checkout;

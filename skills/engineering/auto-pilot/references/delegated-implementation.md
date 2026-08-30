@@ -1,16 +1,17 @@
 # Owner-directed PR execution
 
 Keep one Sol owner accountable for the approved goal, repository truth, final
-quality, and PR delivery. Direct execution is valid for any scope the owner can
-reliably finish in its current session. Fresh stages and leaf workers are
-optional context-management tools, not the default substantive route.
+quality, and requested terminal boundary. Direct execution is valid for any
+scope the owner can reliably finish in its current session. In `ship`, that
+owner stays in the current task through production; optional leaf workers are
+bounded context tools, not a change of ownership.
 
 ```text
 approved artifact
   -> Sol owner: resolve truth and choose the execution shape
   -> direct work, optional fresh owner stages, or optional leaf workers
   -> owner: integrate, review once, verify, and open the PR
-  -> terminal pr_ready; no merge or production mutation
+  -> pr: terminal pr_ready; ship: internal pr_ready transition
 ```
 
 ## Let the owner choose
@@ -22,15 +23,16 @@ the expected context cost or useful parallelism justifies another execution
 context.
 
 An explicit `direct`, `task`, or `subagent` executor preference still overrides
-that default. State the resolved preference before dispatch, and record the
-actual route. An independent user-visible task and an in-turn collaboration
-subagent remain different execution kinds; never present one as the other.
+that default in PR-only mode. State the resolved preference before dispatch,
+and record the actual route. A `ship` invocation does not hand its terminal
+promise to another user-visible task. An independent user-visible task and an
+in-turn collaboration subagent remain different execution kinds; never present
+one as the other.
 
-Native context compaction continues the same session and stage. Creating a new
-session creates a new stage. If an owner deliberately hands unfinished work to
-a clean session, record the earlier stage as `continued`, pass repository state
-plus a compact handoff, and let the new stage own the remaining outcome. Normal
-compaction alone is not a reason to create that stage.
+Native context compaction continues the same session and stage. PR-only mode
+may explicitly choose a new owner stage. `ship` must not hand unfinished work
+or release authority to a new session; normal compaction is the supported
+continuation.
 
 ## Conditional leaf-worker contract
 
@@ -57,10 +59,10 @@ the integrated candidate once rather than reviewing each worker, commit, or
 partial change. The same owner may perform that consolidated review, or it may
 choose a fresh review stage when a clean context materially helps.
 
-## Fresh owner-stage handoff
+## PR-only fresh owner-stage handoff
 
-When the owner chooses a fresh stage, bind it to the approved artifact and real
-Git state. Provide only the information needed to continue:
+When a PR-only owner chooses a fresh stage, bind it to the approved artifact and
+real Git state. Provide only the information needed to continue:
 
 Generate one opaque goal ID at the first fresh-stage boundary with
 `node <skill-dir>/scripts/new_goal_id.mjs`. Put
@@ -103,16 +105,16 @@ The accountable PR owner must:
    and test-quality review;
 4. patch findings without creating a review ping-pong loop; and
 5. use focused evidence while the head is moving, then run the complete
-   exact-candidate gate for the final live PR head, validate `pr_ready` only
-   from promotable PASS evidence, and stop without merging or mutating
-   production.
+   exact-candidate gate for the final live PR head and validate `pr_ready` only
+   from promotable PASS evidence. Stop without merge only in `pr`; in `ship`,
+   retain the receipt as an internal handoff and continue in the same task.
 
 Keep directly causal in-scope fixes on that same PR before `pr_ready`. Do not
 defer a known deterministic release-readiness defect to the release task, and
 do not create intermediate PRs merely to run another full promotion cycle.
 
-Emit `::created-thread{threadId="<REF>"}` (or `clientThreadId`) for every
-user-visible stage task. Record the actual primary implementation lane in the
-Auto Pilot routing marker. Additional owner stages and leaf nesting remain
-best-effort routing evidence when the runtime does not expose their complete
-relationship; mark that evidence unverified instead of inventing certainty.
+For a PR-only user-visible stage task, emit its created-thread directive and
+record the actual primary implementation lane. `ship` must not emit a release
+task directive. Leaf nesting remains best-effort routing evidence when the
+runtime does not expose its complete relationship; mark that evidence
+unverified instead of inventing certainty.

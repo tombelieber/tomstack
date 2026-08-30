@@ -17,7 +17,12 @@ const ROUTING_MARKER = /<!--\s*auto-pilot-routing:\s*\{[^\r\n]*\}\s*-->/gi
 const MAX_RECEIPT_BYTES = 1024 * 1024
 const RECEIPT_VALIDATOR = fileURLToPath(new URL('./validate_receipt.py', import.meta.url))
 
-export function collectCompletionReceipt(message, expectedMode, directory) {
+export function collectCompletionReceipt(
+  message,
+  expectedMode,
+  directory,
+  {validatorPath = RECEIPT_VALIDATOR} = {},
+) {
   const marker = typeof message === 'string' ? message.match(RECEIPT_MARKER) : null
   if (!marker) return receiptFailure('missing')
 
@@ -39,7 +44,8 @@ export function collectCompletionReceipt(message, expectedMode, directory) {
     return receiptFailure('invalid_json', markedSource)
   }
 
-  const validation = spawnSync('python3', [RECEIPT_VALIDATOR, source], {
+  if (validatorPath === null) return receiptFailure('validator_unavailable', markedSource)
+  const validation = spawnSync('python3', [validatorPath, source], {
     stdio: 'ignore',
     timeout: 5000,
     windowsHide: true,

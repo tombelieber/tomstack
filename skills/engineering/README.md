@@ -4,7 +4,7 @@ Promoted skills for software delivery and repository verification.
 
 ## User-invoked
 
-- **[auto-pilot](./auto-pilot/SKILL.md):** Deliver an approved plan through a verified PR and an explicitly authorized release boundary.
+- **[auto-pilot](./auto-pilot/SKILL.md):** Deliver `pr` to a verified unmerged PR, or keep `ship`/`release` in the invoking task through production proof.
 
 ## Model-invoked
 

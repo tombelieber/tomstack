@@ -1,12 +1,19 @@
-const ROUTING_SCHEMA_VERSION = 2
+const ROUTING_SCHEMA_VERSION = 3
 const ROUTING_MARKER = /<!--\s*auto-pilot-routing:\s*(\{[^\r\n]*\})\s*-->/gi
 const CREATED_THREAD_DIRECTIVE = /::created-thread\{([^}]*)\}/g
 const TASK_REFERENCE = /(?:threadId|clientThreadId)="([^"]+)"/
-const RELEASE_FALLBACK = /\$auto-pilot\s+release\s+https?:\/\/[^\s/]+\/[^\s/]+\/[^\s/]+\/pull\/\d+(?=\s|$)/i
 const GOAL_ID = /^apg_[A-Za-z0-9_-]{12,80}$/
 
 const IMPLEMENTATION_LANES = new Set(['independent_task', 'direct', 'collaboration_subagent', 'not_applicable'])
-const CONTINUATION_LANES = new Set(['fresh_release_task', 'reused_release_task', 'fallback_command', 'not_requested', 'current_release_task'])
+const CONTINUATION_LANES = new Set([
+  'current_ship_task',
+  'current_release_task',
+  'not_requested',
+  // Parse legacy markers so the audit can explain the contract deviation.
+  'fresh_release_task',
+  'reused_release_task',
+  'fallback_command',
+])
 
 export function auditRouting({message, manifest, subagents = 0}) {
   const createdThreadRefs = createdThreadReferences(message)
@@ -35,14 +42,6 @@ export function auditRouting({message, manifest, subagents = 0}) {
     const continuationResult = auditContinuation({declared, manifest, message, createdThreadRefs, deviations})
     fallback = implementationResult.fallback || continuationResult.fallback
     auditCreatedTaskAccounting({declared, manifest, createdThreadRefs, deviations, unverified})
-    if (
-      manifest.mode !== 'release'
-      && manifest.continuation === 'release'
-      && declared.implementation.lane === 'independent_task'
-      && declared.continuation.lane === 'fresh_release_task'
-      && declared.implementation.task_ref
-      && declared.implementation.task_ref === declared.continuation.task_ref
-    ) deviations.push('implementation and fresh release continuation must use distinct task_ref values')
   }
 
   return {
@@ -80,6 +79,10 @@ function auditImplementation({declared, manifest, subagents, createdThreadRefs, 
     return {fallback}
   }
 
+  if (manifest.continuation === 'release' && value.lane === 'independent_task') {
+    deviations.push('ship implementation and production ownership must remain in the same task')
+  }
+
   if (value.lane === 'independent_task') {
     requireTaskEvidence(value, createdThreadRefs, 'implementation', deviations)
     if (!['task', 'auto'].includes(executor)) deviations.push(`implementation lane conflicts with configured executor=${executor}`)
@@ -102,7 +105,7 @@ function auditImplementation({declared, manifest, subagents, createdThreadRefs, 
   return {fallback}
 }
 
-function auditContinuation({declared, manifest, message, createdThreadRefs, deviations}) {
+function auditContinuation({declared, manifest, deviations}) {
   const value = declared.continuation
   let fallback = false
 
@@ -113,20 +116,8 @@ function auditContinuation({declared, manifest, message, createdThreadRefs, devi
   }
 
   if (manifest.continuation === 'release') {
-    if (value.lane === 'fresh_release_task') {
-      requireTaskEvidence(value, createdThreadRefs, 'release continuation', deviations)
-      fallback = preferenceFallback(value, manifest.routing_config?.release, 'release', deviations)
-    } else if (value.lane === 'reused_release_task') {
-      if (!value.task_ref) deviations.push('reused release task requires task_ref')
-      if (value.worktree !== true) deviations.push('reused release task requires worktree=true')
-      if (!value.reason) deviations.push('reused release task requires a reason')
-      fallback = preferenceFallback(value, manifest.routing_config?.release, 'release', deviations)
-    } else if (value.lane === 'fallback_command') {
-      fallback = true
-      if (!value.reason) deviations.push('release fallback requires a reason')
-      if (!RELEASE_FALLBACK.test(message || '')) deviations.push('release fallback command was not found in the final response')
-    } else {
-      deviations.push('requested release continuation requires fresh_release_task, reused_release_task, or fallback_command')
+    if (value.lane !== 'current_ship_task') {
+      deviations.push('ship release continuation must remain in the same task with continuation.lane=current_ship_task')
     }
   } else if (value.lane !== 'not_requested') {
     deviations.push('PR-only mode requires continuation.lane=not_requested')
@@ -172,13 +163,6 @@ function auditCreatedTaskAccounting({declared, manifest, createdThreadRefs, devi
   if (declared.implementation.lane === 'independent_task' && declared.implementation.task_ref) {
     declaredRefs.push(declared.implementation.task_ref)
   }
-  if (
-    manifest.mode !== 'release'
-    && manifest.continuation === 'release'
-    && declared.continuation.lane === 'fresh_release_task'
-    && declared.continuation.task_ref
-  ) declaredRefs.push(declared.continuation.task_ref)
-
   const unexpected = createdThreadRefs.filter((reference) => !declaredRefs.includes(reference))
   if (!unexpected.length) return
   if (manifest.mode !== 'release' && declared.implementation.lane === 'independent_task') {
