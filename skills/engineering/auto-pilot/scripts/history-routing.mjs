@@ -1,4 +1,4 @@
-const ROUTING_SCHEMA_VERSION = 3
+const ROUTING_SCHEMA_VERSION = 4
 const ROUTING_MARKER = /<!--\s*auto-pilot-routing:\s*(\{[^\r\n]*\})\s*-->/gi
 const CREATED_THREAD_DIRECTIVE = /::created-thread\{([^}]*)\}/g
 const TASK_REFERENCE = /(?:threadId|clientThreadId)="([^"]+)"/
@@ -72,9 +72,18 @@ function auditImplementation({declared, manifest, subagents, createdThreadRefs, 
   const value = declared.implementation
   const executor = manifest.routing_config?.implementation?.substantive_executor || 'auto'
   const collaboration = manifest.routing_config?.collaboration?.policy || 'auto'
+  const current = currentContract(manifest)
+  const goalMode = manifest.goal_mode || manifest.mode
+  const existingCandidate = current && goalMode === 'ship' && manifest.input_kind === 'existing_candidate'
   let fallback = false
 
-  if (manifest.mode === 'release') {
+  if (current) {
+    if (value.lane === 'independent_task') {
+      deviations.push('the invoking task must remain the accountable owner; independent owner tasks are unsupported')
+    }
+  }
+
+  if (!current && manifest.mode === 'release') {
     if (value.lane !== 'not_applicable') deviations.push('release mode requires implementation.lane=not_applicable')
     return {fallback}
   }
@@ -97,8 +106,8 @@ function auditImplementation({declared, manifest, subagents, createdThreadRefs, 
     if (!value.reason) deviations.push('direct implementation requires a reason')
     if (executor === 'subagent') deviations.push('direct implementation conflicts with configured executor=subagent')
     fallback = /fallback|unavailable|failed/i.test(value.reason || '')
-  } else if (value.lane === 'not_applicable') {
-    deviations.push('PR mode requires a real implementation lane')
+  } else if (value.lane === 'not_applicable' && !existingCandidate) {
+    deviations.push(`${goalMode === 'ship' ? 'ship plan' : 'PR'} goal requires a real implementation lane`)
   }
 
   if (collaboration === 'off' && subagents > 0) deviations.push('collaboration.policy=off but subagents were observed')
@@ -108,6 +117,16 @@ function auditImplementation({declared, manifest, subagents, createdThreadRefs, 
 function auditContinuation({declared, manifest, deviations}) {
   const value = declared.continuation
   let fallback = false
+
+  if (currentContract(manifest)) {
+    const goalMode = manifest.goal_mode || manifest.mode
+    if (goalMode === 'ship') {
+      if (value.lane !== 'current_ship_task') deviations.push('ship and every production alias require continuation.lane=current_ship_task')
+    } else if (value.lane !== 'not_requested') {
+      deviations.push('PR_READY goal requires continuation.lane=not_requested')
+    }
+    return {fallback}
+  }
 
   if (manifest.mode === 'release') {
     if (value.lane !== 'current_release_task') deviations.push('release mode requires continuation.lane=current_release_task')
@@ -165,6 +184,10 @@ function auditCreatedTaskAccounting({declared, manifest, createdThreadRefs, devi
   }
   const unexpected = createdThreadRefs.filter((reference) => !declaredRefs.includes(reference))
   if (!unexpected.length) return
+  if (currentContract(manifest)) {
+    deviations.push(`created owner task violates same-task accountability: ${unexpected.join(', ')}`)
+    return
+  }
   if (manifest.mode !== 'release' && declared.implementation.lane === 'independent_task') {
     unverified.push(`additional owner-stage relationships are not exposed by the current routing marker: ${unexpected.join(', ')}`)
     return
@@ -202,4 +225,8 @@ function createdThreadReferences(message) {
 
 function plainObject(value) {
   return Boolean(value && typeof value === 'object' && !Array.isArray(value))
+}
+
+function currentContract(manifest) {
+  return Boolean(manifest?.goal_mode || (manifest?.invocation_schema_version ?? manifest?.schema_version ?? 0) >= 6)
 }

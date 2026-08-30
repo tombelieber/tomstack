@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Validate an Auto Pilot version 8 completion receipt."""
+"""Validate an Auto Pilot version 9 goal-attempt receipt."""
 
-import json
 import hashlib
+import json
 import re
 import sys
 from pathlib import Path
@@ -16,26 +16,29 @@ CONTRACT_FILES = (
     "references/receipt-schema.md",
     "scripts/validate_receipt.py",
 )
-
-SCHEMA_VERSION = 8
-BLOCKER_PHASES = {
-    "implementation",
-    "qualification",
-    "pre_mutation",
-    "post_mutation",
-    "production_proof",
+SCHEMA_VERSION = 9
+GOAL_ID = re.compile(r"apg_[A-Za-z0-9_-]{12,80}")
+ATTEMPT_ID = re.compile(r"apa_[A-Za-z0-9_-]{12,80}")
+OPEN_PHASES = {
+    "implementation", "qualification", "pre_mutation", "post_mutation",
+    "production_proof", "release_notes", "cleanup",
 }
-BLOCKER_CATEGORIES = {
-    "code",
-    "ci",
-    "release_path",
-    "authorization",
-    "credential",
-    "remote_state",
-    "provider",
-    "safety",
-    "other",
+OPEN_CATEGORIES = {
+    "code", "ci", "release_path", "authorization", "credential",
+    "remote_state", "provider", "safety", "documentation", "cleanup", "other",
 }
+ROOT_KEYS = {
+    "schema_version", "goal_mode", "invoked_alias", "goal", "attempt",
+    "completion_scope", "open_items", "plan", "summary", "git", "criteria",
+    "checks", "pull_request", "promotion", "release", "release_notes",
+    "cleanup", "capability_reachability",
+}
+DEFERRED_ACTION = re.compile(
+    r"\b(?:TODO|FIXME|TBD)\b"
+    r"|\b(?:delete|remove|clean(?:up| up)|publish|document|fix|retry|follow[- ]?up)\b.{0,40}\b(?:later|afterward|subsequently|pending)\b"
+    r"|\b(?:later|afterward|subsequently|pending)\b.{0,40}\b(?:delete|remove|clean(?:up| up)|publish|document|fix|retry|follow[- ]?up)\b",
+    re.I,
+)
 
 
 def die(message):
@@ -49,23 +52,29 @@ def obj(value, name):
     return value
 
 
+def known(value, allowed, name):
+    unknown = sorted(set(value) - set(allowed))
+    if unknown:
+        die(f"{name} contains unsupported fields: {', '.join(unknown)}")
+
+
 def text(value, name):
     if not isinstance(value, str) or not value.strip():
         die(f"{name} must be a non-empty string")
     return value.strip()
 
 
-def git_sha(value, name):
-    value = text(value, name)
-    if not re.fullmatch(r"[0-9a-fA-F]{7,64}", value):
-        die(f"{name} must be a 7-64 character hexadecimal Git id")
-    return value
-
-
 def full_git_sha(value, name):
     value = text(value, name)
     if not re.fullmatch(r"[0-9a-fA-F]{40}", value):
         die(f"{name} must be a full 40 character hexadecimal Git id")
+    return value.lower()
+
+
+def git_sha(value, name):
+    value = text(value, name)
+    if not re.fullmatch(r"[0-9a-fA-F]{7,64}", value):
+        die(f"{name} must be a 7-64 character hexadecimal Git id")
     return value.lower()
 
 
@@ -76,18 +85,6 @@ def sha256_digest(value, name):
     return value.lower()
 
 
-def release_contract_sha256():
-    skill_root = Path(__file__).resolve().parents[1]
-    digest = hashlib.sha256()
-    for relative in CONTRACT_FILES:
-        path = skill_root / relative
-        digest.update(relative.encode("utf-8"))
-        digest.update(b"\0")
-        digest.update(path.read_bytes())
-        digest.update(b"\0")
-    return digest.hexdigest()
-
-
 def web_url(value, name):
     value = text(value, name)
     parsed = urlparse(value)
@@ -96,460 +93,457 @@ def web_url(value, name):
     return value
 
 
+def release_contract_sha256():
+    root = Path(__file__).resolve().parents[1]
+    digest = hashlib.sha256()
+    for relative in CONTRACT_FILES:
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update((root / relative).read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def validate_goal(value, goal_mode):
+    value = obj(value, "goal")
+    known(value, {"id", "target", "achieved"}, "goal")
+    goal_id = text(value.get("id"), "goal.id")
+    if not GOAL_ID.fullmatch(goal_id):
+        die("goal.id must be an opaque apg_ identifier")
+    expected = "PR_READY" if goal_mode == "pr" else "SHIPPED"
+    if value.get("target") != expected:
+        die(f"goal.target must be {expected} for goal_mode {goal_mode}")
+    if value.get("achieved") not in {None, expected}:
+        die("goal.achieved must be null or exactly equal goal.target")
+    return value
+
+
+def validate_attempt(value):
+    value = obj(value, "attempt")
+    known(value, {
+        "id", "result", "basis", "previous_receipt_sha256",
+        "change_artifact_ref", "change_evidence",
+    }, "attempt")
+    attempt_id = text(value.get("id"), "attempt.id")
+    if not ATTEMPT_ID.fullmatch(attempt_id):
+        die("attempt.id must be an opaque apa_ identifier")
+    if value.get("result") not in {"achieved", "incomplete"}:
+        die("attempt.result must be achieved or incomplete")
+    basis = value.get("basis")
+    if basis not in {"initial", "repair", "external_state_change", "reconciliation"}:
+        die("attempt.basis is unsupported")
+    text(value.get("change_evidence"), "attempt.change_evidence")
+    if basis == "initial":
+        if value.get("previous_receipt_sha256") is not None or value.get("change_artifact_ref") is not None:
+            die("initial attempt requires null prior receipt and change artifact")
+    else:
+        sha256_digest(value.get("previous_receipt_sha256"), "attempt.previous_receipt_sha256")
+        text(value.get("change_artifact_ref"), "attempt.change_artifact_ref")
+    return value
+
+
+def string_ids(value, name, require_nonempty=False):
+    if not isinstance(value, list) or (require_nonempty and not value):
+        die(f"{name} must be {'a non-empty' if require_nonempty else 'an'} array")
+    result = [text(item, f"{name}[{index}]") for index, item in enumerate(value)]
+    if len(set(result)) != len(result):
+        die(f"{name} must not contain duplicates")
+    return result
+
+
+def validate_completion_scope(value):
+    value = obj(value, "completion_scope")
+    known(value, {"criteria_ids", "production_case_ids", "release_notes", "artifact_ref", "evidence"}, "completion_scope")
+    criteria_ids = string_ids(value.get("criteria_ids"), "completion_scope.criteria_ids", True)
+    production_ids = string_ids(value.get("production_case_ids"), "completion_scope.production_case_ids")
+    if value.get("release_notes") not in {"required", "not_applicable"}:
+        die("completion_scope.release_notes is unsupported")
+    text(value.get("artifact_ref"), "completion_scope.artifact_ref")
+    text(value.get("evidence"), "completion_scope.evidence")
+    return {
+        "criteria_ids": criteria_ids,
+        "production_case_ids": production_ids,
+        "release_notes": value.get("release_notes"),
+    }
+
+
+def validate_open_items(value):
+    if not isinstance(value, list):
+        die("open_items must be an array")
+    seen = set()
+    for index, item in enumerate(value):
+        name = f"open_items[{index}]"
+        item = obj(item, name)
+        known(item, {"id", "kind", "phase", "category", "reason", "evidence", "next_safe_action"}, name)
+        item_id = text(item.get("id"), f"{name}.id")
+        if item_id in seen:
+            die(f"{name}.id must be unique")
+        seen.add(item_id)
+        if item.get("kind") not in {"blocker", "failure", "todo", "follow_up"}:
+            die(f"{name}.kind is unsupported")
+        if item.get("phase") not in OPEN_PHASES:
+            die(f"{name}.phase is unsupported")
+        if item.get("category") not in OPEN_CATEGORIES:
+            die(f"{name}.category is unsupported")
+        text(item.get("reason"), f"{name}.reason")
+        text(item.get("evidence"), f"{name}.evidence")
+        text(item.get("next_safe_action"), f"{name}.next_safe_action")
+    return value
+
+
+def validate_plan(value):
+    value = obj(value, "plan")
+    known(value, {"source", "approved"}, "plan")
+    if value.get("approved") is not True:
+        die("plan.approved must be true")
+    text(value.get("source"), "plan.source")
+
+
 def validate_git(value):
     value = obj(value, "git")
+    known(value, {"base_branch", "delivery_branch", "commits"}, "git")
     text(value.get("base_branch"), "git.base_branch")
     text(value.get("delivery_branch"), "git.delivery_branch")
     commits = value.get("commits")
     if not isinstance(commits, list) or not commits:
         die("git.commits must contain at least one commit")
-    for index, commit in enumerate(commits):
-        git_sha(commit, f"git.commits[{index}]")
-    return value
+    return {**value, "commits": [git_sha(item, f"git.commits[{index}]") for index, item in enumerate(commits)]}
 
 
 def validate_items(value, kind, require_pass):
     if not isinstance(value, list) or not value:
         die(f"{kind} must contain at least one item")
-    passed = 0
+    result = []
     for index, item in enumerate(value):
         item = obj(item, f"{kind}[{index}]")
         key = "id" if kind == "criteria" else "name"
         text(item.get(key), f"{kind}[{index}].{key}")
         text(item.get("evidence"), f"{kind}[{index}].evidence")
-        allowed = {"passed"} if kind == "criteria" else {"passed", "not_applicable"}
-        if not require_pass:
-            allowed |= {"failed", "not_run"}
+        allowed = {"passed"} if require_pass else {"passed", "not_applicable", "failed", "not_run"}
         if item.get("status") not in allowed:
             die(f"{kind}[{index}].status is unsupported")
-        if item.get("status") == "passed":
-            passed += 1
-    if require_pass and passed == 0:
-        die(f"{kind} must contain at least one passed item")
-    return value
-
-
-def validate_exact_candidate(checks, git_value, pull_request, require_success):
-    matches = [check for check in checks if check.get("name") == "exact-candidate"]
-    if len(matches) != 1:
-        die("delivery evidence requires exactly one exact-candidate check")
-    check = matches[0]
-    base = full_git_sha(
-        check.get("candidate_base_sha"), "exact-candidate.candidate_base_sha"
-    )
-    head = full_git_sha(
-        check.get("candidate_head_sha"), "exact-candidate.candidate_head_sha"
-    )
-    if base == head:
-        die("exact-candidate base and head must differ")
-    if head not in {commit.lower() for commit in git_value.get("commits", [])}:
-        die("exact-candidate head must appear in git.commits")
-    pr_url = web_url(check.get("pull_request_url"), "exact-candidate.pull_request_url")
-    if pr_url != pull_request.get("url"):
-        die("exact-candidate pull_request_url must equal pull_request.url")
-    if not isinstance(check.get("promotable"), bool):
-        die("exact-candidate.promotable must be a boolean")
-    if check.get("required_ci_status") not in {"passed", "failed", "not_run"}:
-        die("exact-candidate.required_ci_status is unsupported")
-    if require_success:
-        if check.get("status") != "passed":
-            die("exact-candidate.status must be passed")
-        if check.get("promotable") is not True:
-            die("exact-candidate.promotable must be true")
-        if check.get("required_ci_status") != "passed":
-            die("exact-candidate.required_ci_status must be passed")
-    return {"base": base, "head": head, "pull_request_url": pr_url}
-
-
-def validate_release_contract_binding(
-    checks,
-    promotion=None,
-    exact_candidate=None,
-    pull_request=None,
-    require_success=False,
-):
-    matches = [
-        check for check in checks if check.get("name") == "release-contract-binding"
-    ]
-    if len(matches) != 1:
-        die("release mode requires exactly one release-contract-binding check")
-
-    check = matches[0]
-    if check.get("status") != "passed":
-        die("release-contract-binding.status must be passed")
-    if check.get("single_use") is not True:
-        die("release-contract-binding.single_use must be true")
-
-    contract = sha256_digest(
-        check.get("contract_sha256"), "release-contract-binding.contract_sha256"
-    )
-    if contract != release_contract_sha256():
-        die("release-contract-binding.contract_sha256 does not match the installed contract")
-    candidate = full_git_sha(
-        check.get("candidate_head_sha"),
-        "release-contract-binding.candidate_head_sha",
-    )
-    base = full_git_sha(
-        check.get("candidate_base_sha"),
-        "release-contract-binding.candidate_base_sha",
-    )
-    pr_url = web_url(
-        check.get("pull_request_url"),
-        "release-contract-binding.pull_request_url",
-    )
-
-    source_digest = check.get("source_receipt_sha256")
-    if source_digest is not None:
-        sha256_digest(
-            source_digest, "release-contract-binding.source_receipt_sha256"
-        )
-    if promotion is not None:
-        if candidate != promotion.get("candidate_head_sha").lower():
-            die("release-contract-binding candidate must equal promotion candidate head")
-        if base != promotion.get("candidate_base_sha").lower():
-            die("release-contract-binding base must equal promotion candidate base")
-        if promotion.get("source") == "pr_ready_receipt" and source_digest is None:
-            die("pr_ready_receipt promotion requires source_receipt_sha256")
-        if promotion.get("source") == "live_pr" and source_digest is not None:
-            die("live_pr promotion requires null source_receipt_sha256")
-        if require_success and promotion.get("source") != "pr_ready_receipt":
-            die("successful release mode requires a pr_ready_receipt source")
-        if promotion.get("source") == "pr_ready_receipt":
-            source_path = Path(promotion.get("source_receipt")).expanduser()
-            if not source_path.is_absolute():
-                die("promotion.source_receipt must be an absolute local path")
-            try:
-                source_bytes = source_path.read_bytes()
-            except OSError:
-                die("promotion.source_receipt must be a readable local receipt file")
-            if hashlib.sha256(source_bytes).hexdigest() != source_digest:
-                die("source_receipt_sha256 does not match promotion.source_receipt")
-            try:
-                source_root = obj(json.loads(source_bytes), "promotion.source_receipt")
-            except (json.JSONDecodeError, UnicodeDecodeError):
-                die("promotion.source_receipt must contain valid JSON")
-            if source_root.get("mode") != "pr" or source_root.get("terminal_state") != "pr_ready":
-                die("promotion.source_receipt must be a pr_ready receipt")
-            if validate(source_path) != "pr_ready":
-                die("promotion.source_receipt must validate as pr_ready")
-            source_git = validate_git(source_root.get("git"))
-            source_checks = validate_items(
-                source_root.get("checks"), "checks", True
-            )
-            source_pr = validate_pull_request(source_root.get("pull_request"))
-            source_exact = validate_exact_candidate(
-                source_checks, source_git, source_pr, True
-            )
-            source_commits = {
-                str(commit).lower() for commit in source_git.get("commits", [])
-            }
-            if candidate not in source_commits:
-                die("promotion candidate must appear in the source pr_ready receipt")
-            if source_exact != {"base": base, "head": candidate, "pull_request_url": pr_url}:
-                die("source pr_ready receipt must match the bound base, head, and PR")
-    if exact_candidate is not None:
-        if exact_candidate != {"base": base, "head": candidate, "pull_request_url": pr_url}:
-            die("release-contract-binding must match exact-candidate evidence")
-    if pull_request is not None and pr_url != pull_request.get("url"):
-        die("release-contract-binding pull_request_url must equal pull_request.url")
-    return check
+        if kind == "criteria":
+            known(item, {"id", "status", "evidence"}, f"criteria[{index}]")
+        elif item.get("name") == "exact-candidate":
+            known(item, {"name", "status", "candidate_base_sha", "candidate_head_sha", "pull_request_url", "promotable", "required_ci_status", "evidence"}, f"checks[{index}]")
+        elif item.get("name") == "production-release-ready":
+            known(item, {"name", "status", "production_path_status", "preflight_status", "credentials_status", "configuration_status", "migration_status", "recovery_status", "next_action", "evidence"}, f"checks[{index}]")
+        elif item.get("name") == "release-contract-binding":
+            known(item, {"name", "status", "contract_sha256", "goal_id", "attempt_id", "candidate_base_sha", "candidate_head_sha", "pull_request_url", "source_receipt_sha256", "single_use", "evidence"}, f"checks[{index}]")
+        elif item.get("name") == "remote-state-reconciliation":
+            known(item, {"name", "status", "artifact_ref", "evidence"}, f"checks[{index}]")
+            if item.get("status") == "passed":
+                text(item.get("artifact_ref"), f"checks[{index}].artifact_ref")
+        else:
+            known(item, {"name", "status", "evidence"}, f"checks[{index}]")
+        result.append(item)
+    return result
 
 
 def validate_pull_request(value):
     value = obj(value, "pull_request")
+    known(value, {"url", "status", "merged", "merge_sha"}, "pull_request")
     web_url(value.get("url"), "pull_request.url")
-    if value.get("status") not in {"open", "ready", "merged"}:
-        die("pull_request.status is unsupported")
-    if not isinstance(value.get("merged"), bool):
-        die("pull_request.merged must be a boolean")
+    if value.get("status") not in {"open", "ready", "merged"} or not isinstance(value.get("merged"), bool):
+        die("pull_request status or merged flag is unsupported")
     if value.get("merged"):
         if value.get("status") != "merged":
             die("merged pull request requires status merged")
         full_git_sha(value.get("merge_sha"), "pull_request.merge_sha")
-    else:
-        if value.get("status") not in {"open", "ready"}:
-            die("unmerged pull request requires status open or ready")
-        if value.get("merge_sha") is not None:
-            die("unmerged pull request requires merge_sha null")
+    elif value.get("status") not in {"open", "ready"} or value.get("merge_sha") is not None:
+        die("unmerged pull request requires open/ready status and null merge_sha")
     return value
 
 
-def validate_release(value, allow_failed=False):
+def validate_exact_candidate(checks, git_value, pull_request, require_success):
+    matches = [item for item in checks if item.get("name") == "exact-candidate"]
+    if len(matches) != 1:
+        die("delivery evidence requires exactly one exact-candidate check")
+    check = matches[0]
+    known(check, {"name", "status", "candidate_base_sha", "candidate_head_sha", "pull_request_url", "promotable", "required_ci_status", "evidence"}, "exact-candidate")
+    base = full_git_sha(check.get("candidate_base_sha"), "exact-candidate.candidate_base_sha")
+    head = full_git_sha(check.get("candidate_head_sha"), "exact-candidate.candidate_head_sha")
+    if base == head or head not in set(git_value["commits"]):
+        die("exact-candidate head must differ from base and appear in git.commits")
+    if web_url(check.get("pull_request_url"), "exact-candidate.pull_request_url") != pull_request.get("url"):
+        die("exact-candidate pull_request_url must equal pull_request.url")
+    if not isinstance(check.get("promotable"), bool) or check.get("required_ci_status") not in {"passed", "failed", "not_run"}:
+        die("exact-candidate promotability evidence is unsupported")
+    if require_success and (check.get("status") != "passed" or check.get("promotable") is not True or check.get("required_ci_status") != "passed"):
+        die("successful goal requires a passed, promotable exact candidate with current CI")
+    return {"base": base, "head": head, "pull_request_url": pull_request.get("url")}
+
+
+def validate_production_ready(checks, require_success):
+    matches = [item for item in checks if item.get("name") == "production-release-ready"]
+    if len(matches) != 1:
+        die("delivery evidence requires exactly one production-release-ready check")
+    check = matches[0]
+    known(check, {
+        "name", "status", "production_path_status", "preflight_status", "credentials_status",
+        "configuration_status", "migration_status", "recovery_status", "next_action", "evidence",
+    }, "production-release-ready")
+    if require_success and (
+        check.get("status") != "passed"
+        or check.get("production_path_status") != "verified"
+        or check.get("preflight_status") != "passed"
+        or check.get("credentials_status") != "ready"
+        or check.get("configuration_status") != "ready"
+        or check.get("migration_status") not in {"ready", "not_applicable"}
+        or check.get("recovery_status") != "ready"
+        or check.get("next_action") != "production_release"
+    ):
+        die("production-release-ready must prove that only the production action remains")
+
+
+def validate_release(value, require_success):
     value = obj(value, "release")
-    statuses = {"not_requested", "passed"}
-    if allow_failed:
-        statuses.add("failed")
-    if value.get("status") not in statuses:
+    known(value, {"status", "url", "message", "evidence"}, "release")
+    allowed = {"not_requested", "passed"} if require_success else {"not_requested", "passed", "failed", "not_run"}
+    if value.get("status") not in allowed:
         die("release.status is unsupported")
     if value.get("url") is not None:
         web_url(value.get("url"), "release.url")
-    notes_url = value.get("notes_url")
-    message = value.get("message")
     if value.get("status") == "passed":
-        message = text(message, "release.message")
+        web_url(value.get("url"), "release.url")
+        message = text(value.get("message"), "release.message")
         if not message.startswith("### Release"):
             die("release.message must start with the ### Release heading")
-        if notes_url is not None:
-            notes_url = web_url(notes_url, "release.notes_url")
-        if notes_url is not None and notes_url not in message:
-            die("release.message must contain release.notes_url")
-    elif notes_url is not None or message is not None:
-        if notes_url is None or message is None:
-            die("release.notes_url and release.message must both be set or both be null")
-        notes_url = web_url(notes_url, "release.notes_url")
-        message = text(message, "release.message")
-        if notes_url not in message:
-            die("release.message must contain release.notes_url")
+    elif value.get("message") is not None:
+        die("release.message must be null unless release.status passed")
     text(value.get("evidence"), "release.evidence")
     return value
 
 
-def validate_promotion(value, git_value=None):
-    value = obj(value, "promotion")
-    source = value.get("source")
-    if source not in {"live_pr", "pr_ready_receipt"}:
-        die("promotion.source must be live_pr or pr_ready_receipt")
-    source_receipt = value.get("source_receipt")
-    if source == "pr_ready_receipt":
-        text(source_receipt, "promotion.source_receipt")
-    elif source_receipt is not None:
-        die("promotion.source_receipt must be null for live_pr")
-    base_sha = full_git_sha(value.get("candidate_base_sha"), "promotion.candidate_base_sha")
-    head_sha = full_git_sha(value.get("candidate_head_sha"), "promotion.candidate_head_sha")
-    if base_sha == head_sha:
-        die("promotion candidate base and head must differ")
-    authority = text(value.get("authority_evidence"), "promotion.authority_evidence")
-    if not re.search(r"\$auto-pilot\s+(?:ship|release|promote)\b", authority, re.IGNORECASE):
-        die("promotion.authority_evidence must identify the current $auto-pilot ship/release/promote invocation")
-    if git_value is not None:
-        commits = {commit.lower() for commit in git_value.get("commits", [])}
-        if head_sha not in commits:
-            die("promotion.candidate_head_sha must appear in git.commits")
+def validate_release_notes(value, require_success):
+    value = obj(value, "release_notes")
+    known(value, {"status", "artifact_ref", "evidence"}, "release_notes")
+    allowed = {"passed", "not_applicable"} if require_success else {"passed", "not_applicable", "failed", "not_run"}
+    if value.get("status") not in allowed:
+        die("release_notes.status is unsupported")
+    if value.get("status") == "passed":
+        text(value.get("artifact_ref"), "release_notes.artifact_ref")
+    elif value.get("artifact_ref") is not None:
+        text(value.get("artifact_ref"), "release_notes.artifact_ref")
+    text(value.get("evidence"), "release_notes.evidence")
     return value
 
 
 def validate_cleanup(value, require_success):
     value = obj(value, "cleanup")
-    status = value.get("status")
-    allowed_statuses = {"passed"} if require_success else {"passed", "failed", "not_run"}
-    if status not in allowed_statuses:
+    known(value, {"status", "worktree", "local_branch", "remote_branch", "remote_branch_policy_ref", "evidence"}, "cleanup")
+    allowed = {"passed"} if require_success else {"passed", "failed", "not_run"}
+    if value.get("status") not in allowed:
         die("cleanup.status is unsupported")
-
-    terminal_states = {
+    terminal = {
         "worktree": {"removed", "not_used"},
         "local_branch": {"deleted", "not_used"},
         "remote_branch": {"deleted", "absent", "not_used", "retained_by_policy"},
     }
-    incomplete_states = {
-        "worktree": {"retained"},
-        "local_branch": {"retained"},
-        "remote_branch": {"retained"},
-    }
-    for key, terminal in terminal_states.items():
-        allowed = terminal if status == "passed" else terminal | incomplete_states[key]
-        if value.get(key) not in allowed:
-            die(f"cleanup.{key} is unsupported for cleanup.status {status}")
+    incomplete = {"worktree": {"retained"}, "local_branch": {"retained"}, "remote_branch": {"retained"}}
+    for key, values in terminal.items():
+        allowed_values = values if value.get("status") == "passed" else values | incomplete[key]
+        if value.get(key) not in allowed_values:
+            die(f"cleanup.{key} is unsupported for cleanup.status {value.get('status')}")
+    if value.get("remote_branch") == "retained_by_policy":
+        text(value.get("remote_branch_policy_ref"), "cleanup.remote_branch_policy_ref")
+    elif value.get("remote_branch_policy_ref") is not None:
+        die("cleanup.remote_branch_policy_ref is only valid for retained_by_policy")
     text(value.get("evidence"), "cleanup.evidence")
-    return value
+
+
+def validate_promotion(value, git_value):
+    value = obj(value, "promotion")
+    known(value, {"source", "source_receipt", "candidate_base_sha", "candidate_head_sha", "authority_evidence"}, "promotion")
+    if value.get("source") not in {"live_candidate", "pr_ready_receipt"}:
+        die("promotion.source is unsupported")
+    if value.get("source") == "live_candidate" and value.get("source_receipt") is not None:
+        die("live_candidate promotion requires null source_receipt")
+    if value.get("source") == "pr_ready_receipt":
+        source = Path(text(value.get("source_receipt"), "promotion.source_receipt")).expanduser()
+        if not source.is_absolute():
+            die("promotion.source_receipt must be absolute")
+    base = full_git_sha(value.get("candidate_base_sha"), "promotion.candidate_base_sha")
+    head = full_git_sha(value.get("candidate_head_sha"), "promotion.candidate_head_sha")
+    if base == head or head not in set(git_value["commits"]):
+        die("promotion candidate must be the exact delivery head")
+    authority = text(value.get("authority_evidence"), "promotion.authority_evidence")
+    if not re.search(r"\$auto-pilot\s+(?:ship|release|promote|deploy)\b", authority, re.I):
+        die("promotion authority must identify the current ship command or alias")
+    return {"source": value.get("source"), "source_receipt": value.get("source_receipt"), "base": base, "head": head}
+
+
+def validate_binding(checks, goal, attempt, promotion, exact, pull_request):
+    matches = [item for item in checks if item.get("name") == "release-contract-binding"]
+    if len(matches) != 1:
+        die("ship evidence requires exactly one release-contract-binding check")
+    check = matches[0]
+    known(check, {
+        "name", "status", "contract_sha256", "goal_id", "attempt_id", "candidate_base_sha",
+        "candidate_head_sha", "pull_request_url", "source_receipt_sha256", "single_use", "evidence",
+    }, "release-contract-binding")
+    if check.get("status") != "passed" or check.get("single_use") is not True:
+        die("release-contract-binding must be passed and single-use at attempt scope")
+    if check.get("goal_id") != goal.get("id") or check.get("attempt_id") != attempt.get("id"):
+        die("release-contract-binding must bind the current goal and attempt")
+    if sha256_digest(check.get("contract_sha256"), "release-contract-binding.contract_sha256") != release_contract_sha256():
+        die("release-contract-binding contract digest does not match the installed contract")
+    bound = {
+        "base": full_git_sha(check.get("candidate_base_sha"), "release-contract-binding.candidate_base_sha"),
+        "head": full_git_sha(check.get("candidate_head_sha"), "release-contract-binding.candidate_head_sha"),
+        "pull_request_url": web_url(check.get("pull_request_url"), "release-contract-binding.pull_request_url"),
+    }
+    if bound != exact or bound["base"] != promotion["base"] or bound["head"] != promotion["head"] or bound["pull_request_url"] != pull_request.get("url"):
+        die("release-contract-binding must match exact candidate, promotion, and PR")
+    source_digest = check.get("source_receipt_sha256")
+    if promotion["source"] == "live_candidate":
+        if source_digest is not None:
+            die("live_candidate binding requires null source_receipt_sha256")
+        return
+    source_digest = sha256_digest(source_digest, "release-contract-binding.source_receipt_sha256")
+    source = Path(promotion["source_receipt"])
+    try:
+        source_bytes = source.read_bytes()
+    except OSError:
+        die("promotion.source_receipt must be readable")
+    if hashlib.sha256(source_bytes).hexdigest() != source_digest:
+        die("source_receipt_sha256 does not match promotion.source_receipt")
+    try:
+        source_value = json.loads(source_bytes)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        die("promotion.source_receipt must contain valid JSON")
+    if source_value.get("schema_version") != SCHEMA_VERSION or source_value.get("goal_mode") != "pr" or source_value.get("goal", {}).get("achieved") != "PR_READY":
+        die("promotion.source_receipt must be a current valid PR_READY receipt")
+    if validate(source) != "PR_READY":
+        die("promotion.source_receipt must validate as PR_READY")
+    try:
+        if source.read_bytes() != source_bytes:
+            die("promotion.source_receipt changed during validation")
+    except OSError:
+        die("promotion.source_receipt must remain readable during validation")
+    source_checks = source_value.get("checks", [])
+    source_exact = next((item for item in source_checks if item.get("name") == "exact-candidate"), None)
+    source_identity = {
+        "base": full_git_sha(source_exact.get("candidate_base_sha"), "promotion.source_receipt exact candidate base"),
+        "head": full_git_sha(source_exact.get("candidate_head_sha"), "promotion.source_receipt exact candidate head"),
+        "pull_request_url": web_url(source_exact.get("pull_request_url"), "promotion.source_receipt PR URL"),
+    }
+    if source_identity != exact or source_value.get("pull_request", {}).get("url") != pull_request.get("url"):
+        die("promotion.source_receipt must identify the exact promoted candidate and PR")
 
 
 def validate_proof(value, name, require_success, require_artifact=False):
     value = obj(value, name)
+    known(value, {"status", "artifact_ref", "evidence", "decision", "effective_binding_count"}, name)
     allowed = {"passed"} if require_success else {"passed", "failed", "not_run"}
     if value.get("status") not in allowed:
         die(f"{name}.status is unsupported")
     text(value.get("evidence"), f"{name}.evidence")
-    artifact = value.get("artifact_ref")
-    if value.get("status") == "passed" and require_artifact:
-        text(artifact, f"{name}.artifact_ref")
-    elif artifact is not None:
-        text(artifact, f"{name}.artifact_ref")
+    if require_artifact and value.get("status") == "passed":
+        text(value.get("artifact_ref"), f"{name}.artifact_ref")
+    elif value.get("artifact_ref") is not None:
+        text(value.get("artifact_ref"), f"{name}.artifact_ref")
     return value
 
 
-def validate_authorization_proof(value, name, decision, require_success):
-    value = validate_proof(value, name, require_success)
-    if value.get("decision") != decision:
-        die(f"{name}.decision must be {decision}")
-    binding_count = value.get("effective_binding_count")
-    if not isinstance(binding_count, int) or isinstance(binding_count, bool):
-        die(f"{name}.effective_binding_count must be an integer")
-    if decision == "allowed" and binding_count < 1:
-        die(f"{name}.effective_binding_count must be positive for an allowed decision")
-    if decision == "denied" and binding_count != 0:
-        die(f"{name}.effective_binding_count must be zero for a denied decision")
-    return value
-
-
-def validate_capability_reachability(value, require_success):
+def validate_capability(value, require_success):
     value = obj(value, "capability_reachability")
-    deployed_sha = full_git_sha(
-        value.get("deployed_candidate_sha"),
-        "capability_reachability.deployed_candidate_sha",
-    )
+    known(value, {"deployed_candidate_sha", "scope_evidence", "cases"}, "capability_reachability")
+    deployed = full_git_sha(value.get("deployed_candidate_sha"), "capability_reachability.deployed_candidate_sha")
     text(value.get("scope_evidence"), "capability_reachability.scope_evidence")
     cases = value.get("cases")
     if not isinstance(cases, list) or not cases:
-        die("capability_reachability.cases must contain at least one case")
-    seen = set()
+        die("capability_reachability.cases must be non-empty")
+    ids = []
     for index, case in enumerate(cases):
         name = f"capability_reachability.cases[{index}]"
         case = obj(case, name)
-        case_id = text(case.get("id"), f"{name}.id")
-        if case_id in seen:
-            die(f"{name}.id must be unique")
-        seen.add(case_id)
-        for key in (
-            "actor",
-            "credential_class",
-            "resource_scope",
-            "entrypoint",
-            "runtime_principal",
-            "representative_data_case",
-            "expected_terminal_outcome",
-        ):
+        known(case, {
+            "id", "actor", "credential_class", "resource_scope", "entrypoint", "runtime_principal",
+            "representative_data_case", "expected_terminal_outcome", "observed_terminal_outcome",
+            "deterministic", "production", "authorization_changed", "authorized", "unauthorized",
+        }, name)
+        ids.append(text(case.get("id"), f"{name}.id"))
+        for key in ("actor", "credential_class", "resource_scope", "entrypoint", "runtime_principal", "representative_data_case", "expected_terminal_outcome"):
             text(case.get(key), f"{name}.{key}")
-        expected = case.get("expected_terminal_outcome").strip()
         observed = case.get("observed_terminal_outcome")
-        if require_success:
-            observed = text(observed, f"{name}.observed_terminal_outcome")
-            if observed != expected:
-                die(f"{name}.observed_terminal_outcome must equal expected_terminal_outcome")
+        if require_success and text(observed, f"{name}.observed_terminal_outcome") != case.get("expected_terminal_outcome"):
+            die(f"{name} must observe its expected terminal outcome")
         elif observed is not None:
             text(observed, f"{name}.observed_terminal_outcome")
-        validate_proof(
-            case.get("deterministic"),
-            f"{name}.deterministic",
-            require_success,
-            True,
-        )
-        validate_proof(
-            case.get("production"),
-            f"{name}.production",
-            require_success,
-            True,
-        )
+        validate_proof(case.get("deterministic"), f"{name}.deterministic", require_success, True)
+        validate_proof(case.get("production"), f"{name}.production", require_success, True)
         if not isinstance(case.get("authorization_changed"), bool):
-            die(f"{name}.authorization_changed must be a boolean")
+            die(f"{name}.authorization_changed must be boolean")
         if case.get("authorization_changed"):
-            validate_authorization_proof(
-                case.get("authorized"), f"{name}.authorized", "allowed", require_success
-            )
-            validate_authorization_proof(
-                case.get("unauthorized"), f"{name}.unauthorized", "denied", require_success
-            )
+            for label, decision, count in (("authorized", "allowed", 1), ("unauthorized", "denied", 0)):
+                proof = validate_proof(case.get(label), f"{name}.{label}", require_success)
+                if proof.get("decision") != decision or not isinstance(proof.get("effective_binding_count"), int):
+                    die(f"{name}.{label} authorization evidence is invalid")
+                if (decision == "allowed" and proof.get("effective_binding_count") < count) or (decision == "denied" and proof.get("effective_binding_count") != count):
+                    die(f"{name}.{label} binding count is invalid")
         elif "authorized" in case or "unauthorized" in case:
             die(f"{name} authorization proofs require authorization_changed true")
-    return deployed_sha
+    if len(set(ids)) != len(ids):
+        die("capability case IDs must be unique")
+    return {"deployed_sha": deployed, "case_ids": ids}
 
 
-def capability_claims_success(value):
-    if not isinstance(value, dict):
-        return False
-    cases = value.get("cases")
-    if not isinstance(cases, list) or not cases:
-        return False
-    for case in cases:
-        if not isinstance(case, dict):
-            return False
-        if case.get("observed_terminal_outcome") != case.get("expected_terminal_outcome"):
-            return False
-        if case.get("deterministic", {}).get("status") != "passed":
-            return False
-        if case.get("production", {}).get("status") != "passed":
-            return False
-        if case.get("authorization_changed"):
-            if case.get("authorized", {}).get("status") != "passed":
-                return False
-            if case.get("unauthorized", {}).get("status") != "passed":
-                return False
-    return True
+def validate_delivery_details(root, require_success):
+    git_value = validate_git(root.get("git"))
+    criteria = validate_items(root.get("criteria"), "criteria", require_success)
+    checks = validate_items(root.get("checks"), "checks", require_success)
+    pull_request = validate_pull_request(root.get("pull_request"))
+    exact = validate_exact_candidate(checks, git_value, pull_request, require_success)
+    validate_production_ready(checks, require_success)
+    release = validate_release(root.get("release"), require_success)
+    return git_value, criteria, checks, pull_request, exact, release
 
 
-def validate_blockers(value):
-    if not isinstance(value, list):
-        die("blockers must be an array")
-    if not value:
-        return value
-    for index, blocker in enumerate(value):
-        blocker = obj(blocker, f"blockers[{index}]")
-        if blocker.get("phase") not in BLOCKER_PHASES:
-            die(f"blockers[{index}].phase is unsupported")
-        if blocker.get("category") not in BLOCKER_CATEGORIES:
-            die(f"blockers[{index}].category is unsupported")
-        text(blocker.get("reason"), f"blockers[{index}].reason")
-        text(blocker.get("evidence"), f"blockers[{index}].evidence")
-    return value
-
-
-def validate_optional_blocked(root, blockers):
-    git_value = None
-    checks = None
+def validate_incomplete(root, goal_mode):
+    delivery = {"git", "criteria", "checks", "pull_request", "release"}
+    present = delivery & set(root)
+    if present and present != delivery:
+        die("partial delivery evidence must include git, criteria, checks, pull_request, and release together")
+    advanced_phases = {"post_mutation", "production_proof", "release_notes", "cleanup"}
+    observed_phases = {item.get("phase") for item in root.get("open_items", [])}
+    after_mutation = bool(observed_phases & advanced_phases)
+    if not present:
+        unexpected = {"promotion", "release_notes", "cleanup", "capability_reachability"} & set(root)
+        if unexpected:
+            die("post-readiness evidence requires the complete delivery evidence set")
+        if after_mutation:
+            die("post-mutation incomplete evidence requires the admitted candidate and reconciled remote state")
+        return None
+    details = validate_delivery_details(root, False)
+    git_value, _, checks, pull_request, exact, _ = details
+    if goal_mode == "pr" and pull_request.get("merged"):
+        die("PR goal cannot include a merged candidate")
     promotion = None
-    pull_request = None
-    release = None
-    capability = None
-    if "git" in root:
-        git_value = validate_git(root["git"])
-    if "criteria" in root:
-        validate_items(root["criteria"], "criteria", False)
-    if "checks" in root:
-        checks = validate_items(root["checks"], "checks", False)
-    if "pull_request" in root:
-        pull_request = validate_pull_request(root["pull_request"])
-    if "release" in root:
-        release = validate_release(root["release"], True)
     if "promotion" in root:
-        promotion = validate_promotion(root["promotion"], git_value)
+        promotion = validate_promotion(root.get("promotion"), git_value)
+        validate_binding(checks, root["goal"], root["attempt"], promotion, exact, pull_request)
+    if after_mutation:
+        if goal_mode != "ship" or promotion is None:
+            die("post-mutation incomplete evidence requires ship promotion and attempt binding")
+        reconciliations = [item for item in checks if item.get("name") == "remote-state-reconciliation"]
+        if len(reconciliations) != 1 or reconciliations[0].get("status") != "passed":
+            die("post-mutation incomplete evidence requires one passed remote-state reconciliation")
+        if observed_phases & {"production_proof", "release_notes", "cleanup"} and "capability_reachability" not in root:
+            die("production-stage incomplete evidence requires capability reachability evidence")
+        if observed_phases & {"release_notes", "cleanup"} and "release_notes" not in root:
+            die("release-note or cleanup failure requires release_notes evidence")
+        if "cleanup" in observed_phases and "cleanup" not in root:
+            die("cleanup failure requires cleanup evidence")
+    if "release_notes" in root:
+        validate_release_notes(root.get("release_notes"), False)
     if "cleanup" in root:
-        validate_cleanup(root["cleanup"], False)
+        validate_cleanup(root.get("cleanup"), False)
     if "capability_reachability" in root:
-        capability = root["capability_reachability"]
-        deployed_sha = validate_capability_reachability(capability, False)
-        if pull_request is not None and pull_request.get("merged"):
-            if deployed_sha != pull_request.get("merge_sha").lower():
-                die("blocked capability evidence must identify the merged candidate")
-
-    phases = {blocker.get("phase") for blocker in blockers}
-    post_mutation = bool(phases & {"post_mutation", "production_proof"})
-    merged = bool(pull_request and pull_request.get("merged"))
-    if root.get("mode") == "pr" and post_mutation:
-        die("PR-mode blockers cannot claim a post-mutation phase")
-    if post_mutation and not merged:
-        die("post-mutation or production-proof blockers require a merged PR")
-    if merged and phases - {"post_mutation", "production_proof"}:
-        die("a merged PR requires post-mutation or production-proof blockers")
-
-    requires_admission = bool(
-        promotion is not None
-        or merged
-        or post_mutation
-        or capability is not None
-        or (release is not None and release.get("status") == "passed")
-    )
-    if root.get("mode") == "release" and requires_admission:
-        if any(item is None for item in (git_value, checks, pull_request, promotion)):
-            die("post-admission blocked release requires git, checks, PR, and promotion evidence")
-        exact_candidate = validate_exact_candidate(
-            checks, git_value, pull_request, True
-        )
-        validate_release_contract_binding(
-            checks,
-            promotion,
-            exact_candidate,
-            pull_request,
-            False,
-        )
-
-    if (
-        root.get("mode") == "release"
-        and merged
-        and release is not None
-        and release.get("status") == "passed"
-        and capability_claims_success(capability)
-    ):
-        validate_capability_reachability(capability, True)
-        die("a production-proven release must use terminal_state released; closeout cannot block it")
+        capability = validate_capability(root.get("capability_reachability"), False)
+        if pull_request.get("merged") and capability["deployed_sha"] != pull_request.get("merge_sha").lower():
+            die("capability evidence must identify the merged candidate")
+    return details
 
 
 def validate(path):
@@ -560,84 +554,88 @@ def validate(path):
     except json.JSONDecodeError as exc:
         die(f"invalid JSON at line {exc.lineno}, column {exc.colno}")
 
+    known(root, ROOT_KEYS, "receipt")
     if root.get("schema_version") != SCHEMA_VERSION:
         die(f"schema_version must be {SCHEMA_VERSION}")
-    mode = root.get("mode")
-    terminal = root.get("terminal_state")
-    if mode not in {"pr", "release"}:
-        die("mode must be pr or release")
-    if terminal not in {"pr_ready", "released", "blocked"}:
-        die("terminal_state is unsupported")
+    goal_mode = root.get("goal_mode")
+    if goal_mode not in {"pr", "ship"}:
+        die("goal_mode must be pr or ship")
+    alias = root.get("invoked_alias")
+    if alias not in {None, "release", "promote", "deploy"} or (goal_mode == "pr" and alias is not None):
+        die("invoked_alias is unsupported for goal_mode")
 
-    plan = obj(root.get("plan"), "plan")
-    if plan.get("approved") is not True:
-        die("plan.approved must be true")
-    text(plan.get("source"), "plan.source")
+    goal = validate_goal(root.get("goal"), goal_mode)
+    attempt = validate_attempt(root.get("attempt"))
+    scope = validate_completion_scope(root.get("completion_scope"))
+    open_items = validate_open_items(root.get("open_items"))
+    validate_plan(root.get("plan"))
     text(root.get("summary"), "summary")
 
-    blockers = validate_blockers(root.get("blockers"))
-    if terminal == "blocked":
-        if not blockers:
-            die("blocked terminal_state requires at least one blocker")
-        validate_optional_blocked(root, blockers)
-        return terminal
-    if blockers:
-        die("successful terminal_state cannot contain blockers")
+    achieved = attempt.get("result") == "achieved"
+    if achieved:
+        if goal.get("achieved") != goal.get("target") or open_items:
+            die("achieved result requires the exact goal outcome and zero open items")
+    elif goal.get("achieved") is not None or not open_items:
+        die("incomplete result requires null goal.achieved and at least one open item")
 
-    git_value = validate_git(root.get("git"))
-    validate_items(root.get("criteria"), "criteria", True)
-    checks = validate_items(root.get("checks"), "checks", True)
-    pull_request = validate_pull_request(root.get("pull_request"))
-    release = validate_release(root.get("release"))
-    exact_candidate = validate_exact_candidate(
-        checks, git_value, pull_request, True
-    )
+    if not achieved:
+        details = validate_incomplete(root, goal_mode)
+        if details:
+            criteria_ids = [item["id"] for item in details[1]]
+            if set(scope["criteria_ids"]) != set(criteria_ids):
+                die("completion_scope.criteria_ids must exactly match criteria")
+            if "capability_reachability" in root:
+                case_ids = [item["id"] for item in root["capability_reachability"]["cases"]]
+                if set(scope["production_case_ids"]) != set(case_ids):
+                    die("completion_scope.production_case_ids must exactly match capability cases")
+        return "incomplete"
 
-    if terminal == "pr_ready":
-        if mode != "pr":
-            die("pr_ready requires mode pr")
-        if pull_request.get("merged") is not False or pull_request.get("status") not in {"open", "ready"}:
-            die("pr_ready requires an open, unmerged PR/MR")
-        if pull_request.get("merge_sha") is not None:
-            die("pr_ready requires pull_request.merge_sha to be null")
-        if (
-            release.get("status") != "not_requested"
-            or release.get("url") is not None
-            or release.get("notes_url") is not None
-            or release.get("message") is not None
-        ):
-            die("pr_ready requires release status not_requested and null release artifacts")
-        if "promotion" in root:
-            die("pr_ready must not contain promotion evidence")
-        if "cleanup" in root:
-            die("pr_ready must not contain release cleanup evidence")
-        if "capability_reachability" in root:
-            die("pr_ready must not contain production capability reachability evidence")
-        return terminal
+    git_value, criteria, checks, pull_request, exact, release = validate_delivery_details(root, True)
+    if set(scope["criteria_ids"]) != {item["id"] for item in criteria}:
+        die("completion_scope.criteria_ids must exactly match criteria")
 
-    if mode != "release":
-        die("released requires mode release")
+    if goal_mode == "pr":
+        if pull_request.get("merged") or release.get("status") != "not_requested" or release.get("url") is not None or release.get("message") is not None:
+            die("PR_READY requires an open unmerged candidate and no production mutation")
+        if scope["production_case_ids"]:
+            die("PR_READY completion scope must not claim production cases")
+        for forbidden in ("promotion", "release_notes", "cleanup", "capability_reachability"):
+            if forbidden in root:
+                die(f"PR_READY must not contain {forbidden}")
+        return "PR_READY"
+
     promotion = validate_promotion(root.get("promotion"), git_value)
-    validate_release_contract_binding(
-        checks,
-        promotion,
-        exact_candidate,
-        pull_request,
-        True,
-    )
-    validate_cleanup(root.get("cleanup"), False)
-    if pull_request.get("merged") is not True or pull_request.get("status") != "merged":
-        die("release mode requires a merged PR/MR")
-    merge_sha = full_git_sha(pull_request.get("merge_sha"), "pull_request.merge_sha")
+    validate_binding(checks, goal, attempt, promotion, exact, pull_request)
+    notes = validate_release_notes(root.get("release_notes"), True)
+    if (scope["release_notes"] == "required" and notes.get("status") != "passed") or (
+        scope["release_notes"] == "not_applicable" and notes.get("status") != "not_applicable"
+    ):
+        die("release_notes status must match completion_scope.release_notes")
+    validate_cleanup(root.get("cleanup"), True)
+    if not pull_request.get("merged") or release.get("status") != "passed":
+        die("SHIPPED requires a merged PR and passed production release")
+    capability = validate_capability(root.get("capability_reachability"), True)
+    if capability["deployed_sha"] != pull_request.get("merge_sha").lower():
+        die("deployed candidate must equal pull_request.merge_sha")
+    if set(scope["production_case_ids"]) != set(capability["case_ids"]):
+        die("completion_scope.production_case_ids must exactly match capability cases")
+    if attempt.get("basis") == "reconciliation":
+        reconciliations = [item for item in checks if item.get("name") == "remote-state-reconciliation"]
+        if len(reconciliations) != 1 or reconciliations[0].get("status") != "passed":
+            die("reconciliation attempt requires one passed remote-state-reconciliation check")
+    reject_deferred_actions(root)
+    return "SHIPPED"
 
-    if release.get("status") != "passed":
-        die("released requires release.status passed")
-    deployed_sha = validate_capability_reachability(
-        root.get("capability_reachability"), True
-    )
-    if deployed_sha != merge_sha:
-        die("capability_reachability.deployed_candidate_sha must equal pull_request.merge_sha")
-    return terminal
+
+def reject_deferred_actions(value, name="receipt"):
+    if isinstance(value, dict):
+        for key, item in value.items():
+            reject_deferred_actions(item, f"{name}.{key}")
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            reject_deferred_actions(item, f"{name}[{index}]")
+    elif isinstance(value, str) and DEFERRED_ACTION.search(value):
+        die(f"{name} contains deferred work in a SHIPPED receipt")
 
 
 if __name__ == "__main__":

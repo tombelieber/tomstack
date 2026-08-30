@@ -1,61 +1,52 @@
 # In-task ship promotion
 
-Use this only when the current invocation explicitly selects `ship`,
-`--then-release`, or directly orders implementation followed by production
-delivery. The command grants one continuous in-scope delivery mandate.
+Use this for `ship`, `--then-release`, a direct production imperative, or the
+`release`, `promote`, and `deploy` aliases. All normalize to the `SHIPPED` goal.
 
-## Keep ownership continuous
+## Continuous ownership
 
-Do not create, fork, or hand off to another user-visible task. The current
-accountable owner stays active through implementation, PR creation, admission,
-merge, deploy or distribution, production proof, and closeout. Native context
-compaction is still the same task. Optional bounded helpers return to this owner
-and never receive release authority.
+The invoking task owns implementation, PR qualification, admission, merge,
+deployment or distribution, production proof, notes, and cleanup. Do not create
+a continuation task or require another command after waiting. Native compaction
+and ordinary later prompts continue the same active goal. Helpers may return
+bounded evidence but never own a stage or production authority.
 
-Do not send a final answer at PR readiness. Store a validated `pr_ready` receipt
-as an internal handoff and continue immediately. If progress requires waiting,
-wait for CI, deployment, and observation inside the current task with bounded
-status reads or the runtime's wait mechanism.
+## Shared PR_READY gate
 
-## Make the PR releasable before final admission
+The same gate qualifies both public `PR_READY` and the internal readiness
+transition inside `ship`:
 
-1. Read the repository release, migration, verification, and rollback contracts
-   before the final candidate gate.
-2. Prove a production release path before merge. A repository with no deploy or
-   public distribution owner cannot satisfy `ship`; stop before merge instead
-   of treating merge as success.
-3. Run the repository dry-run/preflight while the PR can still change. Resolve
-   deterministic scope, credential presence, environment, deploy targets,
-   migration/backfill compatibility, release lock/draft state, recovery inputs,
-   and impact-selected production proof.
-4. Fix directly causal in-scope readiness defects on the same PR, then run the
-   final exact-candidate gate and current required CI on the intended head.
-5. Create the internal `pr_ready` receipt, hash it, compute the installed
-   release-contract SHA-256, and re-read the live PR and current base. Any head
-   or base change invalidates admission and ends this attempt.
+1. Identify the repository release owner, production path, migration/backfill
+   and rollback boundaries, required credentials/configuration, release locks,
+   notes channel, cleanup policy, and impact-selected production proof.
+2. Run dry-run/preflight while the PR is mutable. Fix directly causal in-scope
+   failures in the same task.
+3. Qualify the exact head against the current promotable base and current
+   required CI.
+4. Record a passed `production-release-ready` check and an exact completion
+   inventory. Nothing may remain except the protected production action.
 
-This ordering prevents the release stage from discovering deterministic inputs
-that the PR stage could have supplied. Do not repeatedly open PRs or rerun an
-unchanged full gate merely to move between stages.
+For `pr`, that proves `PR_READY` and no merge occurs. For `ship`, keep it as an
+internal artifact and continue; it is not a final answer.
 
-## Continue to the terminal promise
+## Attempt-scoped admission
 
-After admission, treat the candidate as immutable and follow
-[release promotion](release-promotion.md) in the same task. The explicit `ship`
-command is the production authority recorded in `promotion.authority_evidence`.
-Do not ask whether to merge, deploy, publish, run an impact-selected canary, or
-finish closeout when those actions remain inside the approved scope.
+Immediately before mutation, bind the installed contract SHA-256, goal ID,
+new attempt ID, live head and base, PR URL, CI, impact scope, release plan, and
+recovery inputs. `single_use: true` means the binding cannot authorize a second
+mutation attempt. It does not seal the goal, task, or session.
 
-End only as:
+If head, base, contract, CI, scope, or another deterministic input changes,
+discard that binding. Repair or wait in this task, then create a new attempt
+linked by the prior receipt SHA and change evidence. Never blind-retry the same
+unchanged mutation.
 
-- `released`: the exact merged candidate is deployed or publicly distributed
-  and its affected capability reached the required production terminal outcome;
-  or
-- `blocked`: a genuine authority, credential, safety, compatibility, changed
-  candidate/base, provider, or ambiguous-remote-state barrier prevents that
-  outcome.
+## Continue until SHIPPED
 
-An open PR, `pr_ready`, merge success, deploy start, deployment without terminal
-proof, elapsed time, and unavailable task creation are never successful `ship`
-outcomes. A blocker ends this attempt with one bounded repair packet; do not
-create or start another attempt automatically.
+After admission, follow [release promotion](release-promotion.md). Merge through
+the protected path, deploy the exact candidate, prove every affected production
+capability, publish applicable notes, and finish safe task-owned cleanup.
+
+The only successful outcome is `SHIPPED`. A blocker or wait creates an
+`incomplete` checkpoint and leaves the same goal active. Production live with
+unfinished notes or cleanup is still incomplete; resume and finish it here.

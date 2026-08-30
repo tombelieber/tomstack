@@ -2,40 +2,48 @@
 
 ## What it does
 
-Carries one approved software goal to the boundary named by the current
-command. `pr` delivers a verified open, unmerged PR. `ship` keeps the invoking
-task accountable through implementation, PR qualification, merge, deployment
-or public distribution, and production proof. Direct `release` promotes an
-existing PR in its invoking task.
+Carries one approved software goal to exactly one of two successful outcomes:
 
-`pr_ready` is terminal only for `pr`; it is an internal admission artifact in
-`ship`. `ship` and `release` finish only as `released` or `blocked`. A merge or
-successful deploy without exact production reachability is not completion.
+- `PR_READY`: an open, unmerged PR is fully production-release-ready. Its only
+  remaining product action is production release or deployment.
+- `SHIPPED`: the exact candidate is merged, released or distributed, deployed
+  where applicable, proven on the real production capability, documented, and
+  cleaned up with zero scoped leftovers.
+
+`pr` targets `PR_READY`. `ship` targets `SHIPPED`; `release`, `promote`, and
+`deploy` are aliases for that same goal, not separate modes. A merge, tag, or
+successful deployment without exact production proof is not `SHIPPED`.
+
+An attempt may end as incomplete, waiting, blocked, or failed without ending
+the goal. The invoking task stays accountable and resumes through safe repair,
+changed evidence, or external-state progress until it reaches its requested
+outcome.
 
 ## When to reach for it
 
 Invoke `$auto-pilot` after a plan is approved and the desired boundary is clear:
-PR only, same-task PR-to-production delivery, or production promotion of an
-existing PR.
+production-ready PR, or complete same-task delivery to production.
 
 ## Common questions
 
-- Does `pr` deploy? No. It stops at a verified unmerged PR.
-- Does `ship` create a release task? No. The same task owns the full production
-  outcome; optional helpers remain bounded terminal leaves.
-- Can Auto Pilot fix release readiness defects? During `ship`, it fixes directly
-  causal in-scope defects while the PR is still mutable. Direct `release` and an
-  admitted ship candidate remain immutable.
+- Does `pr` deploy? No. It stops only at `PR_READY`.
+- Does `ship` create a release task? No. The same task owns the full `SHIPPED`
+  outcome; optional helpers remain bounded leaves.
+- Can Auto Pilot fix release-readiness defects? Yes. It repairs directly causal,
+  in-scope defects before binding an immutable attempt. If evidence changes or
+  an attempt fails safely, it creates a linked attempt in the same task rather
+  than locking the goal or blindly replaying a mutation.
 - Is there a release timer? No arbitrary conversation or whole-task cutoff.
-  Auto Pilot waits through bounded status reads; a real provider or repository
-  timeout can still block.
-- What if no production path exists? It blocks before merge and returns one
-  bounded repair packet.
+  Auto Pilot waits through bounded status reads and resumes after real external
+  progress.
+- What if production is temporarily unreachable? Record an incomplete attempt,
+  preserve the evidence, and continue the active goal in this same task when
+  safe progress becomes possible.
 
 ## It's working if
 
-A `pr` result has an exact-candidate-qualified open PR. A `ship` or `release`
-result binds the admitted candidate and installed contract, reaches production
-through the repository-owned path, and proves the exact deployed capability.
-Release-note or task-owned local cleanup failures after live proof remain
-explicit closeout warnings; they do not rewrite `released` as `blocked`.
+A `PR_READY` result has an exact-candidate-qualified open PR whose only next
+product action is production release or deployment. A `SHIPPED` result binds
+the admitted candidate and installed contract, reaches production through the
+repository-owned path, proves the exact deployed capability, completes release
+notes and task-owned cleanup, and leaves no scoped TODO or follow-up.

@@ -1,169 +1,141 @@
 ---
 name: auto-pilot
-description: "Finish one approved software goal at the boundary named by the current command. `pr` delivers a verified unmerged PR. `ship` keeps the same accountable task through PR, merge, deploy or distribution, and production proof. `release` promotes an existing PR in the current task. Ship and release end only as released or blocked, never at PR readiness or merge-only."
 disable-model-invocation: true
+description: "Finish one approved software goal at exactly one of two successful boundaries: PR_READY, meaning the open candidate is fully production-release-ready and only the production action remains; or SHIPPED, meaning the exact candidate is live and proven in production with zero scoped leftovers. The invoking task remains accountable and resumable through waits, repairs, retries, and changed external state."
 ---
 
 # Auto Pilot
 
-Use one explicit command at the start of the prompt:
+Start with one explicit goal mode:
 
 ```text
 $auto-pilot pr /path/to/approved-plan.md
 $auto-pilot ship /path/to/approved-plan.md
-$auto-pilot release <PR URL or number>
 ```
 
-`pr` owns implementation through an open, unmerged, production-ready PR.
-`ship` is one end-to-end production mandate: the same accountable task owns
-implementation, PR, merge, deployment, and production proof. `release` starts
-from a live existing PR and owns promotion in the current task. Do not create a
-user-visible continuation task for either command.
+`release`, `promote`, and `deploy` are compatibility aliases for `ship` starting
+from an existing candidate. They are telemetry, not a third goal mode.
 
-Read [receipt schema](references/receipt-schema.md) before recording an internal
-`pr_ready` handoff or any terminal result. For implementation, read
-[owner-directed execution](references/delegated-implementation.md). For `ship`,
-read [in-task promotion](references/automatic-promotion.md). Before any merge or
-external mutation, read [release promotion](references/release-promotion.md).
+Read [receipt schema](references/receipt-schema.md) before producing evidence.
+Read [owner-directed execution](references/delegated-implementation.md) before
+implementation. For `ship` and its aliases, also read
+[in-task promotion](references/automatic-promotion.md) and, before merge or any
+production mutation, [release promotion](references/release-promotion.md).
+
+## The only two successful end states
+
+1. `PR_READY` — one open, unmerged PR is fully production-release-ready. The
+   exact head and current base are qualified, required CI is current, the real
+   release path and preflight are proven, credentials/configuration/migrations/
+   recovery inputs are ready or explicitly not applicable, and every scoped
+   implementation, review, test, documentation, and readiness item is complete.
+   The only remaining action is the protected production release.
+2. `SHIPPED` — the exact candidate is merged, released or distributed, and
+   proven through each affected production capability. Applicable release notes
+   and safe task-owned cleanup are complete. There is no scoped TODO, follow-up,
+   actionable warning, or leftover.
+
+`waiting`, `blocked`, `incomplete`, and `unknown` are resumable statuses, not
+achieved goal end states. An open PR, merge, deploy start, healthy process, or
+successful deployment without exact production proof is never `SHIPPED`.
+
+## Keep the invoking task accountable
+
+1. The task that receives the command owns the goal until `PR_READY` or
+   `SHIPPED`. Native compaction, Stop, SessionEnd, waiting, a failed attempt, or
+   a final response does not transfer ownership and does not make later turns
+   read-only.
+2. Continue ordinary follow-up in the same task. If the user supplies missing
+   input or external state changes, resume there without requiring another
+   `$auto-pilot` command, session, or task.
+3. Optional collaboration helpers are bounded terminal leaves. They may not
+   spawn, fork, create another owner task, delegate, merge, deploy, migrate,
+   roll back, or own production. Their result returns to the invoking owner.
+4. Never abandon the goal merely because CI, deployment, review, or observation
+   takes time. Use bounded status reads or the runtime wait mechanism and keep
+   working through normal failures.
 
 ## Resolve preferences
 
 Read [configuration](references/configuration.md) and run its resolver once for
-a real invocation. Current-invocation flags override optional user config,
-which overrides defaults. Model and thinking values are preferences, not
-evidence or authority. They never cause a `ship` or `release` handoff.
+a real invocation. Invocation flags override optional user config, which
+overrides defaults. Preferences never transfer goal ownership. State the
+resolved implementation preference and target end state in one concise update.
 
-State the resolved implementation preference and the requested terminal
-boundary in one concise commentary update. Never describe a collaboration
-subagent as an independent Codex task or substitute one execution kind for
-another.
+## Build one release-ready candidate
 
-## Select the terminal promise
+1. Resolve the approved artifact and repository truth. Discover the real
+   release, migration, rollback, verification, and cleanup owners immediately.
+2. Run the release dry-run/preflight while the PR is mutable. Surface affected
+   scope, credential presence, configuration, deploy targets, migrations or
+   backfills, locks/drafts, recovery inputs, notes, cleanup policy, and the
+   required impact-selected production cases.
+3. Implement, review once after integration, fix directly causal in-scope
+   defects, verify, commit, push, and open one final PR. Use focused checks while
+   the head moves; run the complete required exact-candidate gate on the head
+   intended for promotion.
+4. Prove the `production-release-ready` check. If any deterministic readiness
+   input is missing, safely repair it in the same task while the candidate is
+   mutable. Pause only for genuine authority, credential, destructive-data,
+   billing, incompatible migration, safety, or ambiguous-remote-state decisions.
+5. For `pr`, validate a schema-v9 `PR_READY` receipt and stop before merge. For
+   `ship`, treat readiness as an internal transition and continue immediately.
 
-1. Use `pr` by default: implement, verify, open the PR, and finish as `pr_ready`
-   or `blocked`. It grants no merge or production authority.
-2. Use `ship` only from the explicit subcommand, `--then-release`, or a direct
-   current imperative to implement and go live. It grants routine in-scope PR
-   merge, migration, deploy, distribution, impact-selected canary, production
-   verification, and release-note actions without another confirmation.
-3. Use `release` only from an explicit current `release` or `promote` command
-   naming an existing candidate.
-4. A `ship` or `release` invocation ends only as `released` or `blocked`.
-   `pr_ready`, an open PR, a merge, a deployment start, and a successful deploy
-   without production proof are not terminal success.
-5. If no production or public distribution path exists, return `blocked`
-   before merge. Never convert that absence into merge-only success.
+## Ship to production
 
-Production authority remains bounded to the approved scope. Stop for destructive
-user-data repair, a changed product scope, a new secret or permission, billing
-or material spend, an incompatible migration decision, or ambiguous remote
-state. Routine release mechanics already covered by `ship` or `release` do not
-need another prompt.
+1. Bind the live head, current promotable base, required CI, impact scope,
+   installed contract digest, goal ID, attempt ID, release plan, and recovery
+   inputs immediately before irreversible mutation. The binding is immutable
+   and single-use for that attempt only; it never seals the task or goal.
+2. If a pre-mutation fact changes, do not use the stale binding. Diagnose and
+   fix the in-scope cause, or wait for the required state, then create a new
+   linked attempt in this same task. Do not blindly rerun an unchanged mutation.
+3. Merge through the protected repository path, resolve the exact merged SHA,
+   and run the repository release owner. After mutation, reconcile actual remote
+   state before any repository-defined bounded recovery; never guess whether a
+   failed command changed production.
+4. Prove each affected capability through its real actor, credential class,
+   resource scope, entry point, runtime principal, representative data, exact
+   deployed identity, and terminal outcome. When authorization changed, prove
+   both an allowed and denied principal at the real boundary.
+5. Complete every applicable release-note and safe task-owned cleanup action.
+   A failure here is a valid `incomplete` checkpoint even if production is live;
+   repair it in the same task before claiming `SHIPPED`.
 
-## Keep one accountable controller
+## Persist without looping or giving up
 
-1. The active owner works directly and remains responsible for the terminal
-   promise. Native compaction continues the same task.
-2. A `ship` run must not hand unfinished implementation or release ownership to
-   another user-visible task. If collaboration is explicitly available and
-   useful, bounded helpers are terminal leaves; they cannot spawn, fork, create
-   another task, delegate, merge, deploy, migrate, roll back, or own production.
-3. Give parallel writers non-overlapping paths or isolated worktrees. Fan
-   results back once, then review the integrated candidate once rather than
-   reviewing each worker, commit, or partial change.
-4. Share repository state, Git identities, test artifacts, and compact
-   handoffs—not copied conversation history or hidden reasoning.
-
-## PR and ship preparation
-
-1. Resolve the approved artifact and repository truth. For `ship`, discover the
-   real release owner and prove a production or distribution path immediately,
-   before spending the final exact-candidate gate.
-2. Run the repository dry-run/preflight early enough to expose deterministic
-   release inputs: affected scope, credential presence, migration/backfill and
-   rollback boundaries, release lock/draft state, deploy targets, and required
-   production proof. Fix directly causal in-scope defects on the same PR while
-   it is still mutable.
-3. Integrate implementation, perform one consolidated review, patch findings,
-   commit, push, and open one final PR. Use focused evidence while the head is
-   moving; run the complete repository-required exact-candidate gate only on
-   the head intended to merge.
-4. An open PR reaches `pr_ready` only with promotable PASS exact-candidate
-   evidence and current required CI for its live head. FAIL, BYPASS, missing,
-   stale, unpromotable, or scope-mismatched evidence is not ready.
-5. In `pr`, emit the terminal `pr_ready` receipt and stop without merge or
-   production mutation. In `ship`, write and hash that receipt as an internal
-   immutable handoff, but do not send a final response: `pr_ready` is an
-   internal transition, never the final result of `ship`.
-6. Immediately bind the admitted candidate to the current promotable base. If
-   the base or head changes after admission, stop `blocked`; do not refresh,
-   requalify, re-admit, or start another attempt automatically.
-
-## Release execution
-
-1. At the start of every release turn, reload this installed `SKILL.md`,
-   [release promotion](references/release-promotion.md), and
-   [receipt schema](references/receipt-schema.md).
-2. For direct `release`, create a fresh read-only `pr_ready` receipt from the
-   live exact candidate when no valid prior receipt is available. Do not treat
-   a missing file from another task as a blocker when current repository
-   evidence can establish the same facts. The candidate remains immutable:
-   do not repeat implementation, edit source, create commits or branches, open
-   another PR, or repair CI or release tooling in release mode.
-3. Complete one pre-mutation admission packet and bind its receipt SHA-256,
-   installed contract SHA-256, current base/head, required CI, impact scope,
-   dry-run plan, credential presence, and recovery inputs.
-4. Do not impose an arbitrary whole-task wall-clock cutoff. Wait for CI,
-   deployment, and observation in the current task using bounded status reads
-   or the product wait mechanism. A provider or repository timeout may still be
-   a real blocker; elapsed conversation time or approval waiting is not.
-5. Merge through the normal protected path, re-resolve the merge SHA, then run
-   the repository release owner once. Use only its declared bounded recovery
-   for eligible transient or incomplete post-mutation phases of the unchanged
-   admitted plan.
-6. Prove the exact deployed candidate and each affected capability through its
-   actor, credential class, resource scope, entry point, runtime principal,
-   representative data, and terminal outcome. Deployment alone is not proof.
-7. Publish the canonical note when the repository has one and attempt safe
-   task-owned worktree/branch cleanup. Note or local cleanup failures must be
-   reported as closeout warnings. Local cleanup failure does not rewrite a
-   proven live production release as blocked.
-
-## Stop without looping
-
-- Before mutation, a genuine deterministic blocker ends the single attempt with
-  one bounded repair packet. Do not repair, requalify, create a follow-up PR, or
-  start a fresh release attempt automatically.
-- After mutation, reconcile exact remote state before the one repository-defined
-  bounded recovery. Never blindly retry or guess whether a command mutated
-  production.
-- PR readiness, merge success, unavailable task/thread creation, elapsed time,
-  approval waiting, a missing separately published note after production is
-  proven live, and local cleanup are not production blockers.
-- A terminal `blocked` or `released` response permanently seals the release
-  attempt. Later turns are read-only discussion.
+- Retry ordinary deterministic work only after diagnosing a cause and changing
+  the relevant code, input, or external state. Preserve prior receipt hashes
+  and use a new attempt ID.
+- Authentication, authorization, checksum, source-integrity, candidate, or
+  safety failures are never blind-retried.
+- External pending state remains active and monitored in this task. Missing user
+  authority becomes `waiting` with one exact requested input; once supplied,
+  continue in the same task.
+- A checkpoint may describe the last safe boundary and next safe action, but it
+  must not call itself a third terminal outcome, completion, or permanent seal.
 
 ## Prove completion
 
-Create and validate the version 8 receipt:
+Create and validate a version-9 receipt:
 
 ```bash
 python3 <skill-dir>/scripts/validate_receipt.py <receipt.json>
 ```
 
-For a final `ship` or `release` result, use receipt mode `release` and terminal
-state `released` or `blocked`. Never emit a merge-only terminal state.
-`released` requires exact production/distribution reachability; closeout
-warnings stay explicit in the receipt. The final visible content for `released`
-must end with the exact Markdown stored in `release.message`.
+An achieved receipt has `goal.achieved` equal to `PR_READY` or `SHIPPED`,
+`attempt.result: achieved`, and `open_items: []`. An unfinished attempt has
+`goal.achieved: null`, `attempt.result: incomplete`, and at least one structured
+`open_items` entry; it keeps the goal active.
 
-Append one routing marker, then the receipt marker:
+Append one routing marker and the receipt marker:
 
 ```text
-<!-- auto-pilot-routing: {"goal_id":null,"implementation":{"lane":"direct","task_ref":null,"worktree":null,"model":"gpt-5.6-sol","thinking":"xhigh","reason":"Owner completed the work in the current task."},"continuation":{"lane":"current_ship_task","task_ref":null,"worktree":null,"model":"gpt-5.6-sol","thinking":"xhigh","reason":"The same task continued through production."}} -->
+<!-- auto-pilot-routing: {"goal_id":"apg_...","implementation":{"lane":"direct","task_ref":null,"worktree":null,"model":"gpt-5.6-sol","thinking":"xhigh","reason":"The invoking task remained accountable."},"continuation":{"lane":"current_ship_task","task_ref":null,"worktree":null,"model":"gpt-5.6-sol","thinking":"xhigh","reason":"The same task continued through production."}} -->
 <!-- auto-pilot-receipt: /absolute/path/to/receipt.json -->
 ```
 
-Use `not_requested` for `pr` and `current_release_task` for direct `release`.
-Optional helpers do not replace the accountable implementation lane. Do not
-commit agent-control artifacts unless the repository explicitly requires them.
+Use `continuation.lane: not_requested` for `pr` and `current_ship_task` for
+`ship` plus every alias. For `SHIPPED`, the final visible content must end with
+the exact Markdown stored in `release.message`. Do not commit agent-control
+artifacts unless the repository explicitly requires them.

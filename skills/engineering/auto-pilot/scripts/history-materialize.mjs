@@ -7,6 +7,7 @@ import {
   readFileSync,
   readdirSync,
   renameSync,
+  rmSync,
   statSync,
   writeFileSync,
 } from 'node:fs'
@@ -25,14 +26,19 @@ const TOKEN_FIELDS = [
 ]
 const GOAL_ID = /^apg_[A-Za-z0-9_-]{12,80}$/
 export const CODEX_PARSER_VERSION = 1
-export const MATERIALIZER_VERSION = 1
+export const MATERIALIZER_VERSION = 3
 
 export async function materializePendingRuns({dataRoot, schemaVersion, now = () => new Date()} = {}) {
   const root = join(dataRoot, 'runs')
   if (!safeDirectory(root)) return {scanned: 0, materialized: 0, unavailable: 0, failed: 0, errors: []}
 
   const result = {scanned: 0, materialized: 0, unavailable: 0, failed: 0, errors: []}
-  for (const name of readdirSync(root)) {
+  const names = readdirSync(root).sort((left, right) => {
+    const leftManifest = readJson(join(root, left, 'manifest.json'))
+    const rightManifest = readJson(join(root, right, 'manifest.json'))
+    return `${leftManifest?.started_at || ''}\0${left}`.localeCompare(`${rightManifest?.started_at || ''}\0${right}`)
+  })
+  for (const name of names) {
     const directory = join(root, name)
     if (!safeDirectory(directory)) continue
     const manifest = readJson(join(directory, 'manifest.json'))
@@ -80,15 +86,25 @@ export async function materializeRun(directory, manifest, {schemaVersion, now = 
   const invocationSchemaVersion = Number.isInteger(manifest.invocation_schema_version)
     ? manifest.invocation_schema_version
     : manifest.schema_version
-  const expectedReceiptMode = invocationSchemaVersion >= 5 && manifest.continuation === 'release'
-    ? 'release'
-    : manifest.mode
+  const expectedReceiptMode = invocationSchemaVersion >= 6
+    ? manifest.goal_mode
+    : invocationSchemaVersion >= 5 && manifest.continuation === 'release'
+      ? 'release'
+      : manifest.mode
   const routing = auditRouting({message: finalMessage, manifest, subagents: agents.length})
   const collectedCompletion = collectCompletionReceipt(
     finalMessage,
     expectedReceiptMode,
     directory,
-    {validatorPath: archivedValidatorPath(directory, manifest)},
+    {
+      validatorPath: archivedValidatorPath(directory, manifest),
+      expectedGoalId: invocationSchemaVersion >= 6 ? manifest.goal_id : null,
+      expectedLineage: invocationSchemaVersion >= 6 ? {
+        previous_receipt_sha256: manifest.expected_previous_receipt_sha256 || null,
+        attempt_ids: Array.isArray(manifest.prior_attempt_ids) ? manifest.prior_attempt_ids : [],
+        completion_scope: manifest.expected_completion_scope || null,
+      } : null,
+    },
   )
   const completion = enforceReleaseRouting(
     collectedCompletion,
@@ -140,11 +156,25 @@ export async function materializeRun(directory, manifest, {schemaVersion, now = 
   }
   writePrivateJson(join(directory, 'metrics.json'), metrics)
 
-  const terminalState = completion.terminal_state
+  const terminalState = completion.legacy_terminal_state || completion.terminal_state
+  const goalOutcome = completion.goal_outcome || null
+  const attemptResult = completion.attempt_result || 'unknown'
+  const goalStatus = invocationSchemaVersion >= 6
+    ? goalOutcome ? 'achieved' : attemptResult === 'incomplete' ? 'waiting' : 'active'
+    : 'legacy_unknown'
   writePrivateJson(join(directory, 'outcome.json'), {
     schema_version: schemaVersion,
     run_id: manifest.run_id,
     terminal_state: terminalState,
+    attempt_result: attemptResult,
+    attempt_id: completion.attempt_id || null,
+    attempt_basis: completion.attempt_basis || null,
+    previous_receipt_sha256: completion.previous_receipt_sha256 || null,
+    completion_scope: completion.completion_scope || null,
+    completion_scope_sha256: completion.completion_scope_sha256 || null,
+    goal_target: completion.goal_target || manifest.goal_target || null,
+    goal_outcome: goalOutcome,
+    legacy_terminal_state: completion.legacy_terminal_state || null,
     completion_receipt: completion.evidence,
     collection_reason: terminal.reason || 'post_hoc',
     ended_at: endedAt.toISOString(),
@@ -157,6 +187,16 @@ export async function materializeRun(directory, manifest, {schemaVersion, now = 
     collector_version: manifest.collector_version ?? invocationSchemaVersion,
     status: 'finished',
     terminal_state: terminalState,
+    attempt_result: attemptResult,
+    attempt_id: completion.attempt_id || null,
+    attempt_basis: completion.attempt_basis || null,
+    previous_receipt_sha256: completion.previous_receipt_sha256 || null,
+    completion_scope: completion.completion_scope || null,
+    completion_scope_sha256: completion.completion_scope_sha256 || null,
+    goal_status: goalStatus,
+    goal_target: completion.goal_target || manifest.goal_target || null,
+    goal_outcome: goalOutcome,
+    legacy_terminal_state: completion.legacy_terminal_state || null,
     ended_at: endedAt.toISOString(),
     model: metrics.model,
     effort: metrics.effort,
@@ -168,11 +208,18 @@ export async function materializeRun(directory, manifest, {schemaVersion, now = 
     materializer_version: MATERIALIZER_VERSION,
     materialized_at: now().toISOString(),
   })
+  reconcileActiveGoal(directory, manifest, completion, {
+    invocationSchemaVersion,
+    goalId: goal.id,
+    goalOutcome,
+    attemptResult,
+    endedAt,
+  })
   return {collectionComplete, runId: manifest.run_id}
 }
 
 export function enforceReleaseRouting(completion, routing, manifest, invocationSchemaVersion = manifest.schema_version) {
-  if (invocationSchemaVersion < 5 || completion.terminal_state !== 'released') return completion
+  if (invocationSchemaVersion >= 6 || invocationSchemaVersion < 5 || completion.terminal_state !== 'released') return completion
   const expectedLane = manifest.mode === 'release'
     ? 'current_release_task'
     : manifest.continuation === 'release'
@@ -194,7 +241,7 @@ export function enforceReleaseRouting(completion, routing, manifest, invocationS
 
 function archivedValidatorPath(directory, manifest) {
   const hash = manifest.skill_bundle_sha256
-  if (!/^[a-f0-9]{64}$/.test(hash || '')) return undefined
+  if (!/^[a-f0-9]{64}$/.test(hash || '')) return null
   const candidate = join(
     dirname(dirname(directory)),
     'versions',
@@ -204,6 +251,40 @@ function archivedValidatorPath(directory, manifest) {
     'validate_receipt.py',
   )
   return regularFile(candidate) ? candidate : null
+}
+
+function reconcileActiveGoal(directory, manifest, completion, state) {
+  if (state.invocationSchemaVersion < 6 || !manifest.session_id) return
+  const dataRoot = dirname(dirname(directory))
+  const path = join(dataRoot, 'active-goals', `${safeSegment(manifest.session_id)}.json`)
+  const active = readJson(path)
+  if (!active || active.goal_id !== state.goalId) return
+  const activeRun = Date.parse(active.latest_run_started_at || '')
+  const materializedRun = Date.parse(manifest.started_at || '')
+  if (Number.isFinite(activeRun) && Number.isFinite(materializedRun) && activeRun > materializedRun) return
+  if (state.goalOutcome && completion.evidence?.status === 'valid') {
+    rmSync(path, {force: true})
+    return
+  }
+  const validAttempt = completion.evidence?.status === 'valid' && state.attemptResult === 'incomplete'
+  const attemptIds = Array.isArray(active.attempt_ids) ? active.attempt_ids : []
+  const nextAttemptIds = validAttempt && completion.attempt_id && !attemptIds.includes(completion.attempt_id)
+    ? [...attemptIds, completion.attempt_id]
+    : attemptIds
+  writePrivateJson(path, {
+    ...active,
+    status: validAttempt ? 'waiting' : 'active',
+    last_attempt_result: state.attemptResult,
+    last_receipt_sha256: validAttempt ? completion.evidence.receipt_sha256 : active.last_receipt_sha256 ?? null,
+    last_attempt_id: validAttempt ? completion.attempt_id : active.last_attempt_id ?? null,
+    attempt_ids: nextAttemptIds,
+    last_completion_scope: validAttempt ? completion.completion_scope : active.last_completion_scope ?? null,
+    last_completion_scope_sha256: validAttempt
+      ? completion.completion_scope_sha256
+      : active.last_completion_scope_sha256 ?? null,
+    last_materialized_started_at: manifest.started_at || null,
+    updated_at: state.endedAt.toISOString(),
+  })
 }
 
 export async function parseCodexTranscript(path, {startBytes = 0, endBytes, turnId = null} = {}) {
@@ -417,6 +498,12 @@ function topologySummary(root, agents) {
 }
 
 function goalEvidence(manifest, routing) {
+  if ((manifest.invocation_schema_version ?? manifest.schema_version) >= 6) {
+    if (typeof manifest.goal_id === 'string' && GOAL_ID.test(manifest.goal_id)) {
+      const source = manifest.goal_id_source || 'generated'
+      return {id: manifest.goal_id, source, sources: manifest.goal_id_sources || [source]}
+    }
+  }
   const declared = routing?.declared?.goal_id
   if (typeof declared === 'string' && GOAL_ID.test(declared)) {
     const sources = manifest.goal_id === declared && manifest.goal_id_source === 'invocation_marker'

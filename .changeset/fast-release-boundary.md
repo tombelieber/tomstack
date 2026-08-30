@@ -2,8 +2,9 @@
 "tomstack-skills": minor
 ---
 
-Make Auto Pilot `ship` own the complete production outcome in one task. Require
-`ship` and `release` to end only as `released` or `blocked`, block before merge
-when no production path exists, remove the arbitrary whole-task timer, preserve
-exact-candidate admission, and keep note or local cleanup failures as closeout
-warnings after production is proven live.
+Reduce Auto Pilot to two achieved goal outcomes. `PR_READY` now proves the exact
+open candidate is fully production-release-ready and only the production action
+remains. `SHIPPED` now requires exact production proof plus applicable notes,
+cleanup, and zero scoped leftovers. Release, promote, and deploy normalize to
+ship. Incomplete attempts remain resumable in the invoking task; immutable
+admission binds one attempt and never seals the task, goal, or later turns.
