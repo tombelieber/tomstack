@@ -19,7 +19,7 @@ import {materializePendingRuns} from './history-materialize.mjs'
 import {snapshotCompletionReceipt} from './history-receipt.mjs'
 import {resolveAutoPilotConfig} from './resolve_config.mjs'
 
-export const AUTO_PILOT_VERSION = '0.13.0'
+export const AUTO_PILOT_VERSION = '0.13.1'
 export const HISTORY_SCHEMA_VERSION = 6
 export const DEFAULT_RAW_RETENTION_DAYS = 90
 
