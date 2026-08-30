@@ -1,5 +1,12 @@
 # tomstack-skills
 
+## 0.2.2
+
+### Patch Changes
+
+- [#10](https://github.com/tombelieber/tomstack/pull/10) [`72e097b`](https://github.com/tombelieber/tomstack/commit/72e097bcbb234594dffd19ffc6e677803d1d0d8c) Thanks [@tombelieber](https://github.com/tombelieber)! - Align canonical Auto Pilot history metadata with the v0.13.1 marketplace
+  distribution and fail the repository contract if these versions drift again.
+
 ## 0.2.1
 
 ### Patch Changes
