@@ -1,5 +1,12 @@
 # tomstack-skills
 
+## 0.2.1
+
+### Patch Changes
+
+- [#8](https://github.com/tombelieber/tomstack/pull/8) [`09c5eae`](https://github.com/tombelieber/tomstack/commit/09c5eaefaea229cede5f9fbc6fcd6543e5695ad9) Thanks [@tombelieber](https://github.com/tombelieber)! - Pin the Auto Pilot marketplace distribution to v0.13.1, which documents and
+  proves the actual GitHub install path and supports npm 12 Git admission.
+
 ## 0.2.0
 
 ### Minor Changes
