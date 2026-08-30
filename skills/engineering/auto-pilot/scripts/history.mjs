@@ -19,8 +19,8 @@ import {materializePendingRuns} from './history-materialize.mjs'
 import {snapshotCompletionReceipt} from './history-receipt.mjs'
 import {resolveAutoPilotConfig} from './resolve_config.mjs'
 
-export const AUTO_PILOT_VERSION = '0.11.0'
-export const HISTORY_SCHEMA_VERSION = 4
+export const AUTO_PILOT_VERSION = '0.13.0'
+export const HISTORY_SCHEMA_VERSION = 6
 export const DEFAULT_RAW_RETENTION_DAYS = 90
 
 const SELECTED_SKILL = /^\s*\[\$auto-pilot\]\([^\r\n)]*[/\\]auto-pilot[/\\]SKILL\.md(?:#[^\r\n)]*)?\)(?=\s|$)/i
@@ -28,7 +28,7 @@ const LEADING_SKILL = /^\s*\$auto-pilot(?=\s|$)/i
 const GOAL_MARKER = /<!--\s*auto-pilot-goal:\s*(apg_[A-Za-z0-9_-]{12,80})\s*-->/i
 const NON_EXECUTION_REQUEST = /(?:do not|don't|dont|never)\s+(?:start|run|execute)|(?:just|only)\s+(?:confirm|answer|advise|explain|review|analyse|analyze)|what\s+do\s+you\s+think|how\s+(?:do|can|should|would)\b[^\r\n]{0,80}\b(?:improve|optimise|optimize|design)|\b(?:improve|optimise|optimize|review|analyse|analyze)\b[^\r\n]{0,80}\b(?:skill|auto[ -]?pilot)|(?:優化|改善|檢討)[^\r\n]{0,40}(?:skill|auto[ -]?pilot)|不要(?:開始|執行)|唔好(?:開始|執行)|只(?:需|要)?[^\r\n]{0,12}(?:確認|回答|建議|解釋|分析)|有冇足夠[^\r\n]{0,40}(?:開始|執行)/i
 const NO_RELEASE_CONTINUATION = /(?:do not|don't|dont|never|without)\s+(?:merge|release|deploy|ship|go\s+live)|(?:不要|唔好|不用|唔使|毋須)[^\r\n]{0,20}(?:release|deploy|ship|merge|發布|發佈|上線)/i
-const RELEASE_CONTINUATION = /--then-release\b|(?:finish|complete|implement|build|fix|do)\b[^\r\n]{0,100}\b(?:and|then)\b[^\r\n]{0,30}\b(?:merge|release|deploy|ship|go\s+live)\b|(?:after|once|when)\b[^\r\n]{0,100}\b(?:release|deploy|ship|go\s+live)\b|(?:merge)\b[^\r\n]{0,30}\b(?:and|then)\b[^\r\n]{0,20}\b(?:release|deploy|ship|go\s+live)\b|(?:完成|做完|搞掂)[^\r\n]{0,60}(?:之後|後|然后|然後|並|同埋|再|就)[^\r\n]{0,30}(?:release|deploy|ship|發布|發佈|上線)|(?:直接|自動)[^\r\n]{0,20}(?:release|deploy|ship|發布|發佈|上線)/i
+const RELEASE_CONTINUATION = /--then-release\b|(?:finish|complete|implement|build|fix|do)\b[^\r\n]{0,100}\b(?:and|then)\b[^\r\n]{0,30}\b(?:merge|release|deploy|ship|go\s+live)\b|(?:after|once|when)\b[^\r\n]{0,100}\b(?:release|deploy|ship|go\s+live)\b|(?:merge)\b[^\r\n]{0,30}\b(?:and|then)\b[^\r\n]{0,20}\b(?:release|deploy|ship|go\s+live)\b|\b(?:ship|deploy|release)\s+(?:it|this|that)\b|\bgo\s+live\b|(?:完成|做完|搞掂)[^\r\n]{0,60}(?:之後|後|然后|然後|並|同埋|再|就)[^\r\n]{0,30}(?:release|deploy|ship|發布|發佈|上線)|(?:直接|自動|幫我|請)[^\r\n]{0,20}(?:release|deploy|ship|發布|發佈|上線)/i
 const AMBIGUOUS_RELEASE_CONTINUATION = [
   /[?？]\s*$/,
   /\b(?:can|could|should|would|may|might|whether)\b[^\r\n]{0,100}\b(?:merge|release|deploy|ship|go\s+live)\b/i,
@@ -58,16 +58,21 @@ export function parseAutoPilotInvocation(prompt) {
 
   const argument = prompt.slice(match[0].length).trim()
   if (NON_EXECUTION_REQUEST.test(argument)) return null
-  const subcommand = argument.match(/^(pr|release|promote|ship)(?=\s|$)/i)?.[1]?.toLowerCase() || null
-  const releaseMode = subcommand === 'release' || subcommand === 'promote'
+  const subcommand = argument.match(/^(pr|ship|release|promote|deploy)(?=\s|$)/i)?.[1]?.toLowerCase() || null
+  const invokedAlias = ['release', 'promote', 'deploy'].includes(subcommand) ? subcommand : null
   const explicitContinuation = subcommand === 'ship' || /--then-release\b/i.test(argument)
-  const continuation = !releaseMode && !NO_RELEASE_CONTINUATION.test(argument)
-    && (explicitContinuation || (!ambiguousReleaseContinuation(argument) && RELEASE_CONTINUATION.test(argument)))
-    ? 'release'
-    : null
+  const shipGoal = Boolean(invokedAlias) || (
+    subcommand === 'ship'
+    || (!NO_RELEASE_CONTINUATION.test(argument)
+      && (explicitContinuation || (!ambiguousReleaseContinuation(argument) && RELEASE_CONTINUATION.test(argument))))
+  )
+  const goalMode = shipGoal ? 'ship' : 'pr'
   return {
-    mode: releaseMode ? 'release' : 'pr',
-    continuation,
+    goal_mode: goalMode,
+    invoked_alias: invokedAlias,
+    input_kind: invokedAlias ? 'existing_candidate' : 'plan_or_goal',
+    mode: goalMode,
+    continuation: null,
     invocation_source: command ? 'leading_command' : 'leading_skill_selection',
     explicit_subcommand: subcommand,
     goal_id: argument.match(GOAL_MARKER)?.[1] || null,
@@ -87,8 +92,22 @@ export async function handleHookEvent(event, options = {}) {
   switch (event.hook_event_name) {
     case 'UserPromptSubmit':
       {
-        const invocation = parseAutoPilotInvocation(event.prompt)
-        if (!invocation) return {handled: false, reason: 'not_auto_pilot'}
+        await materializeHistory({dataRoot, now})
+        let invocation = parseAutoPilotInvocation(event.prompt)
+        if (!invocation) {
+          const active = readActiveGoal(dataRoot, event.session_id)
+          if (!active) return {handled: false, reason: 'not_auto_pilot'}
+          invocation = {
+            goal_mode: active.goal_mode,
+            invoked_alias: active.invoked_alias,
+            input_kind: active.input_kind,
+            mode: active.goal_mode,
+            continuation: null,
+            invocation_source: 'active_goal_resume',
+            explicit_subcommand: null,
+            goal_id: active.goal_id,
+          }
+        }
         return startRun(event, {dataRoot, now, invocation, env})
       }
     case 'SubagentStop':
@@ -114,8 +133,18 @@ function startRun(event, {dataRoot, now, invocation, env}) {
     schema_version: HISTORY_SCHEMA_VERSION,
     auto_pilot_version: AUTO_PILOT_VERSION,
   })
+  const active = readActiveGoal(dataRoot, event.session_id)
+  const requestedGoalId = invocation.goal_id || null
+  const canResume = Boolean(active && (!requestedGoalId || requestedGoalId === active.goal_id))
+  const goalMode = canResume && active.goal_mode === 'ship'
+    ? 'ship'
+    : invocation.goal_mode
+  const goalId = canResume ? active.goal_id : requestedGoalId || generatedGoalId(event, now())
+  const invokedAlias = canResume ? active.invoked_alias ?? invocation.invoked_alias : invocation.invoked_alias
+  const inputKind = canResume ? active.input_kind ?? invocation.input_kind : invocation.input_kind
   const manifest = {
     schema_version: HISTORY_SCHEMA_VERSION,
+    invocation_schema_version: HISTORY_SCHEMA_VERSION,
     auto_pilot_version: AUTO_PILOT_VERSION,
     collector_version: HISTORY_SCHEMA_VERSION,
     skill_sha256: installedSkillHash(),
@@ -126,13 +155,23 @@ function startRun(event, {dataRoot, now, invocation, env}) {
     turn_id: event.turn_id,
     status: 'running',
     terminal_state: null,
-    mode: invocation.mode,
-    continuation: invocation.continuation,
+    goal_status: 'active',
+    goal_target: goalMode === 'pr' ? 'PR_READY' : 'SHIPPED',
+    goal_outcome: null,
+    attempt_result: null,
+    goal_mode: goalMode,
+    invoked_alias: invokedAlias,
+    input_kind: inputKind,
+    mode: goalMode,
+    continuation: null,
     invocation_source: invocation.invocation_source,
     explicit_subcommand: invocation.explicit_subcommand,
-    goal_id: invocation.goal_id || runKey(event.session_id, event.turn_id),
-    goal_id_source: invocation.goal_id ? 'invocation_marker' : 'run_id',
-    goal_id_sources: [invocation.goal_id ? 'invocation_marker' : 'run_id'],
+    goal_id: goalId,
+    goal_id_source: canResume ? 'active_goal' : requestedGoalId ? 'invocation_marker' : 'generated',
+    goal_id_sources: [canResume ? 'active_goal' : requestedGoalId ? 'invocation_marker' : 'generated'],
+    expected_previous_receipt_sha256: canResume ? active.last_receipt_sha256 ?? null : null,
+    prior_attempt_ids: canResume && Array.isArray(active.attempt_ids) ? active.attempt_ids : [],
+    expected_completion_scope: canResume ? active.last_completion_scope ?? null : null,
     started_at: now().toISOString(),
     ended_at: null,
     cwd: stringOrNull(event.cwd),
@@ -151,7 +190,24 @@ function startRun(event, {dataRoot, now, invocation, env}) {
     raw_pruned_at: null,
   }
   writePrivateJson(join(directory, 'manifest.json'), manifest)
-  return {handled: true, action: 'started', run_id: manifest.run_id, directory}
+  writeActiveGoal(dataRoot, {
+    schema_version: HISTORY_SCHEMA_VERSION,
+    session_id: event.session_id,
+    goal_id: goalId,
+    goal_mode: goalMode,
+    invoked_alias: invokedAlias,
+    input_kind: inputKind,
+    status: 'active',
+    last_receipt_sha256: canResume ? active.last_receipt_sha256 ?? null : null,
+    last_attempt_id: canResume ? active.last_attempt_id ?? null : null,
+    attempt_ids: canResume && Array.isArray(active.attempt_ids) ? active.attempt_ids : [],
+    last_completion_scope: canResume ? active.last_completion_scope ?? null : null,
+    last_completion_scope_sha256: canResume ? active.last_completion_scope_sha256 ?? null : null,
+    latest_run_started_at: manifest.started_at,
+    last_materialized_started_at: canResume ? active.last_materialized_started_at ?? null : null,
+    updated_at: now().toISOString(),
+  })
+  return {handled: true, action: canResume ? 'resumed' : 'started', run_id: manifest.run_id, directory}
 }
 
 function archiveSubagent(event, {dataRoot, now}) {
@@ -195,7 +251,7 @@ function markRunTerminal(directory, event, {now, reason}) {
   const manifestPath = join(directory, 'manifest.json')
   const manifest = readJson(manifestPath)
   if (!manifest) return {handled: false, reason: 'missing_manifest'}
-  if (manifest.status === 'finished') return {handled: true, action: 'already_finished', run_id: manifest.run_id}
+  if (manifest.status !== 'running') return {handled: true, action: 'already_marked_terminal', run_id: manifest.run_id}
 
   const endedAt = now()
   const transcriptPath = regularFile(event.transcript_path) ? event.transcript_path : manifest.transcript_source
@@ -271,6 +327,7 @@ export function historyStatus(dataRoot = resolveHistoryRoot()) {
     running: runs.filter((run) => run.manifest.status === 'running').length,
     pending_materialization: runs.filter((run) => run.manifest.status === 'pending_materialization').length,
     finished: runs.filter((run) => run.manifest.status === 'finished').length,
+    active_goals: activeGoalCount(dataRoot),
     raw_bytes: rawBytes,
   }
 }
@@ -296,10 +353,22 @@ export async function historyRuns({dataRoot = resolveHistoryRoot(), sinceDays = 
       mode: run.manifest.mode ?? null,
       continuation: run.manifest.continuation ?? null,
       terminal_state: run.manifest.terminal_state,
+      goal_mode: run.manifest.goal_mode ?? null,
+      goal_status: run.manifest.goal_status ?? 'legacy_unknown',
+      goal_target: run.manifest.goal_target ?? null,
+      goal_outcome: run.manifest.goal_outcome ?? null,
+      attempt_result: run.manifest.attempt_result ?? 'unknown',
+      attempt_id: run.manifest.attempt_id ?? null,
+      attempt_basis: run.manifest.attempt_basis ?? null,
+      previous_receipt_sha256: run.manifest.previous_receipt_sha256 ?? null,
+      completion_scope_sha256: run.manifest.completion_scope_sha256 ?? null,
+      legacy_terminal_state: run.manifest.legacy_terminal_state ?? run.manifest.terminal_state ?? null,
+      receipt_schema_version: run.outcome?.completion_receipt?.schema_version ?? null,
       completion_receipt_status: run.outcome?.completion_receipt?.status ?? 'legacy_unverified',
-      benchmark_eligible: run.outcome?.completion_receipt?.status === 'valid'
-        && (run.manifest.schema_version < 4 || run.metrics?.collection_complete === true)
-        && (run.metrics?.subagents === 0 || run.metrics?.subagent_token_accounting_complete === true),
+      delivery_benchmark_eligible: deliveryBenchmarkEligible(run),
+      benchmark_eligible: deliveryBenchmarkEligible(run)
+        && runRoutingStatus(run) === 'passed'
+        && Boolean(runSkillBundle(run)),
       total_tokens: run.metrics?.token_usage_observed === false ? null : (run.metrics?.token_usage?.total_tokens ?? null),
       lifecycle_total_tokens: (
         run.metrics?.subagents === 0
@@ -309,7 +378,7 @@ export async function historyRuns({dataRoot = resolveHistoryRoot(), sinceDays = 
       cached_input_tokens: run.metrics?.token_usage?.cached_input_tokens ?? null,
       tool_calls: run.metrics?.tool_calls ?? null,
       subagents: run.metrics?.subagents ?? null,
-      orchestration_status: run.metrics?.routing?.status ?? run.manifest.orchestration_status ?? 'legacy_unobserved',
+      orchestration_status: runRoutingStatus(run),
       goal_id: run.manifest.goal_id ?? run.manifest.run_id,
       goal_id_source: run.manifest.goal_id_source ?? 'legacy_unlinked',
       goal_id_sources: run.manifest.goal_id_sources ?? [run.manifest.goal_id_source ?? 'legacy_unlinked'],
@@ -327,6 +396,17 @@ export async function historyReport(options = {}) {
   const medianTokens = percentile(totals, 0.5)
   const threshold = medianTokens === null ? null : medianTokens * 2
   const benchmark = runs.filter((run) => run.benchmark_eligible)
+  const deliveryBenchmark = runs.filter((run) => run.delivery_benchmark_eligible)
+  const benchmarkBundles = new Map()
+  for (const run of benchmark) {
+    if (!benchmarkBundles.has(run.skill_bundle_sha256)) benchmarkBundles.set(run.skill_bundle_sha256, [])
+    benchmarkBundles.get(run.skill_bundle_sha256).push(run)
+  }
+  const benchmarkBundleCohorts = Object.fromEntries(
+    [...benchmarkBundles.entries()]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([hash, items]) => [hash, summarizeRuns(items)]),
+  )
   const versions = {}
   for (const run of runs) {
     const version = run.auto_pilot_version || 'unknown'
@@ -337,9 +417,13 @@ export async function historyReport(options = {}) {
   const benchmarkGoals = goals.filter((goal) => goal.benchmark_eligible)
   return {
     runs: runs.length,
+    delivery_benchmark_runs: deliveryBenchmark.length,
     benchmark_runs: benchmark.length,
     excluded_unverified_runs: runs.length - benchmark.length,
     terminal_states: countValues(runs.map((run) => run.terminal_state || 'unknown')),
+    goal_outcomes: countValues(runs.map((run) => run.goal_outcome || 'none')),
+    attempt_results: countValues(runs.map((run) => run.attempt_result || 'unknown')),
+    legacy_terminal_states: countValues(runs.map((run) => run.legacy_terminal_state || 'none')),
     continuations: countValues(runs.map((run) => run.continuation || 'none')),
     orchestration_statuses: countValues(runs.map((run) => run.orchestration_status || 'legacy_unobserved')),
     total_tokens: totals.reduce((sum, value) => sum + value, 0),
@@ -351,6 +435,8 @@ export async function historyReport(options = {}) {
     version_bundles: Object.fromEntries(Object.entries(versions).map(([version, hashes]) => [version, [...hashes].sort()])),
     version_drift: Object.entries(versions).filter(([, hashes]) => hashes.size > 1).map(([version]) => version),
     benchmark: summarizeRuns(benchmark),
+    benchmark_cross_bundle_comparable: benchmarkBundles.size === 1,
+    benchmark_bundle_cohorts: benchmarkBundleCohorts,
     goals: goals.length,
     benchmark_goals: benchmarkGoals.length,
     excluded_unverified_goals: goals.length - benchmarkGoals.length,
@@ -377,6 +463,8 @@ function summarizeRuns(runs) {
   return {
     runs: runs.length,
     terminal_states: countValues(runs.map((run) => run.terminal_state || 'unknown')),
+    goal_outcomes: countValues(runs.map((run) => run.goal_outcome || 'none')),
+    attempt_results: countValues(runs.map((run) => run.attempt_result || 'unknown')),
     total_tokens: totals.reduce((sum, value) => sum + value, 0),
     median_tokens: percentile(totals, 0.5),
     median_duration_ms: percentile(durations, 0.5),
@@ -393,14 +481,21 @@ function summarizeGoals(runs) {
   return [...grouped.entries()].map(([goalId, items]) => {
     const sorted = [...items].sort((left, right) => left.started_at.localeCompare(right.started_at))
     const sources = new Set(sorted.flatMap((run) => run.goal_id_sources || [run.goal_id_source]))
-    const linked = sorted.length > 1 && sources.has('routing_marker') && sources.has('invocation_marker')
-    const single = sorted.length === 1 && sources.has('run_id')
+    const linked = sorted.length > 1 && (
+      (sources.has('routing_marker') && sources.has('invocation_marker'))
+      || (sources.has('generated') && sources.has('active_goal'))
+      || (sources.size === 1 && sources.has('active_goal'))
+    )
+    const single = sorted.length === 1 && ['run_id', 'generated', 'invocation_marker'].some(source => sources.has(source))
     const lineageStatus = linked ? 'linked' : single ? 'single_run' : 'unverified'
     const starts = sorted.map((run) => Date.parse(run.started_at)).filter(Number.isFinite)
     const ends = sorted.map((run) => Date.parse(run.ended_at)).filter(Number.isFinite)
     const allTokensKnown = sorted.every((run) => Number.isFinite(run.lifecycle_total_tokens))
     const allDurationsKnown = sorted.every((run) => Number.isFinite(run.duration_ms))
     const allCompactionsKnown = sorted.every((run) => Number.isFinite(run.compactions))
+    const bundleHashes = new Set(sorted.map((run) => run.skill_bundle_sha256).filter(Boolean))
+    const exactBundle = bundleHashes.size === 1 && sorted.every((run) => Boolean(run.skill_bundle_sha256))
+    const achievedRun = [...sorted].reverse().find((run) => ['PR_READY', 'SHIPPED'].includes(run.goal_outcome))
     return {
       goal_id: goalId,
       lineage_status: lineageStatus,
@@ -421,11 +516,32 @@ function summarizeGoals(runs) {
         ? Math.max(...sorted.map((run) => run.topology.max_observed_depth))
         : null,
       terminal_states: countValues(sorted.map((run) => run.terminal_state || 'unknown')),
+      goal_outcomes: countValues(sorted.map((run) => run.goal_outcome || 'none')),
+      attempt_results: countValues(sorted.map((run) => run.attempt_result || 'unknown')),
+      goal_outcome: [...sorted].reverse().find((run) => run.goal_outcome)?.goal_outcome || null,
+      skill_bundle_sha256: exactBundle ? [...bundleHashes][0] : null,
       benchmark_eligible: ['linked', 'single_run'].includes(lineageStatus)
-        && sorted.every((run) => run.benchmark_eligible)
-        && allTokensKnown,
+        && achievedRun?.benchmark_eligible === true
+        && allTokensKnown
+        && exactBundle,
     }
   }).sort((left, right) => (left.started_at || '').localeCompare(right.started_at || ''))
+}
+
+function deliveryBenchmarkEligible(run) {
+  return run.outcome?.completion_receipt?.status === 'valid'
+    && run.outcome?.completion_receipt?.schema_version >= 9
+    && ['PR_READY', 'SHIPPED'].includes(run.manifest.goal_outcome)
+    && (run.manifest.schema_version < 4 || run.metrics?.collection_complete === true)
+    && (run.metrics?.subagents === 0 || run.metrics?.subagent_token_accounting_complete === true)
+}
+
+function runRoutingStatus(run) {
+  return run.metrics?.routing?.status ?? run.manifest.orchestration_status ?? 'legacy_unobserved'
+}
+
+function runSkillBundle(run) {
+  return run.manifest.skill_bundle_sha256 ?? run.manifest.skill_sha256 ?? null
 }
 
 function summarizeGoalCohort(goals) {
@@ -466,6 +582,31 @@ function runsRoot(dataRoot) { return join(dataRoot, 'runs') }
 function runDirectory(dataRoot, sessionId, turnId) { return join(runsRoot(dataRoot), runKey(sessionId, turnId)) }
 function runKey(sessionId, turnId) { return `${safeSegment(sessionId)}--${safeSegment(turnId)}` }
 function safeSegment(value) { return String(value || 'unknown').replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 180) }
+
+function activeGoalPath(dataRoot, sessionId) {
+  return join(dataRoot, 'active-goals', `${safeSegment(sessionId)}.json`)
+}
+
+function activeGoalCount(dataRoot) {
+  const root = join(dataRoot, 'active-goals')
+  if (!existsSync(root) || !lstatSync(root).isDirectory() || lstatSync(root).isSymbolicLink()) return 0
+  return readdirSync(root).filter((name) => readActiveGoal(dataRoot, name.replace(/\.json$/, ''))).length
+}
+
+function readActiveGoal(dataRoot, sessionId) {
+  if (!sessionId) return null
+  const value = readJson(activeGoalPath(dataRoot, sessionId))
+  return ['active', 'waiting'].includes(value?.status) ? value : null
+}
+
+function writeActiveGoal(dataRoot, value) {
+  writePrivateJson(activeGoalPath(dataRoot, value.session_id), value)
+}
+
+function generatedGoalId(event, now) {
+  const seed = `${event.session_id}\0${event.turn_id}\0${now.toISOString()}`
+  return `apg_${createHash('sha256').update(seed).digest('hex').slice(0, 24)}`
+}
 
 function requireIds(event) {
   if (!event.session_id || !event.turn_id) throw new Error('hook event is missing session_id or turn_id')

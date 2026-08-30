@@ -41,7 +41,7 @@ npx skills@latest update <name>
 
 **User-invoked**
 
-- **[auto-pilot](./skills/engineering/auto-pilot/SKILL.md):** Deliver an approved plan through a verified PR and an explicitly authorized release boundary.
+- **[auto-pilot](./skills/engineering/auto-pilot/SKILL.md):** Reach exactly `PR_READY` or `SHIPPED`; keep the invoking task resumable through waits and repairs, and allow no scoped leftovers at success.
 
 **Model-invoked**
 
@@ -72,7 +72,7 @@ more than a skill:
 
 | Product | Distribution | Purpose |
 |---|---|---|
-| [codex-auto-pilot](https://github.com/tombelieber/codex-auto-pilot) | Codex marketplace, GitHub | Verified PR and release execution |
+| [codex-auto-pilot](https://github.com/tombelieber/codex-auto-pilot) | Codex marketplace, GitHub | Two-outcome PR_READY/SHIPPED delivery with resumable same-task ownership |
 | [claude-backup](https://github.com/tombelieber/claude-backup) | Claude marketplace, npm | Claude Code backup and restore CLI |
 | [chatgpt-share-dump](https://github.com/tombelieber/chatgpt-share-dump) | Claude marketplace, GitHub | ChatGPT share archive CLI |
 | [pain-point-mining-agent](https://github.com/tombelieber/pain-point-mining-agent) | Claude marketplace, GitHub | Product-signal mining workflow |

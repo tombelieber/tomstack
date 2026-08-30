@@ -2,6 +2,9 @@
 "tomstack-skills": minor
 ---
 
-Make Auto Pilot releases single-use and fail closed: require a promotable
-exact-candidate PR receipt, bind the live head and contract hashes, prohibit
-release-task repairs, and enforce a declared whole-task release-control budget.
+Reduce Auto Pilot to two achieved goal outcomes. `PR_READY` now proves the exact
+open candidate is fully production-release-ready and only the production action
+remains. `SHIPPED` now requires exact production proof plus applicable notes,
+cleanup, and zero scoped leftovers. Release, promote, and deploy normalize to
+ship. Incomplete attempts remain resumable in the invoking task; immutable
+admission binds one attempt and never seals the task, goal, or later turns.

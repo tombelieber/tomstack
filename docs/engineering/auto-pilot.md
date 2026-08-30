@@ -2,33 +2,48 @@
 
 ## What it does
 
-Carries one approved software goal through a verified PR and, only when the
-user explicitly authorizes it, into a separate release task with deterministic
-evidence. The PR stage owns implementation and exact-candidate qualification;
-the release task promotes that immutable candidate or stops blocked.
+Carries one approved software goal to exactly one of two successful outcomes:
+
+- `PR_READY`: an open, unmerged PR is fully production-release-ready. Its only
+  remaining product action is production release or deployment.
+- `SHIPPED`: the exact candidate is merged, released or distributed, deployed
+  where applicable, proven on the real production capability, documented, and
+  cleaned up with zero scoped leftovers.
+
+`pr` targets `PR_READY`. `ship` targets `SHIPPED`; `release`, `promote`, and
+`deploy` are aliases for that same goal, not separate modes. A merge, tag, or
+successful deployment without exact production proof is not `SHIPPED`.
+
+An attempt may end as incomplete, waiting, blocked, or failed without ending
+the goal. The invoking task stays accountable and resumes through safe repair,
+changed evidence, or external-state progress until it reaches its requested
+outcome.
 
 ## When to reach for it
 
 Invoke `$auto-pilot` after a plan is approved and the desired boundary is clear:
-PR only, PR followed by release, or release of an existing PR.
+production-ready PR, or complete same-task delivery to production.
 
 ## Common questions
 
-- Does PR mode deploy? No. Production authority remains separate.
-- Does it require subagents? No. One accountable owner chooses the smallest
-  useful execution shape.
-- Can release happen automatically? Only from an explicit `ship` or release
-  instruction in the same invocation.
-- Can a blocked release task repair the PR? No. Release tasks are single-use
-  and cannot edit code, open another PR, or resume after a terminal result.
-- How long should release control take? The default whole-task budget is 10
-  minutes from live-PR binding, unless the user or repository declares another
-  bound before promotion begins. Unsafe in-flight mutation still reaches its
-  next repository-defined safe boundary before stopping.
+- Does `pr` deploy? No. It stops only at `PR_READY`.
+- Does `ship` create a release task? No. The same task owns the full `SHIPPED`
+  outcome; optional helpers remain bounded leaves.
+- Can Auto Pilot fix release-readiness defects? Yes. It repairs directly causal,
+  in-scope defects before binding an immutable attempt. If evidence changes or
+  an attempt fails safely, it creates a linked attempt in the same task rather
+  than locking the goal or blindly replaying a mutation.
+- Is there a release timer? No arbitrary conversation or whole-task cutoff.
+  Auto Pilot waits through bounded status reads and resumes after real external
+  progress.
+- What if production is temporarily unreachable? Record an incomplete attempt,
+  preserve the evidence, and continue the active goal in this same task when
+  safe progress becomes possible.
 
 ## It's working if
 
-The exact candidate has a reviewable PR, machine-checkable evidence, and no
-production mutation unless the user granted release authority. A successful
-release also binds the live head, source-receipt SHA-256, installed contract
-SHA-256, and complete-task timing in its validated receipt.
+A `PR_READY` result has an exact-candidate-qualified open PR whose only next
+product action is production release or deployment. A `SHIPPED` result binds
+the admitted candidate and installed contract, reaches production through the
+repository-owned path, proves the exact deployed capability, completes release
+notes and task-owned cleanup, and leaves no scoped TODO or follow-up.

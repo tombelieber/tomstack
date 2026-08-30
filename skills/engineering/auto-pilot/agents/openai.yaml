@@ -1,6 +1,6 @@
 interface:
   display_name: "Auto Pilot"
-  short_description: "Build a verified PR, then start one safe release task"
-  default_prompt: "$auto-pilot pr <approved-plan-path>. Use ship instead of pr when I explicitly want one-command PR-to-production delivery: finish one fully qualified PR, then create one fresh single-use $auto-pilot release <PR> task. Bind the task to the live head, source-receipt SHA-256, and installed release-contract SHA-256; never resume it after a terminal result. The release task must treat the candidate as immutable, never edit code or open another PR, and stop blocked rather than exceed its default 10-minute whole-task wall-clock budget to implement repairs."
+  short_description: "Reach PR_READY or SHIPPED without leaving the task"
+  default_prompt: "$auto-pilot pr <approved-plan-path>. Use ship for complete production delivery. There are only two achieved end states: PR_READY means every non-production and release-readiness item is complete and only the production action remains; SHIPPED means the exact candidate is proven live with zero scoped leftovers. Release, promote, and deploy are ship aliases. Keep this task accountable and resumable through waits, safe repairs, changed external state, and linked attempts; never seal it or require a new session."
 policy:
   allow_implicit_invocation: false

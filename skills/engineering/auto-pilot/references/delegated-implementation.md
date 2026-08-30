@@ -1,118 +1,56 @@
-# Owner-directed PR execution
+# Owner-directed execution
 
-Keep one Sol owner accountable for the approved goal, repository truth, final
-quality, and PR delivery. Direct execution is valid for any scope the owner can
-reliably finish in its current session. Fresh stages and leaf workers are
-optional context-management tools, not the default substantive route.
+The task that receives `$auto-pilot` remains accountable for the goal and its
+requested end state. Direct work is valid at any size. Native compaction is the
+supported way to continue a long task; do not create a new owner stage merely
+to refresh context.
 
 ```text
-approved artifact
-  -> Sol owner: resolve truth and choose the execution shape
-  -> direct work, optional fresh owner stages, or optional leaf workers
-  -> owner: integrate, review once, verify, and open the PR
-  -> terminal pr_ready; no merge or production mutation
+approved goal
+  -> invoking owner resolves truth and readiness
+  -> direct work plus optional bounded terminal helpers
+  -> owner integrates, reviews, verifies, and reaches PR_READY or SHIPPED
 ```
 
-## Let the owner choose
+## Choose execution shape without transferring ownership
 
-Treat `tiny` and `substantive` as advisory scope metadata. They do not require a
-handoff, a fresh task, a subagent, or a particular model. With the default
-`implementation.substantive_executor=auto`, the active owner decides whether
-the expected context cost or useful parallelism justifies another execution
-context.
+`tiny` and `substantive` are advisory. `implementation.substantive_executor`
+may prefer `direct`, `subagent`, or `auto`; legacy `task` configuration is read
+for compatibility but cannot create a current-contract owner task. If the
+preferred interface is unavailable, disclose the fallback and continue in the
+invoking task when it meets the capability floor.
 
-An explicit `direct`, `task`, or `subagent` executor preference still overrides
-that default. State the resolved preference before dispatch, and record the
-actual route. An independent user-visible task and an in-turn collaboration
-subagent remain different execution kinds; never present one as the other.
+Optional helpers must receive a narrow packet:
 
-Native context compaction continues the same session and stage. Creating a new
-session creates a new stage. If an owner deliberately hands unfinished work to
-a clean session, record the earlier stage as `continued`, pass repository state
-plus a compact handoff, and let the new stage own the remaining outcome. Normal
-compaction alone is not a reason to create that stage.
+- exact objective and acceptance boundary;
+- allowed files or read-only scope;
+- repository and verification commands;
+- explicit prohibition on spawning, forking, creating another task, delegating,
+  merging, deploying, migrating, rolling back, or mutating production; and
+- a bounded result format returning evidence to the owner.
 
-## Conditional leaf-worker contract
+Use isolated worktrees or non-overlapping paths for parallel writers. Integrate
+once, then conduct one consolidated review against the approved goal and live
+repository state. Do not substitute per-helper review for integrated review.
 
-Do not prescribe worker use, worker count, or wave cadence. If an owner session
-independently chooses collaboration, resolve the configured leaf-model
-preference and give every spawned helper exactly one role:
+## Same-task persistence
 
-- `stage_owner`: owns a bounded stage and may choose its own leaf workers;
-- `leaf_worker`: owns only its assigned packet and must not spawn, fork, create
-  another task, or delegate to another agent.
+Stop, SessionEnd, missing receipt evidence, CI waiting, an incomplete attempt,
+or a changed external state ends only the current turn/attempt checkpoint. The
+active goal remains attached to the same task, and an ordinary follow-up resumes
+it without another `$auto-pilot` command.
 
-The rule is role-scoped, not raw task-tree depth. A fresh stage owner may itself
-be a child task and may still spawn leaf workers. A leaf worker may not. Put the
-no-delegation rule in every leaf prompt because the current Codex runtime does
-not expose a repository-controlled hard depth switch.
+If an attempt was bound for mutation, keep its evidence immutable. A safe repair
+or changed external state creates a new linked attempt under the same goal ID.
+That is evidence lineage, not a new owner session.
 
-Keep write ownership explicit. Parallel writers must own non-overlapping paths
-or isolated worktrees; when work overlaps, the owner should integrate it rather
-than relying on concurrent mutation. A leaf never becomes the PR or release
-authority.
+## Handoff boundary
 
-After the owner-selected work finishes, fan results back to the owner. Review
-the integrated candidate once rather than reviewing each worker, commit, or
-partial change. The same owner may perform that consolidated review, or it may
-choose a fresh review stage when a clean context materially helps.
+For `PR_READY`, the invoking owner returns the complete v9 receipt only after
+all non-production scope and release readiness are complete. For `SHIPPED`, no
+helper or intermediate PR handoff may become the final response; the owner
+continues through production proof, applicable notes, cleanup, and an empty
+`open_items` list.
 
-## Fresh owner-stage handoff
-
-When the owner chooses a fresh stage, bind it to the approved artifact and real
-Git state. Provide only the information needed to continue:
-
-Generate one opaque goal ID at the first fresh-stage boundary with
-`node <skill-dir>/scripts/new_goal_id.mjs`. Put
-`<!-- auto-pilot-goal: <ID> -->` in the receiving Auto Pilot prompt and the
-same `goal_id` in the dispatching owner's final routing marker. Reuse that ID
-across later fresh stages. This breadcrumb exists only to join local lifecycle
-records; it carries no hidden reasoning and does not add hook context.
-
-1. approved artifact and relevant repository instructions;
-2. repository path, base SHA, owned branch or worktree, and bounded scope;
-3. current completed and remaining outcomes;
-4. focused verification required by repository policy; and
-5. explicit authority boundaries.
-
-The receiving owner must preserve unrelated work, implement the owned outcome,
-run focused verification, and return repository evidence rather than copied
-conversation history or hidden reasoning.
-
-```json
-{
-  "objective": "bounded stage outcome",
-  "git": {"base_sha": "...", "branch": "...", "head_sha": "..."},
-  "completed": ["..."],
-  "remaining": ["..."],
-  "changed_paths": ["..."],
-  "checks": [{"name": "...", "status": "passed", "evidence": "..."}],
-  "failures": [],
-  "open_risks": [],
-  "blockers": []
-}
-```
-
-## Consolidate and deliver
-
-The accountable PR owner must:
-
-1. verify every returned branch or head against the expected base;
-2. inspect the complete integrated diff and runtime wiring;
-3. perform one consolidated correctness, architecture, security, performance,
-   and test-quality review;
-4. patch findings without creating a review ping-pong loop; and
-5. use focused evidence while the head is moving, then run the complete
-   exact-candidate gate for the final live PR head, validate `pr_ready` only
-   from promotable PASS evidence, and stop without merging or mutating
-   production.
-
-Keep directly causal in-scope fixes on that same PR before `pr_ready`. Do not
-defer a known deterministic release-readiness defect to the release task, and
-do not create intermediate PRs merely to run another full promotion cycle.
-
-Emit `::created-thread{threadId="<REF>"}` (or `clientThreadId`) for every
-user-visible stage task. Record the actual primary implementation lane in the
-Auto Pilot routing marker. Additional owner stages and leaf nesting remain
-best-effort routing evidence when the runtime does not expose their complete
-relationship; mark that evidence unverified instead of inventing certainty.
+Historical cross-task goal breadcrumbs remain readable in history but are not
+an allowed current execution route.
