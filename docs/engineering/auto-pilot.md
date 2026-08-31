@@ -39,11 +39,16 @@ production-ready PR, or complete same-task delivery to production.
 - What if production is temporarily unreachable? Record an incomplete attempt,
   preserve the evidence, and continue the active goal in this same task when
   safe progress becomes possible.
+- What proves a production migration? Representative data from the supported
+  old production version must pass the real upgrade path, then work through the
+  new system's reads, applicable writes, and impacted critical workflows. A
+  migration marker, row count, or retained record alone does not qualify.
 
 ## It's working if
 
 A `PR_READY` result has an exact-candidate-qualified open PR whose only next
 product action is production release or deployment. A `SHIPPED` result binds
 the admitted candidate and installed contract, reaches production through the
-repository-owned path, proves the exact deployed capability, completes release
-notes and task-owned cleanup, and leaves no scoped TODO or follow-up.
+repository-owned path, proves the exact deployed capability and any migrated
+legacy data through the new system, completes release notes and task-owned
+cleanup, and leaves no scoped TODO or follow-up.

@@ -228,6 +228,14 @@ def validate_items(value, kind, require_pass):
             known(item, {"name", "status", "candidate_base_sha", "candidate_head_sha", "pull_request_url", "promotable", "required_ci_status", "evidence"}, f"checks[{index}]")
         elif item.get("name") == "production-release-ready":
             known(item, {"name", "status", "production_path_status", "preflight_status", "credentials_status", "configuration_status", "migration_status", "recovery_status", "next_action", "evidence"}, f"checks[{index}]")
+        elif item.get("name") == "production-data-compatibility":
+            known(item, {
+                "name", "status", "source_data_version", "target_data_version",
+                "representative_legacy_data", "migration_execution_status",
+                "new_system_read_status", "new_system_write_status",
+                "critical_workflow_status", "data_invariants_status",
+                "mixed_version_status", "production_case_id", "artifact_ref", "evidence",
+            }, f"checks[{index}]")
         elif item.get("name") == "release-contract-binding":
             known(item, {"name", "status", "contract_sha256", "goal_id", "attempt_id", "candidate_base_sha", "candidate_head_sha", "pull_request_url", "source_receipt_sha256", "single_use", "evidence"}, f"checks[{index}]")
         elif item.get("name") == "remote-state-reconciliation":
@@ -294,6 +302,60 @@ def validate_production_ready(checks, require_success):
         or check.get("next_action") != "production_release"
     ):
         die("production-release-ready must prove that only the production action remains")
+    return check
+
+
+def validate_production_data_compatibility(checks, production_ready, require_success):
+    matches = [item for item in checks if item.get("name") == "production-data-compatibility"]
+    migration_applies = production_ready.get("migration_status") == "ready"
+    if not migration_applies:
+        if matches:
+            die("production-data-compatibility requires migration_status ready")
+        return None
+    if not matches and not require_success:
+        return None
+    if len(matches) != 1:
+        die("migration_status ready requires exactly one production-data-compatibility check")
+
+    check = matches[0]
+    known(check, {
+        "name", "status", "source_data_version", "target_data_version",
+        "representative_legacy_data", "migration_execution_status",
+        "new_system_read_status", "new_system_write_status",
+        "critical_workflow_status", "data_invariants_status", "mixed_version_status",
+        "production_case_id", "artifact_ref", "evidence",
+    }, "production-data-compatibility")
+    for key in (
+        "source_data_version", "target_data_version", "representative_legacy_data",
+        "artifact_ref", "evidence",
+    ):
+        text(check.get(key), f"production-data-compatibility.{key}")
+
+    required_statuses = (
+        "migration_execution_status", "new_system_read_status",
+        "critical_workflow_status", "data_invariants_status",
+    )
+    for key in required_statuses:
+        if check.get(key) not in {"passed", "failed", "not_run"}:
+            die(f"production-data-compatibility.{key} is unsupported")
+    if check.get("new_system_write_status") not in {"passed", "not_applicable", "failed", "not_run"}:
+        die("production-data-compatibility.new_system_write_status is unsupported")
+    if check.get("mixed_version_status") not in {"passed", "not_applicable", "failed", "not_run"}:
+        die("production-data-compatibility.mixed_version_status is unsupported")
+
+    if "production_case_id" not in check:
+        die("production-data-compatibility.production_case_id is required")
+    production_case_id = check.get("production_case_id")
+    if production_case_id is not None:
+        production_case_id = text(production_case_id, "production-data-compatibility.production_case_id")
+    if require_success and (
+        check.get("status") != "passed"
+        or any(check.get(key) != "passed" for key in required_statuses)
+        or check.get("new_system_write_status") not in {"passed", "not_applicable"}
+        or check.get("mixed_version_status") not in {"passed", "not_applicable"}
+    ):
+        die("production-data-compatibility must prove migrated data works through the new system")
+    return {"production_case_id": production_case_id}
 
 
 def validate_release(value, require_success):
@@ -495,9 +557,10 @@ def validate_delivery_details(root, require_success):
     checks = validate_items(root.get("checks"), "checks", require_success)
     pull_request = validate_pull_request(root.get("pull_request"))
     exact = validate_exact_candidate(checks, git_value, pull_request, require_success)
-    validate_production_ready(checks, require_success)
+    production_ready = validate_production_ready(checks, require_success)
+    migration_compatibility = validate_production_data_compatibility(checks, production_ready, require_success)
     release = validate_release(root.get("release"), require_success)
-    return git_value, criteria, checks, pull_request, exact, release
+    return git_value, criteria, checks, pull_request, exact, release, migration_compatibility
 
 
 def validate_incomplete(root, goal_mode):
@@ -516,7 +579,7 @@ def validate_incomplete(root, goal_mode):
             die("post-mutation incomplete evidence requires the admitted candidate and reconciled remote state")
         return None
     details = validate_delivery_details(root, False)
-    git_value, _, checks, pull_request, exact, _ = details
+    git_value, _, checks, pull_request, exact, _, _ = details
     if goal_mode == "pr" and pull_request.get("merged"):
         die("PR goal cannot include a merged candidate")
     promotion = None
@@ -590,7 +653,7 @@ def validate(path):
                     die("completion_scope.production_case_ids must exactly match capability cases")
         return "incomplete"
 
-    git_value, criteria, checks, pull_request, exact, release = validate_delivery_details(root, True)
+    git_value, criteria, checks, pull_request, exact, release, migration_compatibility = validate_delivery_details(root, True)
     if set(scope["criteria_ids"]) != {item["id"] for item in criteria}:
         die("completion_scope.criteria_ids must exactly match criteria")
 
@@ -599,6 +662,8 @@ def validate(path):
             die("PR_READY requires an open unmerged candidate and no production mutation")
         if scope["production_case_ids"]:
             die("PR_READY completion scope must not claim production cases")
+        if migration_compatibility and migration_compatibility["production_case_id"] is not None:
+            die("PR_READY production-data-compatibility must not claim a production case")
         for forbidden in ("promotion", "release_notes", "cleanup", "capability_reachability"):
             if forbidden in root:
                 die(f"PR_READY must not contain {forbidden}")
@@ -619,6 +684,10 @@ def validate(path):
         die("deployed candidate must equal pull_request.merge_sha")
     if set(scope["production_case_ids"]) != set(capability["case_ids"]):
         die("completion_scope.production_case_ids must exactly match capability cases")
+    if migration_compatibility:
+        migration_case = migration_compatibility["production_case_id"]
+        if migration_case is None or migration_case not in capability["case_ids"]:
+            die("SHIPPED production-data-compatibility must link a production capability case")
     if attempt.get("basis") == "reconciliation":
         reconciliations = [item for item in checks if item.get("name") == "remote-state-reconciliation"]
         if len(reconciliations) != 1 or reconciliations[0].get("status") != "passed":

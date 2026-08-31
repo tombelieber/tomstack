@@ -10,6 +10,21 @@ import {
   shippedReceipt, validateReceipt,
 } from './v9-fixture.mjs'
 
+function addMigrationCompatibility(value, productionCaseId = null) {
+  value.checks.find(item => item.name === 'production-release-ready').migration_status = 'ready'
+  value.checks.push({
+    name: 'production-data-compatibility', status: 'passed',
+    source_data_version: 'production-v1', target_data_version: 'candidate-v2',
+    representative_legacy_data: 'legacy and edge-shaped production fixtures',
+    migration_execution_status: 'passed', new_system_read_status: 'passed',
+    new_system_write_status: 'passed', critical_workflow_status: 'passed',
+    data_invariants_status: 'passed', mixed_version_status: 'not_applicable',
+    production_case_id: productionCaseId, artifact_ref: 'test:migration-upgrade-e2e',
+    evidence: 'The exact candidate operated migrated fixtures through the new system.',
+  })
+  return value
+}
+
 test('prints the current release-contract SHA-256', () => {
   assert.match(contractSha, /^[0-9a-f]{64}$/)
 })
@@ -77,6 +92,28 @@ for (const [name, mutate] of [
     assert.equal(validateReceipt(value).status, 1)
   })
 }
+
+test('requires deterministic new-system operation when production migration applies', () => {
+  const missing = prReadyReceipt()
+  missing.checks.find(item => item.name === 'production-release-ready').migration_status = 'ready'
+  assert.equal(validateReceipt(missing).status, 1)
+
+  const retainedButUnreadable = addMigrationCompatibility(prReadyReceipt())
+  retainedButUnreadable.checks.find(item => item.name === 'production-data-compatibility').new_system_read_status = 'failed'
+  assert.equal(validateReceipt(retainedButUnreadable).status, 1)
+
+  const implicitCase = addMigrationCompatibility(prReadyReceipt())
+  delete implicitCase.checks.find(item => item.name === 'production-data-compatibility').production_case_id
+  assert.equal(validateReceipt(implicitCase).status, 1)
+
+  assert.equal(validateReceipt(addMigrationCompatibility(prReadyReceipt())).status, 0)
+})
+
+test('requires SHIPPED migration proof to link a real production capability case', () => {
+  assert.equal(validateReceipt(addMigrationCompatibility(shippedReceipt())).status, 1)
+  assert.equal(validateReceipt(addMigrationCompatibility(shippedReceipt(), 'missing-case')).status, 1)
+  assert.equal(validateReceipt(addMigrationCompatibility(shippedReceipt(), 'reply-comment')).status, 0)
+})
 
 test('rejects merge-only SHIPPED claims', () => {
   const value = shippedReceipt()

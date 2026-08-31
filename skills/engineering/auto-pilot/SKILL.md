@@ -27,7 +27,8 @@ production mutation, [release promotion](references/release-promotion.md).
 1. `PR_READY` — one open, unmerged PR is fully production-release-ready. The
    exact head and current base are qualified, required CI is current, the real
    release path and preflight are proven, credentials/configuration/migrations/
-   recovery inputs are ready or explicitly not applicable, and every scoped
+   recovery inputs are ready or explicitly not applicable, applicable legacy
+   production data is proven operable through the new system, and every scoped
    implementation, review, test, documentation, and readiness item is complete.
    The only remaining action is the protected production release.
 2. `SHIPPED` — the exact candidate is merged, released or distributed, and
@@ -68,16 +69,20 @@ resolved implementation preference and target end state in one concise update.
    release, migration, rollback, verification, and cleanup owners immediately.
 2. Run the release dry-run/preflight while the PR is mutable. Surface affected
    scope, credential presence, configuration, deploy targets, migrations or
-   backfills, locks/drafts, recovery inputs, notes, cleanup policy, and the
-   required impact-selected production cases.
+   backfills, supported source versions, representative legacy data, mixed-
+   version or cutover boundaries, locks/drafts, recovery inputs, notes, cleanup
+   policy, and the required impact-selected production cases.
 3. Implement, review once after integration, fix directly causal in-scope
    defects, verify, commit, push, and open one final PR. Use focused checks while
    the head moves; run the complete required exact-candidate gate on the head
    intended for promotion.
 4. Prove the `production-release-ready` check. If any deterministic readiness
    input is missing, safely repair it in the same task while the candidate is
-   mutable. Pause only for genuine authority, credential, destructive-data,
-   billing, incompatible migration, safety, or ambiguous-remote-state decisions.
+   mutable. When migration applies, also prove `production-data-compatibility`
+   by upgrading representative legacy and edge-shaped data and exercising the
+   new system's reads, applicable writes, critical workflows, and invariants.
+   Pause only for genuine authority, credential, destructive-data, billing,
+   incompatible migration, safety, or ambiguous-remote-state decisions.
 5. For `pr`, validate a schema-v9 `PR_READY` receipt and stop before merge. For
    `ship`, treat readiness as an internal transition and continue immediately.
 
@@ -97,7 +102,9 @@ resolved implementation preference and target end state in one concise update.
 4. Prove each affected capability through its real actor, credential class,
    resource scope, entry point, runtime principal, representative data, exact
    deployed identity, and terminal outcome. When authorization changed, prove
-   both an allowed and denied principal at the real boundary.
+   both an allowed and denied principal at the real boundary. When production
+   data migrated, link the compatibility check to an impact-selected production
+   case that operates a migrated legacy record through the new system.
 5. Complete every applicable release-note and safe task-owned cleanup action.
    A failure here is a valid `incomplete` checkpoint even if production is live;
    repair it in the same task before claiming `SHIPPED`.
@@ -109,6 +116,9 @@ resolved implementation preference and target end state in one concise update.
   and use a new attempt ID.
 - Authentication, authorization, checksum, source-integrity, candidate, or
   safety failures are never blind-retried.
+- A successful migration command, marker, schema version, backfill count, row
+  count, or retained data presence never proves compatibility by itself. If the
+  new system cannot operate migrated legacy data, the goal remains incomplete.
 - External pending state remains active and monitored in this task. Missing user
   authority becomes `waiting` with one exact requested input; once supplied,
   continue in the same task.

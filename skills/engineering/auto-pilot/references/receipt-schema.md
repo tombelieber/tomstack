@@ -91,6 +91,44 @@ Every achieved receipt has one passed `exact-candidate` check and one passed
 }
 ```
 
+`migration_status: not_applicable` requires evidence that the release does not
+change persisted production data or its interpretation. `migration_status:
+ready` requires exactly one passed `production-data-compatibility` check:
+
+```json
+{
+  "name": "production-data-compatibility",
+  "status": "passed",
+  "source_data_version": "currently-supported-production-v1",
+  "target_data_version": "exact-candidate-v2",
+  "representative_legacy_data": "legacy and edge-shaped records from the supported source version",
+  "migration_execution_status": "passed",
+  "new_system_read_status": "passed",
+  "new_system_write_status": "passed",
+  "critical_workflow_status": "passed",
+  "data_invariants_status": "passed",
+  "mixed_version_status": "not_applicable",
+  "production_case_id": null,
+  "artifact_ref": "test:migration-upgrade-e2e",
+  "evidence": "The exact candidate operated migrated data through the new system."
+}
+```
+
+For `PR_READY`, `production_case_id` is null because production has not been
+mutated; the deterministic upgrade proof must already pass. For `SHIPPED`, it
+must name one case in `capability_reachability.cases` that uses a migrated legacy
+record through the normal production entry point and observes the new system's
+terminal outcome. `new_system_write_status` may be `not_applicable` only for
+immutable or genuinely read-only data. `mixed_version_status` may be
+`not_applicable` only when an explicit downtime or hard-cutover boundary
+prevents old and new runtimes from accessing incompatible data concurrently.
+
+A completed migration command, migration-table row, schema version, backfill or
+row count, and retained data presence are supporting evidence only. They do not
+prove compatibility when the new system cannot discover, read, update when
+applicable, or use the migrated data in an impacted critical workflow. Lazy
+migration proof exercises both first access and repeat access.
+
 `PR_READY` requires an open unmerged PR, current required CI, no production
 artifacts, `release.status: not_requested`, no production cases, and no
 promotion, notes, cleanup, or capability evidence. It means all non-production
@@ -147,6 +185,9 @@ least one impact-selected capability case. Each case records:
 
 `completion_scope.production_case_ids` must exactly equal all proof case IDs.
 Deployment, health, enqueue, or boot without this terminal proof is insufficient.
+When migration applies, the case linked by `production-data-compatibility` must
+operate representative migrated legacy data through the new system; data that
+only remains stored but fails on use cannot support `SHIPPED`.
 
 ## Notes, cleanup, and final message
 

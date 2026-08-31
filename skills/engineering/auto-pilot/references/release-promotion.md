@@ -13,6 +13,12 @@ directly causal readiness work first, then bind the exact mutation attempt.
 2. Prove the candidate satisfies the complete PR_READY gate. If a deterministic
    in-scope defect is repairable before mutation, fix it in this task and
    requalify the new head.
+   When migration applies, the gate must include `production-data-compatibility`
+   evidence from representative data at the currently supported production
+   version. The exact candidate must discover and read it, write it when the
+   domain is mutable, complete each impacted critical workflow, and preserve
+   declared invariants. Prove the supported old/new order during a rolling
+   deployment, or bind an explicit downtime or hard-cutover boundary.
 3. Bind contract SHA-256, goal ID, attempt ID, exact base/head/PR, required CI,
    impact scope, credentials, dry-run plan, rollback boundary, and recovery
    inputs. Recheck last-moment inputs before mutation.
@@ -36,6 +42,17 @@ contract mismatch, or changed scope invalidates that attempt, not the task.
    real actor, credential class, resource scope, entry point, runtime principal,
    representative data, and expected terminal outcome. Deployment, enqueue,
    boot, health, or a neighboring provider response is insufficient.
+
+For an applicable production migration, use at least one impact-selected
+legacy production record through the normal new-system entry point and link that
+case from the compatibility check. Prove the terminal read and applicable write
+or workflow result, not merely that the record still exists. For lazy migration,
+prove both first access and a repeat access through the post-migration path.
+
+A successful migration process, migration-table row, schema version, backfill
+count, row count, or retained object is supporting evidence only. It cannot make
+the release `SHIPPED` while legacy data is undiscoverable, unreadable, silently
+skipped, or fails when the new system first uses it.
 
 Production canaries are impact-selected and release-only. Use runtime-supplied
 dedicated resources through the normal integration. When authorization changed,
