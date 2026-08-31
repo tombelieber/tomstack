@@ -1,5 +1,13 @@
 # tomstack-skills
 
+## 0.2.3
+
+### Patch Changes
+
+- [#12](https://github.com/tombelieber/tomstack/pull/12) [`51ee06a`](https://github.com/tombelieber/tomstack/commit/51ee06a8871201ff6e4e670f230e496b42c2025f) Thanks [@tombelieber](https://github.com/tombelieber)! - Require production migrations to prove that representative legacy data remains
+  operable through the new system, not merely present after a successful job, and
+  pin the standalone Auto Pilot distribution to v0.13.2.
+
 ## 0.2.2
 
 ### Patch Changes
