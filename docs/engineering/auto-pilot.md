@@ -43,6 +43,12 @@ production-ready PR, or complete same-task delivery to production.
   old production version must pass the real upgrade path, then work through the
   new system's reads, applicable writes, and impacted critical workflows. A
   migration marker, row count, or retained record alone does not qualify.
+- Can a new release gate reject a working production path? No. Every candidate
+  must prove affected existing behavior, supported interfaces/configuration,
+  and representative valid current, legacy, and edge-shaped data still work.
+  New or tightened gates are tested against that baseline. False positives and
+  compatibility gaps are repaired before admission; working behavior or valid
+  data is never disabled merely to make the gate pass.
 
 ## It's working if
 
@@ -50,5 +56,6 @@ A `PR_READY` result has an exact-candidate-qualified open PR whose only next
 product action is production release or deployment. A `SHIPPED` result binds
 the admitted candidate and installed contract, reaches production through the
 repository-owned path, proves the exact deployed capability and any migrated
-legacy data through the new system, completes release notes and task-owned
-cleanup, and leaves no scoped TODO or follow-up.
+legacy data through the new system, re-proves affected existing production
+capabilities, completes release notes and task-owned cleanup, and leaves no
+scoped TODO or follow-up.

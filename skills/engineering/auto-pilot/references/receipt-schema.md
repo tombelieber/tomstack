@@ -1,14 +1,14 @@
 # Goal-attempt receipt
 
-Schema version 9 records goal truth, one immutable attempt, exact completion
-scope, delivery evidence, and any remaining work. It contains no model reasoning
-or ownership transfer.
+Schema version 10 records goal truth, one immutable attempt, exact completion
+scope, delivery evidence, production regression compatibility, and any remaining
+work. It contains no model reasoning or ownership transfer.
 
 ## Core shape
 
 ```json
 {
-  "schema_version": 9,
+  "schema_version": 10,
   "goal_mode": "pr",
   "invoked_alias": null,
   "goal": {
@@ -129,6 +129,48 @@ prove compatibility when the new system cannot discover, read, update when
 applicable, or use the migrated data in an impacted critical workflow. Lazy
 migration proof exercises both first access and repeat access.
 
+Every achieved schema-v10 receipt also requires exactly one passed
+`production-regression-compatibility` check:
+
+```json
+{
+  "name": "production-regression-compatibility",
+  "status": "passed",
+  "current_production_baseline": "current supported production capabilities, interfaces, and configuration",
+  "representative_existing_data": "current, legacy, and edge-shaped valid production fixtures",
+  "existing_behavior_status": "passed",
+  "existing_data_status": "passed",
+  "release_gate_status": "passed",
+  "regression_suite_status": "passed",
+  "gaps_detected": false,
+  "gap_remediation_status": "not_applicable",
+  "gap_artifact_ref": null,
+  "production_case_ids": [],
+  "artifact_ref": "test:production-regression-compatibility",
+  "evidence": "Existing behavior, data, and new release gates passed on the exact candidate."
+}
+```
+
+This check inventories every affected capability that already works in
+production, its supported interfaces and configuration, and representative valid
+current, legacy, and edge-shaped data. The exact candidate must preserve their
+terminal outcomes and invariants. A new or tightened gate must be exercised
+against that valid baseline before enforcement; it may not make working behavior
+or valid production data unusable.
+
+If the proof discovers a gate false positive, data compatibility defect, or
+rollout defect, set `gaps_detected: true`, name the evidence or repair in
+`gap_artifact_ref`, repair the gap while the candidate is mutable, and require
+`gap_remediation_status: passed` before admission. If no gap was found,
+`gap_remediation_status` is `not_applicable` and `gap_artifact_ref` is null.
+Bypass, silent data rejection, and disabling an existing capability are not
+remediation.
+
+For `PR_READY`, `production_case_ids` is empty because production has not been
+mutated. For `SHIPPED`, it is non-empty and every ID names an impact-selected
+existing-capability case in `capability_reachability.cases` that passed through
+the normal production entry point after deployment.
+
 `PR_READY` requires an open unmerged PR, current required CI, no production
 artifacts, `release.status: not_requested`, no production cases, and no
 promotion, notes, cleanup, or capability evidence. It means all non-production
@@ -165,7 +207,7 @@ single-use rule seals only this admitted attempt. A later safely changed attempt
 uses a new attempt ID and binding in the same task.
 
 `promotion.source` is `live_candidate` with null source fields, or
-`pr_ready_receipt` with an absolute readable current v9 PR_READY receipt and
+`pr_ready_receipt` with an absolute readable current v10 PR_READY receipt and
 matching SHA-256. A source receipt must identify the same base, head, and PR as
 the promoted candidate; another valid PR cannot be substituted. Authority
 evidence names the current `ship` command or alias.
@@ -188,6 +230,8 @@ Deployment, health, enqueue, or boot without this terminal proof is insufficient
 When migration applies, the case linked by `production-data-compatibility` must
 operate representative migrated legacy data through the new system; data that
 only remains stored but fails on use cannot support `SHIPPED`.
+Every ID linked by `production-regression-compatibility` must prove an affected
+existing production capability still reaches its supported terminal outcome.
 
 ## Notes, cleanup, and final message
 
@@ -224,6 +268,15 @@ evidence. This prevents an unknown remote state from becoming a retry plan.
 The `release.message` begins with `### Release` and must be the exact final
 visible Markdown before routing/receipt markers.
 
+## Schema-v9 compatibility
+
+The validator accepts released schema-v9 receipts under frozen v9 semantics and
+their known released v9 contract digests. It does not retroactively require
+`production-regression-compatibility` on those receipts. New receipts use schema
+v10, and a schema-v10 ship promotion may only consume a schema-v10 PR_READY
+source receipt. Historical run materialization continues to use the validator
+archived with that run.
+
 ## Validation and history
 
 Validate before responding:
@@ -241,5 +294,5 @@ Append:
 History verifies the exact goal mode, goal ID, attempt lineage, and immutable
 receipt snapshot. Repeated Stop events cannot replace a captured attempt.
 Missing or invalid evidence leaves the goal active. Legacy receipts are
-preserved as legacy claims and are not silently upgraded to a v9 achieved
+preserved as legacy claims and are not silently upgraded to a current achieved
 outcome.

@@ -1,11 +1,11 @@
-import {execFileSync, spawnSync} from 'node:child_process'
+import {spawnSync} from 'node:child_process'
 import {mkdtempSync, rmSync, writeFileSync} from 'node:fs'
 import {tmpdir} from 'node:os'
 import {join, resolve} from 'node:path'
 import {fileURLToPath} from 'node:url'
 
 export const validator = resolve(fileURLToPath(new URL('../scripts/validate_receipt.py', import.meta.url)))
-export const contractSha = execFileSync('python3', [validator, '--contract-sha256'], {encoding: 'utf8'}).trim()
+export const contractSha = 'e7a244b9698e36b8f08da520fc404ce89cb451de147d0a68d836954ee29d3c0e'
 export const headSha = 'a'.repeat(40)
 export const baseSha = 'b'.repeat(40)
 export const mergeSha = 'c'.repeat(40)

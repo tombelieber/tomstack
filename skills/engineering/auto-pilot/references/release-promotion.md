@@ -19,6 +19,11 @@ directly causal readiness work first, then bind the exact mutation attempt.
    domain is mutable, complete each impacted critical workflow, and preserve
    declared invariants. Prove the supported old/new order during a rolling
    deployment, or bind an explicit downtime or hard-cutover boundary.
+   The gate must also include `production-regression-compatibility` across
+   affected existing behavior, supported interfaces/configuration,
+   representative valid production data, and every new or tightened release
+   gate. Repair false positives and compatibility gaps before admission; never
+   break a working production path to satisfy a new gate.
 3. Bind contract SHA-256, goal ID, attempt ID, exact base/head/PR, required CI,
    impact scope, credentials, dry-run plan, rollback boundary, and recovery
    inputs. Recheck last-moment inputs before mutation.
@@ -42,6 +47,12 @@ contract mismatch, or changed scope invalidates that attempt, not the task.
    real actor, credential class, resource scope, entry point, runtime principal,
    representative data, and expected terminal outcome. Deployment, enqueue,
    boot, health, or a neighboring provider response is insufficient.
+
+For every affected existing production capability, run an impact-selected case
+through the normal production entry point after deployment and observe the same
+supported terminal outcome. Link those case IDs from
+`production-regression-compatibility`. A newly enforced gate passing is not
+release proof if the working capability or its valid data became unusable.
 
 For an applicable production migration, use at least one impact-selected
 legacy production record through the normal new-system entry point and link that

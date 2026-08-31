@@ -28,8 +28,10 @@ production mutation, [release promotion](references/release-promotion.md).
    exact head and current base are qualified, required CI is current, the real
    release path and preflight are proven, credentials/configuration/migrations/
    recovery inputs are ready or explicitly not applicable, applicable legacy
-   production data is proven operable through the new system, and every scoped
-   implementation, review, test, documentation, and readiness item is complete.
+   production data is proven operable through the new system, existing supported
+   production behavior and valid data remain operable, new or tightened release
+   gates accept the valid production baseline, and every scoped implementation,
+   review, test, documentation, and readiness item is complete.
    The only remaining action is the protected production release.
 2. `SHIPPED` — the exact candidate is merged, released or distributed, and
    proven through each affected production capability. Applicable release notes
@@ -71,7 +73,8 @@ resolved implementation preference and target end state in one concise update.
    scope, credential presence, configuration, deploy targets, migrations or
    backfills, supported source versions, representative legacy data, mixed-
    version or cutover boundaries, locks/drafts, recovery inputs, notes, cleanup
-   policy, and the required impact-selected production cases.
+   policy, the current supported production behavior/data baseline, newly added
+   or tightened gates, and the required impact-selected production cases.
 3. Implement, review once after integration, fix directly causal in-scope
    defects, verify, commit, push, and open one final PR. Use focused checks while
    the head moves; run the complete required exact-candidate gate on the head
@@ -81,9 +84,14 @@ resolved implementation preference and target end state in one concise update.
    mutable. When migration applies, also prove `production-data-compatibility`
    by upgrading representative legacy and edge-shaped data and exercising the
    new system's reads, applicable writes, critical workflows, and invariants.
+   Always prove `production-regression-compatibility` against existing supported
+   capabilities, interfaces, configuration, and representative valid current,
+   legacy, and edge-shaped data. If that proof finds a gate false positive, data
+   compatibility defect, or rollout defect, repair it before admission; never
+   disable working production behavior or strand valid data to make a gate pass.
    Pause only for genuine authority, credential, destructive-data, billing,
    incompatible migration, safety, or ambiguous-remote-state decisions.
-5. For `pr`, validate a schema-v9 `PR_READY` receipt and stop before merge. For
+5. For `pr`, validate a schema-v10 `PR_READY` receipt and stop before merge. For
    `ship`, treat readiness as an internal transition and continue immediately.
 
 ## Ship to production
@@ -104,7 +112,9 @@ resolved implementation preference and target end state in one concise update.
    deployed identity, and terminal outcome. When authorization changed, prove
    both an allowed and denied principal at the real boundary. When production
    data migrated, link the compatibility check to an impact-selected production
-   case that operates a migrated legacy record through the new system.
+   case that operates a migrated legacy record through the new system. Link the
+   regression-compatibility check to production cases for the affected existing
+   capabilities and prove their expected terminal outcomes still hold.
 5. Complete every applicable release-note and safe task-owned cleanup action.
    A failure here is a valid `incomplete` checkpoint even if production is live;
    repair it in the same task before claiming `SHIPPED`.
@@ -127,7 +137,7 @@ resolved implementation preference and target end state in one concise update.
 
 ## Prove completion
 
-Create and validate a version-9 receipt:
+Create and validate a version-10 receipt:
 
 ```bash
 python3 <skill-dir>/scripts/validate_receipt.py <receipt.json>

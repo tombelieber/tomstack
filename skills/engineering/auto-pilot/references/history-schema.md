@@ -30,7 +30,8 @@ An explicit invocation creates or resumes one active goal:
 While a goal is active, an ordinary later prompt in the same task/session starts
 a new run with the same goal ID and `invocation_source: active_goal_resume`.
 The user does not need another command. A Stop or SessionEnd records a turn
-checkpoint; it does not complete or lock the goal. Only a validated v9 achieved
+checkpoint; it does not complete or lock the goal. Only a validated current
+schema-v10 achieved receipt clears the active-goal record.
 receipt clears the active-goal record.
 
 Each receipt has a separate attempt ID and `attempt_result` of `achieved` or
@@ -64,7 +65,7 @@ goal_outcome: PR_READY | SHIPPED | null
 legacy_terminal_state
 ```
 
-Routing is telemetry, not outcome authority for v6. A valid v9 outcome remains
+Routing is telemetry, not outcome authority for v6. A valid v9 or v10 outcome remains
 authoritative even if routing metadata is missing or records a deviation. New
 ship runs and all aliases use `current_ship_task`; `current_release_task` is
 legacy-only.
@@ -77,7 +78,7 @@ schema version rather than falling back to the currently installed contract.
 
 ## Benchmarks
 
-Run-level delivery benchmarks include only valid schema-v9 achieved outcomes.
+Run-level delivery benchmarks include only valid schema-v9-or-newer achieved outcomes.
 Incomplete, blocked, missing, invalid, or legacy claims never count as achieved.
 Goal lifecycle metrics include the tokens and time of earlier linked attempts,
 waits, repairs, and retries before the final `PR_READY` or `SHIPPED` outcome.
@@ -92,10 +93,12 @@ attempt costs remain included in the goal total.
 
 Archived validators remain authoritative for their original receipts. v8 and
 older `pr_ready`, `released`, and `blocked` values are preserved under
-`legacy_terminal_state`; they are never silently promoted into a current v9
+`legacy_terminal_state`; they are never silently promoted into a current
 achieved benchmark or described as a resumable current goal. Their goal status
 is `legacy_unknown`. A missing archived validator fails closed instead of
-using the newest validator to reinterpret old data.
+using the newest validator to reinterpret old data. Released schema-v9 receipts
+remain valid under their frozen v9 contract semantics; the schema-v10 regression
+gate is not applied retroactively.
 
 Historical cross-task breadcrumbs and `mode: release` remain readable. They do
 not authorize current cross-task ownership or a third goal mode.

@@ -8,6 +8,10 @@ import test from 'node:test'
 import {
   attemptId, contractSha, goalId, incompleteReceipt, prReadyReceipt,
   shippedReceipt, validateReceipt,
+} from './v10-fixture.mjs'
+import {
+  prReadyReceipt as legacyPrReadyReceipt,
+  shippedReceipt as legacyShippedReceipt,
 } from './v9-fixture.mjs'
 
 function addMigrationCompatibility(value, productionCaseId = null) {
@@ -27,6 +31,19 @@ function addMigrationCompatibility(value, productionCaseId = null) {
 
 test('prints the current release-contract SHA-256', () => {
   assert.match(contractSha, /^[0-9a-f]{64}$/)
+})
+
+test('preserves released schema-v9 receipts without applying schema-v10 gates', () => {
+  assert.equal(validateReceipt(legacyPrReadyReceipt()).status, 0)
+  assert.equal(validateReceipt(legacyShippedReceipt()).status, 0)
+
+  const firstV9Contract = legacyShippedReceipt()
+  firstV9Contract.checks.find(item => item.name === 'release-contract-binding').contract_sha256 = 'b58bffb92017ff9d3d3bd0f062de922ba3e3ed415e41ec722b0ca93e4bb2768e'
+  assert.equal(validateReceipt(firstV9Contract).status, 0)
+
+  const unknownV9Contract = legacyShippedReceipt()
+  unknownV9Contract.checks.find(item => item.name === 'release-contract-binding').contract_sha256 = 'f'.repeat(64)
+  assert.equal(validateReceipt(unknownV9Contract).status, 1)
 })
 
 for (const [name, fixture] of [['PR_READY', prReadyReceipt], ['SHIPPED', shippedReceipt]]) {
@@ -54,6 +71,58 @@ for (const [name, mutate] of [
     assert.equal(validateReceipt(value).status, 1)
   })
 }
+
+test('requires schema-v10 production regression compatibility before PR_READY', () => {
+  const missing = prReadyReceipt()
+  missing.checks = missing.checks.filter(item => item.name !== 'production-regression-compatibility')
+  assert.equal(validateReceipt(missing).status, 1)
+
+  for (const field of [
+    'existing_behavior_status',
+    'existing_data_status',
+    'release_gate_status',
+    'regression_suite_status',
+  ]) {
+    const failed = prReadyReceipt()
+    failed.checks.find(item => item.name === 'production-regression-compatibility')[field] = 'failed'
+    assert.equal(validateReceipt(failed).status, 1)
+  }
+})
+
+test('requires detected compatibility gaps to be repaired before admission', () => {
+  const unresolved = prReadyReceipt()
+  const unresolvedGate = unresolved.checks.find(item => item.name === 'production-regression-compatibility')
+  unresolvedGate.gaps_detected = true
+  unresolvedGate.gap_remediation_status = 'not_run'
+  unresolvedGate.gap_artifact_ref = 'test:detected-regression-gap'
+  assert.equal(validateReceipt(unresolved).status, 1)
+
+  const repaired = prReadyReceipt()
+  const repairedGate = repaired.checks.find(item => item.name === 'production-regression-compatibility')
+  repairedGate.gaps_detected = true
+  repairedGate.gap_remediation_status = 'passed'
+  repairedGate.gap_artifact_ref = 'test:repaired-regression-gap'
+  assert.equal(validateReceipt(repaired).status, 0)
+
+  const falseClaim = prReadyReceipt()
+  const falseClaimGate = falseClaim.checks.find(item => item.name === 'production-regression-compatibility')
+  falseClaimGate.gap_artifact_ref = 'test:impossible-gap-artifact'
+  assert.equal(validateReceipt(falseClaim).status, 1)
+})
+
+test('links existing-production regression proof only after production deployment', () => {
+  const premature = prReadyReceipt()
+  premature.checks.find(item => item.name === 'production-regression-compatibility').production_case_ids = ['reply-comment']
+  assert.equal(validateReceipt(premature).status, 1)
+
+  const missingCase = shippedReceipt()
+  missingCase.checks.find(item => item.name === 'production-regression-compatibility').production_case_ids = []
+  assert.equal(validateReceipt(missingCase).status, 1)
+
+  const unknownCase = shippedReceipt()
+  unknownCase.checks.find(item => item.name === 'production-regression-compatibility').production_case_ids = ['missing-case']
+  assert.equal(validateReceipt(unknownCase).status, 1)
+})
 
 test('rejects achieved receipts with any blocker, TODO, or follow-up', () => {
   for (const kind of ['blocker', 'todo', 'follow_up']) {
@@ -211,6 +280,10 @@ test('PR_READY source promotion must bind the exact candidate and PR', () => {
     const source = prReadyReceipt({goal: 'apg_sourcegoal123456'})
     attach(matching, source)
     assert.equal(validateReceipt(matching).status, 0)
+
+    const legacySource = shippedReceipt()
+    attach(legacySource, legacyPrReadyReceipt({goal: 'apg_legacysource12345'}))
+    assert.equal(validateReceipt(legacySource).status, 1)
 
     const unrelated = shippedReceipt()
     const other = prReadyReceipt({goal: 'apg_othergoal1234567'})
