@@ -1,5 +1,13 @@
 # tomstack-skills
 
+## 0.2.4
+
+### Patch Changes
+
+- [#14](https://github.com/tombelieber/tomstack/pull/14) [`6415c8b`](https://github.com/tombelieber/tomstack/commit/6415c8bf47fd4bf150dc65af48e637322cf1e0ee) Thanks [@tombelieber](https://github.com/tombelieber)! - Require Auto Pilot release candidates to preserve existing production behavior,
+  valid production data, and gate compatibility, while keeping released schema-v9
+  receipts valid under frozen v9 semantics.
+
 ## 0.2.3
 
 ### Patch Changes

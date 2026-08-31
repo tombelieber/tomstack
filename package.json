@@ -1,6 +1,6 @@
 {
   "name": "tomstack-skills",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "private": true,
   "description": "Tom Tang's canonical monorepo for maintained agent skills.",
   "repository": {
