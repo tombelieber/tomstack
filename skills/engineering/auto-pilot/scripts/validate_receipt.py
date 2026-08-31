@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate an Auto Pilot version 9 goal-attempt receipt."""
+"""Validate an Auto Pilot goal-attempt receipt."""
 
 import hashlib
 import json
@@ -16,7 +16,12 @@ CONTRACT_FILES = (
     "references/receipt-schema.md",
     "scripts/validate_receipt.py",
 )
-SCHEMA_VERSION = 9
+SCHEMA_VERSION = 10
+SUPPORTED_SCHEMA_VERSIONS = {9, SCHEMA_VERSION}
+LEGACY_V9_CONTRACT_SHA256 = {
+    "b58bffb92017ff9d3d3bd0f062de922ba3e3ed415e41ec722b0ca93e4bb2768e",
+    "e7a244b9698e36b8f08da520fc404ce89cb451de147d0a68d836954ee29d3c0e",
+}
 GOAL_ID = re.compile(r"apg_[A-Za-z0-9_-]{12,80}")
 ATTEMPT_ID = re.compile(r"apa_[A-Za-z0-9_-]{12,80}")
 OPEN_PHASES = {
@@ -210,7 +215,7 @@ def validate_git(value):
     return {**value, "commits": [git_sha(item, f"git.commits[{index}]") for index, item in enumerate(commits)]}
 
 
-def validate_items(value, kind, require_pass):
+def validate_items(value, kind, require_pass, schema_version):
     if not isinstance(value, list) or not value:
         die(f"{kind} must contain at least one item")
     result = []
@@ -235,6 +240,14 @@ def validate_items(value, kind, require_pass):
                 "new_system_read_status", "new_system_write_status",
                 "critical_workflow_status", "data_invariants_status",
                 "mixed_version_status", "production_case_id", "artifact_ref", "evidence",
+            }, f"checks[{index}]")
+        elif schema_version >= 10 and item.get("name") == "production-regression-compatibility":
+            known(item, {
+                "name", "status", "current_production_baseline",
+                "representative_existing_data", "existing_behavior_status",
+                "existing_data_status", "release_gate_status", "regression_suite_status",
+                "gaps_detected", "gap_remediation_status", "gap_artifact_ref",
+                "production_case_ids", "artifact_ref", "evidence",
             }, f"checks[{index}]")
         elif item.get("name") == "release-contract-binding":
             known(item, {"name", "status", "contract_sha256", "goal_id", "attempt_id", "candidate_base_sha", "candidate_head_sha", "pull_request_url", "source_receipt_sha256", "single_use", "evidence"}, f"checks[{index}]")
@@ -358,6 +371,62 @@ def validate_production_data_compatibility(checks, production_ready, require_suc
     return {"production_case_id": production_case_id}
 
 
+def validate_production_regression_compatibility(checks, schema_version, require_success):
+    matches = [item for item in checks if item.get("name") == "production-regression-compatibility"]
+    if schema_version < 10:
+        return None
+    if not matches and not require_success:
+        return None
+    if len(matches) != 1:
+        die("schema v10 delivery evidence requires exactly one production-regression-compatibility check")
+
+    check = matches[0]
+    known(check, {
+        "name", "status", "current_production_baseline",
+        "representative_existing_data", "existing_behavior_status",
+        "existing_data_status", "release_gate_status", "regression_suite_status",
+        "gaps_detected", "gap_remediation_status", "gap_artifact_ref",
+        "production_case_ids", "artifact_ref", "evidence",
+    }, "production-regression-compatibility")
+    for key in (
+        "current_production_baseline", "representative_existing_data",
+        "artifact_ref", "evidence",
+    ):
+        text(check.get(key), f"production-regression-compatibility.{key}")
+
+    required_statuses = (
+        "existing_behavior_status", "existing_data_status",
+        "release_gate_status", "regression_suite_status",
+    )
+    for key in required_statuses:
+        if check.get(key) not in {"passed", "failed", "not_run"}:
+            die(f"production-regression-compatibility.{key} is unsupported")
+    if check.get("gap_remediation_status") not in {"passed", "not_applicable", "failed", "not_run"}:
+        die("production-regression-compatibility.gap_remediation_status is unsupported")
+    if not isinstance(check.get("gaps_detected"), bool):
+        die("production-regression-compatibility.gaps_detected must be boolean")
+    production_case_ids = string_ids(
+        check.get("production_case_ids"),
+        "production-regression-compatibility.production_case_ids",
+    )
+
+    if check.get("gaps_detected"):
+        text(check.get("gap_artifact_ref"), "production-regression-compatibility.gap_artifact_ref")
+    elif check.get("gap_remediation_status") != "not_applicable" or check.get("gap_artifact_ref") is not None:
+        die("no detected regression gap requires not_applicable remediation and a null gap artifact")
+
+    if require_success and (
+        check.get("status") != "passed"
+        or any(check.get(key) != "passed" for key in required_statuses)
+        or (
+            check.get("gaps_detected")
+            and check.get("gap_remediation_status") != "passed"
+        )
+    ):
+        die("production-regression-compatibility must prove existing production behavior, data, and gates remain operable")
+    return {"production_case_ids": production_case_ids}
+
+
 def validate_release(value, require_success):
     value = obj(value, "release")
     known(value, {"status", "url", "message", "evidence"}, "release")
@@ -435,7 +504,7 @@ def validate_promotion(value, git_value):
     return {"source": value.get("source"), "source_receipt": value.get("source_receipt"), "base": base, "head": head}
 
 
-def validate_binding(checks, goal, attempt, promotion, exact, pull_request):
+def validate_binding(checks, goal, attempt, promotion, exact, pull_request, schema_version):
     matches = [item for item in checks if item.get("name") == "release-contract-binding"]
     if len(matches) != 1:
         die("ship evidence requires exactly one release-contract-binding check")
@@ -448,8 +517,17 @@ def validate_binding(checks, goal, attempt, promotion, exact, pull_request):
         die("release-contract-binding must be passed and single-use at attempt scope")
     if check.get("goal_id") != goal.get("id") or check.get("attempt_id") != attempt.get("id"):
         die("release-contract-binding must bind the current goal and attempt")
-    if sha256_digest(check.get("contract_sha256"), "release-contract-binding.contract_sha256") != release_contract_sha256():
-        die("release-contract-binding contract digest does not match the installed contract")
+    contract_digest = sha256_digest(
+        check.get("contract_sha256"),
+        "release-contract-binding.contract_sha256",
+    )
+    valid_contracts = (
+        {release_contract_sha256()}
+        if schema_version == SCHEMA_VERSION
+        else LEGACY_V9_CONTRACT_SHA256
+    )
+    if contract_digest not in valid_contracts:
+        die("release-contract-binding contract digest is not valid for this receipt schema")
     bound = {
         "base": full_git_sha(check.get("candidate_base_sha"), "release-contract-binding.candidate_base_sha"),
         "head": full_git_sha(check.get("candidate_head_sha"), "release-contract-binding.candidate_head_sha"),
@@ -474,8 +552,8 @@ def validate_binding(checks, goal, attempt, promotion, exact, pull_request):
         source_value = json.loads(source_bytes)
     except (json.JSONDecodeError, UnicodeDecodeError):
         die("promotion.source_receipt must contain valid JSON")
-    if source_value.get("schema_version") != SCHEMA_VERSION or source_value.get("goal_mode") != "pr" or source_value.get("goal", {}).get("achieved") != "PR_READY":
-        die("promotion.source_receipt must be a current valid PR_READY receipt")
+    if source_value.get("schema_version") != schema_version or source_value.get("goal_mode") != "pr" or source_value.get("goal", {}).get("achieved") != "PR_READY":
+        die("promotion.source_receipt must be a same-schema valid PR_READY receipt")
     if validate(source) != "PR_READY":
         die("promotion.source_receipt must validate as PR_READY")
     try:
@@ -551,19 +629,27 @@ def validate_capability(value, require_success):
     return {"deployed_sha": deployed, "case_ids": ids}
 
 
-def validate_delivery_details(root, require_success):
+def validate_delivery_details(root, require_success, schema_version):
     git_value = validate_git(root.get("git"))
-    criteria = validate_items(root.get("criteria"), "criteria", require_success)
-    checks = validate_items(root.get("checks"), "checks", require_success)
+    criteria = validate_items(root.get("criteria"), "criteria", require_success, schema_version)
+    checks = validate_items(root.get("checks"), "checks", require_success, schema_version)
     pull_request = validate_pull_request(root.get("pull_request"))
     exact = validate_exact_candidate(checks, git_value, pull_request, require_success)
     production_ready = validate_production_ready(checks, require_success)
     migration_compatibility = validate_production_data_compatibility(checks, production_ready, require_success)
+    regression_compatibility = validate_production_regression_compatibility(
+        checks,
+        schema_version,
+        require_success,
+    )
     release = validate_release(root.get("release"), require_success)
-    return git_value, criteria, checks, pull_request, exact, release, migration_compatibility
+    return (
+        git_value, criteria, checks, pull_request, exact, release,
+        migration_compatibility, regression_compatibility,
+    )
 
 
-def validate_incomplete(root, goal_mode):
+def validate_incomplete(root, goal_mode, schema_version):
     delivery = {"git", "criteria", "checks", "pull_request", "release"}
     present = delivery & set(root)
     if present and present != delivery:
@@ -578,14 +664,17 @@ def validate_incomplete(root, goal_mode):
         if after_mutation:
             die("post-mutation incomplete evidence requires the admitted candidate and reconciled remote state")
         return None
-    details = validate_delivery_details(root, False)
-    git_value, _, checks, pull_request, exact, _, _ = details
+    details = validate_delivery_details(root, False, schema_version)
+    git_value, _, checks, pull_request, exact, _, _, _ = details
     if goal_mode == "pr" and pull_request.get("merged"):
         die("PR goal cannot include a merged candidate")
     promotion = None
     if "promotion" in root:
         promotion = validate_promotion(root.get("promotion"), git_value)
-        validate_binding(checks, root["goal"], root["attempt"], promotion, exact, pull_request)
+        validate_binding(
+            checks, root["goal"], root["attempt"], promotion, exact,
+            pull_request, schema_version,
+        )
     if after_mutation:
         if goal_mode != "ship" or promotion is None:
             die("post-mutation incomplete evidence requires ship promotion and attempt binding")
@@ -618,8 +707,10 @@ def validate(path):
         die(f"invalid JSON at line {exc.lineno}, column {exc.colno}")
 
     known(root, ROOT_KEYS, "receipt")
-    if root.get("schema_version") != SCHEMA_VERSION:
-        die(f"schema_version must be {SCHEMA_VERSION}")
+    schema_version = root.get("schema_version")
+    if schema_version not in SUPPORTED_SCHEMA_VERSIONS:
+        supported = ", ".join(str(item) for item in sorted(SUPPORTED_SCHEMA_VERSIONS))
+        die(f"schema_version must be one of: {supported}")
     goal_mode = root.get("goal_mode")
     if goal_mode not in {"pr", "ship"}:
         die("goal_mode must be pr or ship")
@@ -642,7 +733,7 @@ def validate(path):
         die("incomplete result requires null goal.achieved and at least one open item")
 
     if not achieved:
-        details = validate_incomplete(root, goal_mode)
+        details = validate_incomplete(root, goal_mode, schema_version)
         if details:
             criteria_ids = [item["id"] for item in details[1]]
             if set(scope["criteria_ids"]) != set(criteria_ids):
@@ -653,7 +744,10 @@ def validate(path):
                     die("completion_scope.production_case_ids must exactly match capability cases")
         return "incomplete"
 
-    git_value, criteria, checks, pull_request, exact, release, migration_compatibility = validate_delivery_details(root, True)
+    (
+        git_value, criteria, checks, pull_request, exact, release,
+        migration_compatibility, regression_compatibility,
+    ) = validate_delivery_details(root, True, schema_version)
     if set(scope["criteria_ids"]) != {item["id"] for item in criteria}:
         die("completion_scope.criteria_ids must exactly match criteria")
 
@@ -664,13 +758,17 @@ def validate(path):
             die("PR_READY completion scope must not claim production cases")
         if migration_compatibility and migration_compatibility["production_case_id"] is not None:
             die("PR_READY production-data-compatibility must not claim a production case")
+        if regression_compatibility and regression_compatibility["production_case_ids"]:
+            die("PR_READY production-regression-compatibility must not claim production cases")
         for forbidden in ("promotion", "release_notes", "cleanup", "capability_reachability"):
             if forbidden in root:
                 die(f"PR_READY must not contain {forbidden}")
         return "PR_READY"
 
     promotion = validate_promotion(root.get("promotion"), git_value)
-    validate_binding(checks, goal, attempt, promotion, exact, pull_request)
+    validate_binding(
+        checks, goal, attempt, promotion, exact, pull_request, schema_version,
+    )
     notes = validate_release_notes(root.get("release_notes"), True)
     if (scope["release_notes"] == "required" and notes.get("status") != "passed") or (
         scope["release_notes"] == "not_applicable" and notes.get("status") != "not_applicable"
@@ -688,6 +786,10 @@ def validate(path):
         migration_case = migration_compatibility["production_case_id"]
         if migration_case is None or migration_case not in capability["case_ids"]:
             die("SHIPPED production-data-compatibility must link a production capability case")
+    if regression_compatibility:
+        regression_cases = regression_compatibility["production_case_ids"]
+        if not regression_cases or not set(regression_cases).issubset(capability["case_ids"]):
+            die("SHIPPED production-regression-compatibility must link existing-production capability cases")
     if attempt.get("basis") == "reconciliation":
         reconciliations = [item for item in checks if item.get("name") == "remote-state-reconciliation"]
         if len(reconciliations) != 1 or reconciliations[0].get("status") != "passed":

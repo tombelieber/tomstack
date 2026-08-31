@@ -23,7 +23,14 @@ transition inside `ship`:
    failures in the same task.
 3. Qualify the exact head against the current promotable base and current
    required CI.
-4. Record a passed `production-release-ready` check and an exact completion
+4. Prove `production-regression-compatibility`: every affected existing
+   production capability, supported interface/configuration, and representative
+   valid current, legacy, and edge-shaped data remains operable; every new or
+   tightened release gate accepts that valid baseline.
+5. Repair any gate false positive, data compatibility defect, or rollout defect
+   while the candidate is mutable, then rerun the affected proof. Do not make a
+   working production feature or valid production data fail to satisfy a gate.
+6. Record a passed `production-release-ready` check and an exact completion
    inventory. Nothing may remain except the protected production action.
 
 For `pr`, that proves `PR_READY` and no merge occurs. For `ship`, keep it as an
@@ -44,8 +51,9 @@ unchanged mutation.
 ## Continue until SHIPPED
 
 After admission, follow [release promotion](release-promotion.md). Merge through
-the protected path, deploy the exact candidate, prove every affected production
-capability, publish applicable notes, and finish safe task-owned cleanup.
+the protected path, deploy the exact candidate, prove every affected new and
+existing production capability, publish applicable notes, and finish safe
+task-owned cleanup.
 
 The only successful outcome is `SHIPPED`. A blocker or wait creates an
 `incomplete` checkpoint and leaves the same goal active. Production live with
