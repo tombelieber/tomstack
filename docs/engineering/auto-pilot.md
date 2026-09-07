@@ -26,5 +26,5 @@ release requirements still apply; reducing paperwork never reduces quality.
 
 The old receipt implementation lives outside skill discovery in
 `legacy/auto-pilot/`, preserving historical validation semantics. The Codex
-marketplace remains pinned to its published standalone version until that
-separate release is qualified; changing this source does not publish it.
+marketplace selects the published standalone version pinned in its manifest;
+canonical skill and standalone releases are verified separately.

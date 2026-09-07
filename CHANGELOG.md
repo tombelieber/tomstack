@@ -1,5 +1,11 @@
 # tomstack-skills
 
+## 0.3.0
+
+### Minor Changes
+
+- [`1a0fb9b`](https://github.com/tombelieber/tomstack/commit/1a0fb9bdcb6ba9945c16a0adfb9322506889658f) Thanks [@tombelieber](https://github.com/tombelieber)! - Make Auto Pilot self-contained guidance while preserving the same fully verified release-readiness bar for pr and ship. Remove mandatory receipt/configuration/routing bookkeeping from the active skill, retain legacy receipt compatibility outside skill discovery, and include Batch Grill Me for unresolved goal/spec decisions. The Codex marketplace selects standalone Auto Pilot v0.15.0.
+
 ## 0.2.4
 
 ### Patch Changes
