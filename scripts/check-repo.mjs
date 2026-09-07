@@ -68,7 +68,7 @@ const autoPilotMarketplace = codexMarketplace.plugins.find(
   (entry) => entry.name === "codex-auto-pilot",
 );
 const autoPilotHistory = read(
-  "skills/engineering/auto-pilot/scripts/history.mjs",
+  "legacy/auto-pilot/scripts/history.mjs",
 );
 const autoPilotVersion = autoPilotHistory.match(
   /AUTO_PILOT_VERSION = '([^']+)'/,

@@ -41,10 +41,11 @@ npx skills@latest update <name>
 
 **User-invoked**
 
-- **[auto-pilot](./skills/engineering/auto-pilot/SKILL.md):** Reach exactly `PR_READY` or `SHIPPED`; keep the invoking task resumable through waits and repairs, and allow no scoped leftovers at success.
+- **[auto-pilot](./skills/engineering/auto-pilot/SKILL.md):** Thin guidance for fully verified `PR_READY` or production-proven `SHIPPED`, with the same release-readiness bar.
 
 **Model-invoked**
 
+- **[batch-grill-me](./skills/engineering/batch-grill-me/SKILL.md):** Clarify consequential goal and spec decisions together before implementation.
 - **[impact-aware-qa](./skills/engineering/impact-aware-qa/SKILL.md):** Choose the smallest sufficient repository verification without losing correctness.
 
 ### Productivity

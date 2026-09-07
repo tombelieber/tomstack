@@ -18,6 +18,7 @@
   ],
   "skills": [
     "./skills/engineering/auto-pilot",
+    "./skills/engineering/batch-grill-me",
     "./skills/engineering/impact-aware-qa",
     "./skills/productivity/backup",
     "./skills/productivity/chatgpt-share-dump",
