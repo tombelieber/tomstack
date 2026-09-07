@@ -67,21 +67,12 @@ for (const entry of codexMarketplace.plugins) {
 const autoPilotMarketplace = codexMarketplace.plugins.find(
   (entry) => entry.name === "codex-auto-pilot",
 );
-const autoPilotHistory = read(
-  "skills/engineering/auto-pilot/scripts/history.mjs",
-);
-const autoPilotVersion = autoPilotHistory.match(
-  /AUTO_PILOT_VERSION = '([^']+)'/,
-)?.[1];
 if (!autoPilotMarketplace) {
   fail("Codex marketplace must expose codex-auto-pilot");
-} else if (!autoPilotVersion) {
-  fail("Auto Pilot history metadata must declare AUTO_PILOT_VERSION");
-} else if (autoPilotMarketplace.source?.ref !== `v${autoPilotVersion}`) {
-  fail(
-    `Auto Pilot marketplace/history version mismatch: ref=${autoPilotMarketplace.source?.ref}, history=${autoPilotVersion}`,
-  );
+} else if (!/^v\d+\.\d+\.\d+$/.test(autoPilotMarketplace.source?.ref || "")) {
+  fail("Auto Pilot marketplace must pin a version tag");
 }
+// The published standalone version is independent of the frozen legacy reader.
 
 const rootReadme = read("README.md");
 const names = new Map();

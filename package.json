@@ -1,6 +1,6 @@
 {
   "name": "tomstack-skills",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "private": true,
   "description": "Tom Tang's canonical monorepo for maintained agent skills.",
   "repository": {
@@ -15,14 +15,15 @@
     "skills/",
     "CHANGELOG.md",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "legacy/"
   ],
   "scripts": {
     "changeset": "changeset",
     "version": "changeset version && node scripts/sync-plugin-version.mjs",
     "check-plugin-version": "node scripts/sync-plugin-version.mjs --check",
     "check": "npm run test:auto-pilot && npm run test:impact-aware-qa && node scripts/check-repo.mjs && npm run pack:dry",
-    "test:auto-pilot": "node --test skills/engineering/auto-pilot/tests/receipt-validator.test.mjs",
+    "test:auto-pilot": "node --test legacy/auto-pilot/tests/receipt-validator.test.mjs",
     "test:impact-aware-qa": "node --test skills/engineering/impact-aware-qa/tests/receipt-v2.test.mjs",
     "pack:dry": "npm pack --dry-run --json"
   },

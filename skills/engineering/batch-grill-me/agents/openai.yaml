@@ -1,0 +1,4 @@
+interface:
+  display_name: "Batch Grill Me"
+  short_description: "Clarify goal and spec decisions in batches"
+  default_prompt: "Use $batch-grill-me to resolve the open decisions in this goal before implementation."
