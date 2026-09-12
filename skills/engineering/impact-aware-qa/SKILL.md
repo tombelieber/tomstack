@@ -1,6 +1,6 @@
 ---
 name: impact-aware-qa
-description: Select and run the smallest sufficient repository verification for a code, configuration, schema, documentation, or test change without losing correctness. Use when implementing or reviewing changes, choosing tests, validating before commit or push, reducing slow CI, deciding whether an untouched frontend or other detached surface needs checking, or preparing exact-candidate pre-merge evidence. Escalate unknown and safety-critical impact; never grant deployment authority.
+description: "Select repository checks for a change's actual impact, including required commit, merge and release gates."
 ---
 
 # Impact-Aware QA

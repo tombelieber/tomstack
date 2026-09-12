@@ -1,6 +1,6 @@
 ---
 name: first-principles-xy-problems
-description: Deeply examine an ambiguous product, business, strategy, architecture, or workflow problem before choosing a solution.
+description: "Frame ambiguous product, strategy or architecture problems before choosing a solution; design-only."
 disable-model-invocation: true
 ---
 

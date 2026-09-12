@@ -1,7 +1,7 @@
 ---
 name: auto-pilot
 disable-model-invocation: true
-description: Guide an explicitly requested PR or production delivery through full release readiness. Use pr to stop before merge, or ship to release and verify production.
+description: "Guide explicit PR or ship requests; PR stops before merge, ship qualifies and verifies production."
 ---
 
 # Auto Pilot

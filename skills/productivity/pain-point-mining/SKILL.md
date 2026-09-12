@@ -1,6 +1,6 @@
 ---
 name: pain-point-mining
-description: Use when mining real chat history, session logs, support tickets, or exported transcripts into product pain points, feature demand, weighted frequency x value rankings, PRD updates, and E2E test requirements.
+description: "Mine real chats, support logs or transcripts for evidence-backed customer pain points and product decisions."
 ---
 
 # Pain Point Mining
