@@ -1,5 +1,11 @@
 # tomstack-skills
 
+## 0.3.1
+
+### Patch Changes
+
+- [`b3ec9dd`](https://github.com/tombelieber/tomstack/commit/b3ec9ddda48494c7a08a46d94d2e9d1bb7e6b45a) Thanks [@tombelieber](https://github.com/tombelieber)! - Keep skill discovery descriptions concise and front-load the supported task and decision boundary. Preserve invocation policy and operating contracts.
+
 ## 0.3.0
 
 ### Minor Changes
