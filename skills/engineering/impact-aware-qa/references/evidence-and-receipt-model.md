@@ -164,6 +164,13 @@ still `freshness: executed`.
 Pre-merge and release qualification may require fresh execution even when safe
 dependency/download caches remain warm. Follow the repository contract.
 
+Provider canary evidence is reusable only for the same exact release candidate,
+affected provider/capability, production integration class, and runtime-supplied
+canary scope. Record an opaque evidence reference and terminal outcome; never
+put credentials or raw external account identifiers in a receipt. A canary is
+selected and executed only by the authorized release owner, not by this QA
+receipt.
+
 ## Outcome rules
 
 - `passed`: every selected check passed and no unresolved unknown remains.

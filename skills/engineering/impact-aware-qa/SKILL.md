@@ -73,9 +73,34 @@ promotion contract explicitly requires it. State the skip reason.
 - **Release:** separate explicit authority. QA selection never authorizes a
   deploy, migration, publish, external message, or production mutation.
 
+A healthy but unrelated production endpoint is not release evidence. Map each
+affected domain to a proof that exercises its real entry point, persisted data,
+response contract, and expected outcome; fail closed when no such proof exists.
+
 Do not run pre-merge, browser, database, production probes, or release harnesses
 on every small edit unless the repository contract explicitly makes them the
 minimum evidence for that change.
+
+## Select external canaries by release impact
+
+External production writes are release qualification, never routine edit,
+commit, or pre-merge evidence. They require a separately authorized release
+owner and complement rather than replace deterministic local E2E with fake or
+stubbed providers.
+
+- For a provider-specific change, select at most one bounded canary operation
+  for that provider and changed capability. For shared cross-provider code,
+  select one canary for each provider actually reached by the change.
+- Use a dedicated social or external-system test account/resource connected
+  through the normal production integration. Supply its scope at runtime; do
+  not hard-code account IDs, caller names, or require a duplicate provider app
+  merely to isolate test data.
+- Bind the canary to the exact release candidate and observe the provider's
+  terminal outcome. A successful enqueue, health check, unrelated provider, or
+  customer asset is not substitute evidence.
+- If a safe canary resource is unavailable, report production behavior as
+  unproved or blocked. Do not widen to unrelated providers, spam live APIs, or
+  manufacture evidence on every commit.
 
 ## Return an evidence summary
 
