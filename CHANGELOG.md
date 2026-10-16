@@ -1,5 +1,11 @@
 # tomstack-skills
 
+## 0.4.1
+
+### Patch Changes
+
+- [`2fc176e`](https://github.com/tombelieber/tomstack/commit/2fc176eb906d9f76eada2934575b057c74d3a2d1) Thanks [@tombelieber](https://github.com/tombelieber)! - Use App Canvas v0.7.1 shared passive rendering and verify total browsing contexts, viewport-sized surfaces and DOM reuse during maximum zoom.
+
 ## 0.4.0
 
 ### Minor Changes
