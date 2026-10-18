@@ -1,5 +1,14 @@
 # tomstack-skills
 
+## 0.6.0
+
+### Minor Changes
+
+- [#20](https://github.com/tombelieber/tomstack/pull/20) [`8db4a35`](https://github.com/tombelieber/tomstack/commit/8db4a355a114a7d5c7b305551e20e5c3a513e503) Thanks [@tombelieber](https://github.com/tombelieber)! - Add product-demo-studio for interactive requirements interviews, batch demo
+  production, review galleries and revisions of a selected demo. Include pinned
+  upstream tool sources and optional integration guidance without product data,
+  credentials or assumed creative specifications.
+
 ## 0.5.0
 
 ### Minor Changes
