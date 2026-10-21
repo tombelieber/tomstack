@@ -1,5 +1,13 @@
 # tomstack-skills
 
+## 0.7.0
+
+### Minor Changes
+
+- [#22](https://github.com/tombelieber/tomstack/pull/22) [`7172bf5`](https://github.com/tombelieber/tomstack/commit/7172bf543390028d2bfd11676676d3eb6a475db6) Thanks [@tombelieber](https://github.com/tombelieber)! - Add ui-mr-visual-review for comparable Before/After screenshots embedded in UI
+  PR and MR descriptions, with captured revisions, responsive-state coverage,
+  rendered-image verification, and a reusable description template.
+
 ## 0.6.0
 
 ### Minor Changes
