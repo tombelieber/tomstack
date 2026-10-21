@@ -47,6 +47,7 @@ npx skills@latest update <name>
 
 - **[batch-grill-me](./skills/engineering/batch-grill-me/SKILL.md):** Clarify consequential goal and spec decisions together before implementation.
 - **[impact-aware-qa](./skills/engineering/impact-aware-qa/SKILL.md):** Choose the smallest sufficient repository verification without losing correctness.
+- **[ui-mr-visual-review](./skills/engineering/ui-mr-visual-review/SKILL.md):** Make UI changes reviewable with comparable Before/After images in PR and MR descriptions.
 
 ### Productivity
 

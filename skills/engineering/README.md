@@ -10,3 +10,4 @@ Promoted skills for software delivery and repository verification.
 
 - **[batch-grill-me](./batch-grill-me/SKILL.md):** Clarify consequential goal and spec decisions together before implementation.
 - **[impact-aware-qa](./impact-aware-qa/SKILL.md):** Choose the smallest sufficient repository verification without losing correctness.
+- **[ui-mr-visual-review](./ui-mr-visual-review/SKILL.md):** Make UI changes reviewable with comparable Before/After images in PR and MR descriptions.

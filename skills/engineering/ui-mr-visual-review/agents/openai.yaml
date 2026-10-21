@@ -1,0 +1,4 @@
+interface:
+  display_name: "UI MR Visual Review"
+  short_description: "Show reviewable Before/After UI changes in PRs and MRs"
+  default_prompt: "Use $ui-mr-visual-review to prepare comparable Before/After screenshots for every affected UI view and embed them in this PR/MR description."
