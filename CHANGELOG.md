@@ -1,5 +1,13 @@
 # tomstack-skills
 
+## 0.8.0
+
+### Minor Changes
+
+- [`fa22f46`](https://github.com/tombelieber/tomstack/commit/fa22f463197d7c42941af506e02b331bb2adac35) Thanks [@tombelieber](https://github.com/tombelieber)! - Add Claude Clean Reborn for guided, selective Claude Desktop, Claude Code and
+  browser cleanup, with deletion previews, preserved credential stores, a team
+  handoff prompt and an optional metadata-only macOS/Chrome audit helper.
+
 ## 0.7.0
 
 ### Minor Changes
