@@ -1,0 +1,23 @@
+<section id="email-creation-preview" class="email-preview" lang="%LANG%" dir="ltr" style="%COLORS%" aria-label="%BRAND% email preview">
+<style>%CSS%</style>
+<div class="se-controls" aria-label="Email preview controls">
+  <label class="se-control-label"><span data-role="scenario-label">Email</span><select data-role="scenario"></select></label>
+  <label class="se-control-label"><span data-role="language-label">Language</span><select data-role="language"></select></label>
+  <label class="se-control-label"><span data-role="device-label">Preview</span><select data-role="device"><option value="desktop">Desktop</option><option value="mobile">Mobile</option></select></label>
+</div>
+<div class="se-inbox" data-device="desktop">
+  <div class="se-meta">
+    <div class="se-preview-label"><span data-role="preview-label"></span><span data-role="kind"></span></div>
+    <p class="se-subject" data-role="subject"></p>
+    <p class="se-preheader" data-role="preheader"></p>
+  </div>
+  <div class="se-canvas" aria-label="Email body preview">
+    <div class="se-brand"><img src="%LOGO%" alt="" width="44" height="44"><span>%BRAND%</span></div>
+    <article class="se-mail" data-role="email"></article>
+    <footer class="se-footer" data-role="footer"></footer>
+  </div>
+</div>
+<p class="se-demo-status" data-role="status" role="status" aria-live="polite"></p>
+<script type="application/json" data-role="data">%DATA%</script>
+<script>%RUNTIME%</script>
+</section>

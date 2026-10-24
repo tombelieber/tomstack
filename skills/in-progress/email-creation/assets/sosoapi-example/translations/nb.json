@@ -1,0 +1,164 @@
+{
+  "ui": {
+    "scenario": "Viktig e-post",
+    "language": "Språk",
+    "preview": "Forhåndsvisning",
+    "desktop": "Datamaskin",
+    "mobile": "Mobil",
+    "previewLabel": "Viktige e-poster · Designforhåndsvisning",
+    "demoNotice": "Designforhåndsvisning med eksempeldata. Knappene sender ikke e-post og endrer ikke kontoen din.",
+    "actionNotice": "Kun forhåndsvisning. Ingen e-post ble sendt, og ingen endringer ble gjort på kontoen din.",
+    "greeting": "Hei {{name}},",
+    "team": "SosoAPI-teamet",
+    "help": "Trenger du hjelp?",
+    "contact": "Kontakt oss",
+    "footer": "Denne e-posten gjelder SosoAPI-kontoen din eller en handling du har bedt om.",
+    "secureLink": "Åpne sikker lenke",
+    "fallback": "Hvis knappen ikke fungerer, åpner du den sikre lenken nedenfor.",
+    "codeLabel": "Engangskode for innlogging",
+    "samplePost": "En ny sesong med ideer, inspirert av de små øyeblikkene rundt oss.",
+    "mediaUnavailable": "Mediefilen er utilgjengelig",
+    "groups": {
+      "auth": "Innlogging og sikkerhet",
+      "billing": "Betalinger og abonnementer",
+      "team": "Teamtilgang",
+      "publishing": "Tilkoblinger og publisering",
+      "privacy": "Kontopersonvern"
+    }
+  },
+  "fields": {
+    "workspace": "Arbeidsområde",
+    "plan": "Abonnement",
+    "amountPaid": "Betalt beløp",
+    "renewalDate": "Neste fornyelse",
+    "amountDue": "Utestående beløp",
+    "accessUntil": "Tilgang beholdes til",
+    "accessEnd": "Nåværende tilgang avsluttes",
+    "automaticRenewal": "Automatisk fornyelse",
+    "off": "Av",
+    "organization": "Organisasjon",
+    "role": "Tilgangen din",
+    "viewer": "Lesetilgang",
+    "invitationExpiry": "Invitasjonen utløper",
+    "account": "Konto",
+    "affectedPosts": "Berørte planlagte innlegg",
+    "scheduledFor": "Planlagt til",
+    "issue": "Handling kreves",
+    "replaceMedia": "Erstatt den utilgjengelige mediefilen",
+    "platform": "Plattform",
+    "attemptedAt": "Forsøk utført",
+    "restoreDeadline": "Gjenopprett før",
+    "changedAt": "Endret"
+  },
+  "templates": {
+    "verify": {
+      "name": "Bekreft e-postadresse",
+      "subject": "Bekreft e-postadressen din for SosoAPI",
+      "preview": "Bekreft e-postadressen for å fullføre kontooppsettet.",
+      "title": "Bekreft e-postadressen din",
+      "body": "Takk for at du registrerte deg hos SosoAPI. Bekreft e-postadressen din for å fullføre kontooppsettet.",
+      "cta": "Bekreft e-postadresse",
+      "note": "Denne lenken kan brukes én gang og utløper {{verification_expiry}}. Hvis du ikke har registrert deg hos SosoAPI, kan du se bort fra denne e-posten."
+    },
+    "signin": {
+      "name": "Innloggingskode",
+      "subject": "Innloggingskoden din for SosoAPI",
+      "preview": "Bruk denne engangskoden for å logge inn.",
+      "title": "Innloggingskoden din",
+      "body": "Skriv inn koden nedenfor i SosoAPI for å fullføre innloggingen, eller bruk innloggingsknappen.",
+      "cta": "Logg inn på SosoAPI",
+      "note": "Koden utløper {{code_expiry}}. Ikke del koden eller lenken med andre. Hvis du ikke ba om den, kan du se bort fra denne e-posten."
+    },
+    "reset": {
+      "name": "Tilbakestill passord",
+      "subject": "Tilbakestill SosoAPI-passordet ditt",
+      "preview": "Velg et nytt passord via denne sikre lenken.",
+      "title": "Tilbakestill passordet ditt",
+      "body": "Vi har mottatt en forespørsel om å tilbakestille SosoAPI-passordet ditt. Bruk knappen nedenfor for å velge et nytt passord.",
+      "cta": "Tilbakestill passord",
+      "note": "Denne lenken kan brukes én gang og utløper {{reset_expiry}}. Hvis du ikke ba om tilbakestilling, kan du se bort fra denne e-posten. Passordet ditt er ikke endret."
+    },
+    "security": {
+      "name": "Passord endret",
+      "subject": "SosoAPI-passordet ditt er endret",
+      "preview": "Sikre kontoen din hvis det ikke var du som gjorde denne endringen.",
+      "title": "Passordet ditt er endret",
+      "body": "Passordet til SosoAPI-kontoen din er endret. Hvis du gjorde denne endringen, trenger du ikke gjøre noe mer.",
+      "cta": "Se gjennom kontosikkerheten",
+      "callout": "Hvis du ikke gjorde denne endringen, må du tilbakestille passordet og se gjennom tilkoblede apper og tilgangen til kontoen din."
+    },
+    "activated": {
+      "name": "Abonnement aktivt",
+      "subject": "SosoAPI-abonnementet ditt er aktivt",
+      "preview": "Betalingen din er bekreftet, og abonnementet ditt er aktivt.",
+      "title": "Abonnementet ditt er aktivt",
+      "body": "Betalingen din er bekreftet. Det oppdaterte abonnementet ditt er nå aktivt for arbeidsområdet nedenfor.",
+      "cta": "Åpne arbeidsområde",
+      "note": "Betalingsleverandøren vår sender den offisielle kvitteringen separat. Du kan se abonnementet og fakturaene dine under Fakturering."
+    },
+    "payment": {
+      "name": "Betaling mislyktes",
+      "subject": "Oppdater betalingsmåten din for SosoAPI",
+      "preview": "Vi kunne ikke belaste deg for fornyelsen av abonnementet.",
+      "title": "Betalingen for fornyelsen mislyktes",
+      "body": "Vi kunne ikke belaste deg for fornyelsen av abonnementet. Oppdater betalingsmåten din for å beholde den nåværende tilgangen.",
+      "cta": "Oppdater betalingsmåte",
+      "note": "Hvis du allerede har ordnet betalingen, kan du sjekke siste status under Fakturering. Send aldri kortopplysninger via e-post."
+    },
+    "cancel": {
+      "name": "Oppsigelse bekreftet",
+      "subject": "Oppsigelsen av SosoAPI-abonnementet ditt er bekreftet",
+      "preview": "Det nåværende abonnementet ditt er tilgjengelig frem til datoen nedenfor.",
+      "title": "Oppsigelsen din er bekreftet",
+      "body": "Automatisk fornyelse er slått av. Du kan fortsette å bruke det nåværende abonnementet frem til datoen nedenfor.",
+      "cta": "Se abonnement",
+      "note": "Se under Fakturering hvilke endringer som gjelder når den betalte tilgangen avsluttes. Kontoen din slettes ikke når du sier opp abonnementet."
+    },
+    "invite": {
+      "name": "Teaminvitasjon",
+      "subject": "Du er invitert til Studio på SosoAPI",
+      "preview": "Jamie har invitert deg til teamet.",
+      "title": "Du er invitert til teamet",
+      "body": "Jamie har invitert deg til å samarbeide i SosoAPI. Godta invitasjonen for å få tilgang til arbeidsområdet med tillatelsene som vises nedenfor.",
+      "cta": "Godta invitasjon",
+      "note": "Logg inn med e-postadressen som mottok denne invitasjonen. Hvis du ikke ventet den, kan du se bort fra denne e-posten."
+    },
+    "reconnect": {
+      "name": "Koble til konto på nytt",
+      "subject": "Koble til Instagram-kontoen din på nytt",
+      "preview": "Gjenopprett tilkoblingen for å få tilgang til publisering igjen.",
+      "title": "Koble til kontoen din på nytt",
+      "body": "Vi har ikke lenger tilgang til Instagram-kontoen din. Koble den til på nytt for å gjenopprette tilgangen til publisering.",
+      "cta": "Koble til Instagram på nytt",
+      "note": "Se gjennom de berørte innleggene etter at du har koblet til på nytt. Innlegg som allerede har mislyktes, kan kreve en egen gjenopprettingshandling."
+    },
+    "failed": {
+      "name": "Innlegg ikke publisert",
+      "subject": "Instagram-innlegget ditt kunne ikke publiseres",
+      "preview": "Mediefilen er utilgjengelig. Innholdet i innlegget ditt er lagret.",
+      "title": "Innlegget ditt kunne ikke publiseres",
+      "body": "Det planlagte Instagram-innlegget ditt kunne ikke publiseres fordi mediefilen ikke lenger er tilgjengelig. Innholdet i innlegget ditt er fortsatt lagret.",
+      "cta": "Se gjennom og rett innlegget",
+      "note": "Erstatt mediefilen, se gjennom innlegget og velg et nytt publiseringstidspunkt. Innlegget sendes ikke på nytt når du åpner denne e-posten."
+    },
+    "uncertain": {
+      "name": "Publisering ikke bekreftet",
+      "subject": "Sjekk om Instagram-innlegget ditt ble publisert",
+      "preview": "Vi kunne ikke bekrefte resultatet. Sjekk før du prøver igjen.",
+      "title": "Publiseringen kunne ikke bekreftes",
+      "body": "Plattformen returnerte ikke et tydelig resultat. Innlegget ditt kan allerede være publisert. Sjekk kontoen før du publiserer det på nytt.",
+      "cta": "Se publiseringsstatus",
+      "callout": "For å unngå et duplikat må du sjekke det opprinnelige innlegget på Instagram før du velger en gjenopprettingshandling."
+    },
+    "deletion": {
+      "name": "Sletting forespurt",
+      "subject": "Forespørselen din om å slette SosoAPI-kontoen",
+      "preview": "Du kan gjenopprette kontoen din før fristen nedenfor.",
+      "title": "Vi har mottatt forespørselen om sletting",
+      "body": "Tilgangen til kontoen din er nå satt på pause. Du kan gjenopprette kontoen før fristen nedenfor.",
+      "cta": "Logg inn for å gjenopprette kontoen",
+      "callout": "Personlige planlagte innlegg der publiseringen ikke har startet, blir kansellert, og fornyelsen av abonnementet er i ferd med å bli stoppet. Gjenoppretting av kontoen planlegger ikke innlegg på nytt eller starter fornyelsen automatisk.",
+      "note": "Hvis du ikke ba om dette, gjenopprett kontoen, endre passordet og se gjennom tilkoblede apper. Permanent sletting starter etter gjenopprettingsperioden."
+    }
+  }
+}

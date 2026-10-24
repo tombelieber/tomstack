@@ -1,0 +1,164 @@
+{
+  "ui": {
+    "scenario": "Wichtige E-Mail",
+    "language": "Sprache",
+    "preview": "Vorschau",
+    "desktop": "Desktop",
+    "mobile": "Mobil",
+    "previewLabel": "Wichtige E-Mails · Designvorschau",
+    "demoNotice": "Designvorschau mit Beispieldaten. Über die Schaltflächen werden keine E-Mails versendet und keine Kontoeinstellungen geändert.",
+    "actionNotice": "Nur Vorschau. Es wurde keine E-Mail versendet und nichts an deinem Konto geändert.",
+    "greeting": "Hallo {{name}},",
+    "team": "Das SosoAPI-Team",
+    "help": "Brauchst du Hilfe?",
+    "contact": "Kontakt aufnehmen",
+    "footer": "Diese E-Mail betrifft dein SosoAPI-Konto oder eine von dir angeforderte Aktion.",
+    "secureLink": "Sicheren Link öffnen",
+    "fallback": "Falls die Schaltfläche nicht funktioniert, öffne den sicheren Link unten.",
+    "codeLabel": "Einmaliger Anmeldecode",
+    "samplePost": "Eine neue Saison voller Ideen, inspiriert von den kleinen Momenten um uns herum.",
+    "mediaUnavailable": "Medien nicht verfügbar",
+    "groups": {
+      "auth": "Anmeldung und Sicherheit",
+      "billing": "Zahlungen und Abonnements",
+      "team": "Teamzugang",
+      "publishing": "Verbindungen und Veröffentlichung",
+      "privacy": "Kontodatenschutz"
+    }
+  },
+  "fields": {
+    "workspace": "Arbeitsbereich",
+    "plan": "Tarif",
+    "amountPaid": "Bezahlter Betrag",
+    "renewalDate": "Nächste Verlängerung",
+    "amountDue": "Fälliger Betrag",
+    "accessUntil": "Zugriff bleibt bestehen bis",
+    "accessEnd": "Aktueller Zugriff endet am",
+    "automaticRenewal": "Automatische Verlängerung",
+    "off": "Aus",
+    "organization": "Organisation",
+    "role": "Deine Zugriffsrechte",
+    "viewer": "Leseberechtigung",
+    "invitationExpiry": "Einladung gültig bis",
+    "account": "Konto",
+    "affectedPosts": "Betroffene geplante Beiträge",
+    "scheduledFor": "Geplant für",
+    "issue": "Aktion erforderlich",
+    "replaceMedia": "Nicht verfügbare Medien ersetzen",
+    "platform": "Plattform",
+    "attemptedAt": "Versuch am",
+    "restoreDeadline": "Wiederherstellung vor",
+    "changedAt": "Geändert am"
+  },
+  "templates": {
+    "verify": {
+      "name": "E-Mail bestätigen",
+      "subject": "Bitte bestätige deine E-Mail-Adresse für SosoAPI",
+      "preview": "Bestätige deine E-Mail-Adresse, um dein Konto fertig einzurichten.",
+      "title": "Bitte bestätige deine E-Mail-Adresse",
+      "body": "Vielen Dank für deine Registrierung bei SosoAPI. Bitte bestätige deine E-Mail-Adresse, um dein Konto fertig einzurichten.",
+      "cta": "E-Mail-Adresse bestätigen",
+      "note": "Dieser Link kann einmal verwendet werden und läuft am {{verification_expiry}} ab. Falls du dich nicht bei SosoAPI registriert hast, kannst du diese E-Mail ignorieren."
+    },
+    "signin": {
+      "name": "Anmeldecode",
+      "subject": "Dein SosoAPI-Anmeldecode",
+      "preview": "Melde dich mit diesem einmaligen Code an.",
+      "title": "Dein Anmeldecode",
+      "body": "Gib den folgenden Code in SosoAPI ein, um dich anzumelden, oder verwende die Schaltfläche zur Anmeldung.",
+      "cta": "Bei SosoAPI anmelden",
+      "note": "Der Code läuft am {{code_expiry}} ab. Teile weder diesen Code noch den Link mit anderen. Falls du ihn nicht angefordert hast, kannst du diese E-Mail ignorieren."
+    },
+    "reset": {
+      "name": "Passwort zurücksetzen",
+      "subject": "Setze dein SosoAPI-Passwort zurück",
+      "preview": "Wähle über diesen sicheren Link ein neues Passwort.",
+      "title": "Setze dein Passwort zurück",
+      "body": "Wir haben eine Anfrage zum Zurücksetzen deines SosoAPI-Passworts erhalten. Über die Schaltfläche unten kannst du ein neues Passwort wählen.",
+      "cta": "Passwort zurücksetzen",
+      "note": "Dieser Link kann einmal verwendet werden und läuft am {{reset_expiry}} ab. Falls du das Zurücksetzen nicht angefordert hast, kannst du diese E-Mail ignorieren. Dein Passwort wurde nicht geändert."
+    },
+    "security": {
+      "name": "Passwort geändert",
+      "subject": "Dein SosoAPI-Passwort wurde geändert",
+      "preview": "Falls du diese Änderung nicht vorgenommen hast, sichere dein Konto.",
+      "title": "Dein Passwort wurde geändert",
+      "body": "Das Passwort für dein SosoAPI-Konto wurde geändert. Falls du diese Änderung vorgenommen hast, musst du nichts weiter tun.",
+      "cta": "Kontosicherheit prüfen",
+      "callout": "Falls du diese Änderung nicht vorgenommen hast, setze dein Passwort zurück und prüfe die verbundenen Apps sowie die Zugriffsrechte auf dein Konto."
+    },
+    "activated": {
+      "name": "Abonnement aktiv",
+      "subject": "Dein SosoAPI-Abonnement ist aktiv",
+      "preview": "Deine Zahlung ist bestätigt und dein Abonnement ist aktiv.",
+      "title": "Dein Abonnement ist aktiv",
+      "body": "Deine Zahlung wurde bestätigt. Dein aktualisiertes Abonnement ist jetzt für den folgenden Arbeitsbereich aktiv.",
+      "cta": "Arbeitsbereich öffnen",
+      "note": "Unser Zahlungsanbieter sendet dir den offiziellen Zahlungsbeleg separat. Deinen Tarif und deine Rechnungen findest du im Bereich Abrechnung."
+    },
+    "payment": {
+      "name": "Zahlung fehlgeschlagen",
+      "subject": "Bitte aktualisiere deine SosoAPI-Zahlungsmethode",
+      "preview": "Die Zahlung für die Verlängerung deines Abonnements konnte nicht eingezogen werden.",
+      "title": "Die Zahlung für deine Verlängerung ist fehlgeschlagen",
+      "body": "Die Zahlung für die Verlängerung deines Abonnements konnte nicht eingezogen werden. Bitte aktualisiere deine Zahlungsmethode, um deinen aktuellen Zugriff zu behalten.",
+      "cta": "Zahlungsmethode aktualisieren",
+      "note": "Falls du die Zahlung bereits geklärt hast, prüfe den aktuellen Status im Bereich Abrechnung. Sende niemals Kartendaten per E-Mail."
+    },
+    "cancel": {
+      "name": "Kündigung bestätigt",
+      "subject": "Die Kündigung deines SosoAPI-Abonnements ist bestätigt",
+      "preview": "Dein aktueller Tarif bleibt bis zum folgenden Datum verfügbar.",
+      "title": "Deine Kündigung ist bestätigt",
+      "body": "Die automatische Verlängerung wurde deaktiviert. Du kannst deinen aktuellen Tarif bis zum folgenden Datum weiter nutzen.",
+      "cta": "Abonnement anzeigen",
+      "note": "Im Bereich Abrechnung erfährst du, was sich nach Ende des kostenpflichtigen Zugriffs ändert. Die Kündigung deines Abonnements löscht dein Konto nicht."
+    },
+    "invite": {
+      "name": "Teameinladung",
+      "subject": "Du bist eingeladen, Studio auf SosoAPI beizutreten",
+      "preview": "Jamie hat dich ins Team eingeladen.",
+      "title": "Du bist eingeladen, dem Team beizutreten",
+      "body": "Jamie hat dich zur Zusammenarbeit in SosoAPI eingeladen. Nimm die Einladung an, um mit den unten aufgeführten Berechtigungen auf den Arbeitsbereich zuzugreifen.",
+      "cta": "Einladung annehmen",
+      "note": "Melde dich mit der E-Mail-Adresse an, an die diese Einladung gesendet wurde. Falls du sie nicht erwartet hast, kannst du diese E-Mail ignorieren."
+    },
+    "reconnect": {
+      "name": "Konto erneut verbinden",
+      "subject": "Bitte verbinde dein Instagram-Konto erneut",
+      "preview": "Stelle die Verbindung wieder her, um wieder veröffentlichen zu können.",
+      "title": "Bitte verbinde dein Konto erneut",
+      "body": "Wir können nicht mehr auf dein Instagram-Konto zugreifen. Bitte verbinde es erneut, um wieder veröffentlichen zu können.",
+      "cta": "Instagram erneut verbinden",
+      "note": "Prüfe nach dem erneuten Verbinden die betroffenen Beiträge. Bei bereits fehlgeschlagenen Beiträgen kann eine separate Wiederherstellungsaktion erforderlich sein."
+    },
+    "failed": {
+      "name": "Beitrag nicht veröffentlicht",
+      "subject": "Dein Instagram-Beitrag konnte nicht veröffentlicht werden",
+      "preview": "Die Mediendatei ist nicht verfügbar. Dein Beitragsinhalt ist gespeichert.",
+      "title": "Dein Beitrag konnte nicht veröffentlicht werden",
+      "body": "Dein geplanter Instagram-Beitrag konnte nicht veröffentlicht werden, weil die Mediendatei nicht mehr verfügbar ist. Der Inhalt deines Beitrags ist weiterhin gespeichert.",
+      "cta": "Beitrag prüfen und korrigieren",
+      "note": "Ersetze die Medien, prüfe den Beitrag und wähle einen neuen Veröffentlichungszeitpunkt. Durch das Öffnen dieser E-Mail wird der Beitrag nicht erneut gesendet."
+    },
+    "uncertain": {
+      "name": "Veröffentlichung unbestätigt",
+      "subject": "Bitte prüfe, ob dein Instagram-Beitrag veröffentlicht wurde",
+      "preview": "Wir konnten das Ergebnis nicht bestätigen. Prüfe es vor einem erneuten Versuch.",
+      "title": "Die Veröffentlichung konnte nicht bestätigt werden",
+      "body": "Die Plattform hat kein eindeutiges Ergebnis zurückgegeben. Dein Beitrag ist möglicherweise bereits veröffentlicht. Prüfe das Konto, bevor du ihn erneut veröffentlichst.",
+      "cta": "Veröffentlichungsstatus prüfen",
+      "callout": "Um einen doppelten Beitrag zu vermeiden, prüfe den ursprünglichen Beitrag auf Instagram, bevor du eine Wiederherstellungsaktion auswählst."
+    },
+    "deletion": {
+      "name": "Löschung angefordert",
+      "subject": "Deine Anfrage zur Löschung deines SosoAPI-Kontos",
+      "preview": "Du kannst dein Konto vor der folgenden Frist wiederherstellen.",
+      "title": "Deine Löschanfrage ist eingegangen",
+      "body": "Der Zugriff auf dein Konto ist jetzt pausiert. Du kannst dein Konto vor der folgenden Frist wiederherstellen.",
+      "cta": "Zur Wiederherstellung anmelden",
+      "callout": "Persönliche geplante Beiträge, deren Veröffentlichung noch nicht begonnen hat, werden storniert. Die Verlängerung deines Abonnements wird gestoppt. Durch die Wiederherstellung deines Kontos werden Beiträge nicht automatisch neu geplant und die Verlängerung wird nicht automatisch wieder aktiviert.",
+      "note": "Falls du dies nicht angefordert hast, stelle dein Konto wieder her, ändere dein Passwort und prüfe die verbundenen Apps. Nach Ablauf der Wiederherstellungsfrist beginnt die endgültige Löschung."
+    }
+  }
+}

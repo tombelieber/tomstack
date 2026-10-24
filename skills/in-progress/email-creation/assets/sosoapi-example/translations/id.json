@@ -1,0 +1,164 @@
+{
+  "ui": {
+    "scenario": "Email penting",
+    "language": "Bahasa",
+    "preview": "Pratinjau",
+    "desktop": "Desktop",
+    "mobile": "Seluler",
+    "previewLabel": "Email penting · Pratinjau desain",
+    "demoNotice": "Pratinjau desain dengan data contoh. Tombol tidak mengirim email atau mengubah akun Anda.",
+    "actionNotice": "Hanya pratinjau. Tidak ada email yang dikirim atau perubahan pada akun.",
+    "greeting": "Halo {{name}},",
+    "team": "Tim SosoAPI",
+    "help": "Butuh bantuan?",
+    "contact": "Hubungi kami",
+    "footer": "Email ini berkaitan dengan akun SosoAPI Anda atau tindakan yang Anda minta.",
+    "secureLink": "Buka tautan aman",
+    "fallback": "Jika tombol tidak berfungsi, buka tautan aman di bawah ini.",
+    "codeLabel": "Kode masuk sekali pakai",
+    "samplePost": "Musim baru penuh ide, terinspirasi oleh momen-momen kecil di sekitar kita.",
+    "mediaUnavailable": "Media tidak tersedia",
+    "groups": {
+      "auth": "Masuk dan keamanan",
+      "billing": "Pembayaran dan langganan",
+      "team": "Akses tim",
+      "publishing": "Koneksi dan publikasi",
+      "privacy": "Privasi akun"
+    }
+  },
+  "fields": {
+    "workspace": "Ruang kerja",
+    "plan": "Paket",
+    "amountPaid": "Jumlah dibayar",
+    "renewalDate": "Perpanjangan berikutnya",
+    "amountDue": "Jumlah yang harus dibayar",
+    "accessUntil": "Akses tersedia hingga",
+    "accessEnd": "Akses saat ini berakhir",
+    "automaticRenewal": "Perpanjangan otomatis",
+    "off": "Nonaktif",
+    "organization": "Organisasi",
+    "role": "Hak akses Anda",
+    "viewer": "Penampil",
+    "invitationExpiry": "Undangan kedaluwarsa",
+    "account": "Akun",
+    "affectedPosts": "Postingan terjadwal yang terdampak",
+    "scheduledFor": "Dijadwalkan untuk",
+    "issue": "Tindakan yang diperlukan",
+    "replaceMedia": "Ganti media yang tidak tersedia",
+    "platform": "Platform",
+    "attemptedAt": "Waktu percobaan",
+    "restoreDeadline": "Batas waktu pemulihan",
+    "changedAt": "Waktu perubahan"
+  },
+  "templates": {
+    "verify": {
+      "name": "Konfirmasi email",
+      "subject": "Konfirmasikan alamat email SosoAPI Anda",
+      "preview": "Konfirmasikan alamat email untuk menyelesaikan pengaturan akun.",
+      "title": "Konfirmasikan alamat email Anda",
+      "body": "Terima kasih telah mendaftar di SosoAPI. Konfirmasikan alamat email Anda untuk menyelesaikan pengaturan akun.",
+      "cta": "Konfirmasi alamat email",
+      "note": "Tautan ini hanya dapat digunakan sekali dan kedaluwarsa pada {{verification_expiry}}. Jika Anda tidak mendaftar di SosoAPI, abaikan email ini."
+    },
+    "signin": {
+      "name": "Kode masuk",
+      "subject": "Kode masuk SosoAPI Anda",
+      "preview": "Gunakan kode sekali pakai ini untuk masuk.",
+      "title": "Kode masuk Anda",
+      "body": "Masukkan kode di bawah ini di SosoAPI untuk menyelesaikan proses masuk, atau gunakan tombol masuk.",
+      "cta": "Masuk ke SosoAPI",
+      "note": "Kode kedaluwarsa pada {{code_expiry}}. Jangan bagikan kode atau tautan ini. Jika Anda tidak memintanya, abaikan email ini."
+    },
+    "reset": {
+      "name": "Atur ulang kata sandi",
+      "subject": "Atur ulang kata sandi SosoAPI Anda",
+      "preview": "Pilih kata sandi baru melalui tautan aman ini.",
+      "title": "Atur ulang kata sandi Anda",
+      "body": "Kami menerima permintaan untuk mengatur ulang kata sandi SosoAPI Anda. Gunakan tombol di bawah ini untuk memilih kata sandi baru.",
+      "cta": "Atur ulang kata sandi",
+      "note": "Tautan ini hanya dapat digunakan sekali dan kedaluwarsa pada {{reset_expiry}}. Jika Anda tidak meminta pengaturan ulang, abaikan email ini. Kata sandi Anda belum berubah."
+    },
+    "security": {
+      "name": "Kata sandi diubah",
+      "subject": "Kata sandi SosoAPI Anda telah diubah",
+      "preview": "Jika Anda tidak melakukan perubahan ini, amankan akun Anda.",
+      "title": "Kata sandi Anda telah diubah",
+      "body": "Kata sandi akun SosoAPI Anda telah diubah. Jika Anda yang melakukan perubahan ini, tidak ada tindakan lebih lanjut yang diperlukan.",
+      "cta": "Tinjau keamanan akun",
+      "callout": "Jika Anda tidak melakukan perubahan ini, atur ulang kata sandi dan tinjau aplikasi yang terhubung serta hak akses akun Anda."
+    },
+    "activated": {
+      "name": "Langganan aktif",
+      "subject": "Langganan SosoAPI Anda sudah aktif",
+      "preview": "Pembayaran Anda telah dikonfirmasi dan langganan Anda sudah aktif.",
+      "title": "Langganan Anda sudah aktif",
+      "body": "Pembayaran Anda telah dikonfirmasi. Langganan yang diperbarui kini aktif untuk ruang kerja di bawah ini.",
+      "cta": "Buka ruang kerja",
+      "note": "Penyedia pembayaran kami mengirimkan bukti pembayaran resmi secara terpisah. Anda dapat meninjau paket dan faktur di bagian Penagihan."
+    },
+    "payment": {
+      "name": "Pembayaran tidak berhasil",
+      "subject": "Perbarui metode pembayaran SosoAPI Anda",
+      "preview": "Kami tidak dapat memproses pembayaran perpanjangan langganan Anda.",
+      "title": "Pembayaran perpanjangan tidak berhasil",
+      "body": "Kami tidak dapat memproses pembayaran perpanjangan langganan Anda. Perbarui metode pembayaran agar akses Anda saat ini tetap tersedia.",
+      "cta": "Perbarui metode pembayaran",
+      "note": "Jika Anda sudah menyelesaikan masalah pembayaran, periksa status terbaru di bagian Penagihan. Jangan pernah mengirimkan informasi kartu melalui email."
+    },
+    "cancel": {
+      "name": "Pembatalan dikonfirmasi",
+      "subject": "Pembatalan langganan SosoAPI Anda telah dikonfirmasi",
+      "preview": "Paket Anda saat ini tetap tersedia hingga tanggal di bawah ini.",
+      "title": "Pembatalan Anda telah dikonfirmasi",
+      "body": "Perpanjangan otomatis telah dinonaktifkan. Anda dapat terus menggunakan paket saat ini hingga tanggal di bawah ini.",
+      "cta": "Lihat langganan",
+      "note": "Lihat bagian Penagihan untuk mengetahui perubahan yang berlaku setelah akses berbayar berakhir. Membatalkan langganan tidak menghapus akun Anda."
+    },
+    "invite": {
+      "name": "Undangan tim",
+      "subject": "Anda diundang bergabung dengan Studio di SosoAPI",
+      "preview": "Jamie mengundang Anda untuk bergabung dengan tim.",
+      "title": "Anda diundang bergabung dengan tim",
+      "body": "Jamie mengundang Anda untuk berkolaborasi di SosoAPI. Terima undangan untuk mengakses ruang kerja dengan izin yang ditampilkan di bawah ini.",
+      "cta": "Terima undangan",
+      "note": "Masuk dengan alamat email yang menerima undangan ini. Jika Anda tidak mengharapkan undangan ini, abaikan email ini."
+    },
+    "reconnect": {
+      "name": "Hubungkan kembali akun",
+      "subject": "Hubungkan kembali akun Instagram Anda",
+      "preview": "Pulihkan koneksi agar Anda dapat memublikasikan postingan kembali.",
+      "title": "Hubungkan kembali akun Anda",
+      "body": "Kami tidak lagi dapat mengakses akun Instagram Anda. Hubungkan kembali akun tersebut untuk memulihkan akses publikasi.",
+      "cta": "Hubungkan kembali Instagram",
+      "note": "Setelah terhubung kembali, tinjau postingan yang terdampak. Postingan yang sudah gagal mungkin memerlukan tindakan pemulihan terpisah."
+    },
+    "failed": {
+      "name": "Postingan tidak terbit",
+      "subject": "Postingan Instagram Anda tidak dapat dipublikasikan",
+      "preview": "File media tidak tersedia. Konten postingan Anda masih tersimpan.",
+      "title": "Postingan Anda tidak dapat dipublikasikan",
+      "body": "Postingan Instagram terjadwal Anda tidak dapat dipublikasikan karena file media tidak lagi tersedia. Konten postingan Anda masih tersimpan.",
+      "cta": "Tinjau dan perbaiki postingan",
+      "note": "Ganti media, tinjau postingan, lalu pilih waktu publikasi baru. Membuka email ini tidak akan mengirim ulang postingan."
+    },
+    "uncertain": {
+      "name": "Publikasi belum dikonfirmasi",
+      "subject": "Periksa apakah postingan Instagram Anda sudah terbit",
+      "preview": "Kami tidak dapat memastikan hasilnya. Periksa sebelum mencoba lagi.",
+      "title": "Publikasi belum dapat dikonfirmasi",
+      "body": "Platform tidak memberikan hasil yang jelas. Postingan Anda mungkin sudah terbit. Periksa akun sebelum memublikasikannya lagi.",
+      "cta": "Tinjau status publikasi",
+      "callout": "Untuk menghindari postingan ganda, periksa postingan asli di Instagram sebelum memilih tindakan pemulihan."
+    },
+    "deletion": {
+      "name": "Permintaan penghapusan",
+      "subject": "Permintaan penghapusan akun SosoAPI Anda",
+      "preview": "Anda dapat memulihkan akun sebelum batas waktu di bawah ini.",
+      "title": "Permintaan penghapusan telah diterima",
+      "body": "Akses akun Anda kini ditangguhkan. Anda dapat memulihkan akun sebelum batas waktu di bawah ini.",
+      "cta": "Masuk untuk memulihkan akun",
+      "callout": "Postingan pribadi terjadwal yang belum mulai diproses telah dibatalkan, dan perpanjangan langganan sedang dihentikan. Memulihkan akun tidak otomatis menjadwalkan ulang postingan atau mengaktifkan kembali perpanjangan.",
+      "note": "Jika Anda tidak meminta tindakan ini, pulihkan akun, ubah kata sandi, dan tinjau aplikasi yang terhubung. Penghapusan permanen dimulai setelah masa pemulihan berakhir."
+    }
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "ui": {
+    "scenario": "必要邮件",
+    "language": "语言",
+    "preview": "预览",
+    "desktop": "桌面版",
+    "mobile": "手机版",
+    "previewLabel": "必要邮件 · 设计预览",
+    "demoNotice": "这是使用示例数据的设计预览。按钮不会发送邮件或更改账户。",
+    "actionNotice": "仅供预览，没有发送邮件或更改账户。",
+    "greeting": "{{name}}，你好：",
+    "team": "SosoAPI 团队",
+    "help": "需要帮助？",
+    "contact": "联系我们",
+    "footer": "这封邮件与你的 SosoAPI 账户或你请求的操作有关。",
+    "secureLink": "打开安全链接",
+    "fallback": "如果按钮无法使用，请打开下方的安全链接。",
+    "codeLabel": "一次性登录验证码",
+    "samplePost": "新一季的创作灵感，来自生活中值得细心欣赏的小事。",
+    "mediaUnavailable": "媒体不可用",
+    "groups": {
+      "auth": "登录与安全",
+      "billing": "付款与订阅",
+      "team": "团队访问权限",
+      "publishing": "连接与发布",
+      "privacy": "账户隐私"
+    }
+  },
+  "fields": {
+    "workspace": "工作空间",
+    "plan": "方案",
+    "amountPaid": "已付金额",
+    "renewalDate": "下次续订日期",
+    "amountDue": "应付金额",
+    "accessUntil": "当前权限保留至",
+    "accessEnd": "当前权限结束日期",
+    "automaticRenewal": "自动续订",
+    "off": "已关闭",
+    "organization": "组织",
+    "role": "你的权限",
+    "viewer": "查看者",
+    "invitationExpiry": "邀请到期时间",
+    "account": "账户",
+    "affectedPosts": "受影响的定时帖子",
+    "scheduledFor": "原定发布时间",
+    "issue": "需要处理",
+    "replaceMedia": "替换不可用的媒体",
+    "platform": "平台",
+    "attemptedAt": "尝试发布时间",
+    "restoreDeadline": "恢复截止时间",
+    "changedAt": "更改时间"
+  },
+  "templates": {
+    "verify": {
+      "name": "确认邮箱地址",
+      "subject": "请确认你的 SosoAPI 邮箱地址",
+      "preview": "确认邮箱地址，完成账户设置。",
+      "title": "请确认你的邮箱地址",
+      "body": "感谢你注册 SosoAPI。请确认你的邮箱地址，完成账户设置。",
+      "cta": "确认邮箱地址",
+      "note": "此链接只能使用一次，将于 {{verification_expiry}} 到期。如果你没有注册 SosoAPI，可以忽略这封邮件。"
+    },
+    "signin": {
+      "name": "登录验证码",
+      "subject": "你的 SosoAPI 登录验证码",
+      "preview": "使用此一次性验证码登录。",
+      "title": "你的登录验证码",
+      "body": "在 SosoAPI 中输入以下验证码，或点击登录按钮，即可完成登录。",
+      "cta": "登录 SosoAPI",
+      "note": "验证码将于 {{code_expiry}} 到期。请勿与他人分享验证码或链接。如果你没有提出此请求，可以忽略这封邮件。"
+    },
+    "reset": {
+      "name": "重置密码",
+      "subject": "重置你的 SosoAPI 密码",
+      "preview": "通过安全链接设置新密码。",
+      "title": "重置你的密码",
+      "body": "我们收到了重置你的 SosoAPI 密码的请求。请点击下方按钮，设置新密码。",
+      "cta": "重置密码",
+      "note": "此链接只能使用一次，将于 {{reset_expiry}} 到期。如果你没有请求重置密码，可以忽略这封邮件。你的密码尚未更改。"
+    },
+    "security": {
+      "name": "密码已更改",
+      "subject": "你的 SosoAPI 密码已更改",
+      "preview": "如果这不是你的操作，请立即保护账户。",
+      "title": "你的密码已更改",
+      "body": "你的 SosoAPI 账户密码已更改。如果这是你的操作，则无需采取其他行动。",
+      "cta": "检查账户安全",
+      "callout": "如果这不是你的操作，请重置密码，并检查已连接的应用及账户访问权限。"
+    },
+    "activated": {
+      "name": "订阅已生效",
+      "subject": "你的 SosoAPI 订阅已生效",
+      "preview": "付款已确认，订阅现已生效。",
+      "title": "你的订阅已生效",
+      "body": "你的付款已确认。更新后的订阅已在以下工作空间生效。",
+      "cta": "打开工作空间",
+      "note": "支付服务商会另外发送正式收据。你可以在账单页面查看方案及发票。"
+    },
+    "payment": {
+      "name": "付款未成功",
+      "subject": "请更新你的 SosoAPI 付款方式",
+      "preview": "我们未能收取本次订阅续费。",
+      "title": "续订付款未成功",
+      "body": "我们未能收取本次订阅续费。请更新付款方式，以保留当前使用权限。",
+      "cta": "更新付款方式",
+      "note": "如果你已处理付款，请到账单页面查看最新状态。请勿通过邮件提供银行卡信息。"
+    },
+    "cancel": {
+      "name": "取消订阅已确认",
+      "subject": "你的 SosoAPI 订阅取消已确认",
+      "preview": "你仍可使用当前方案至以下日期。",
+      "title": "取消订阅已确认",
+      "body": "自动续订已关闭。你仍可使用当前方案至以下日期。",
+      "cta": "查看订阅",
+      "note": "付费权限结束后的变更，请到账单页面查看。取消订阅不会删除账户。"
+    },
+    "invite": {
+      "name": "团队邀请",
+      "subject": "你受邀加入 SosoAPI 上的 Studio 团队",
+      "preview": "Jamie 邀请你加入团队。",
+      "title": "你受邀加入团队",
+      "body": "Jamie 邀请你在 SosoAPI 上一起协作。接受邀请后，你就可以按以下权限访问工作空间。",
+      "cta": "接受邀请",
+      "note": "请使用收到邀请的邮箱地址登录。如果这不是你预期收到的邀请，可以忽略这封邮件。"
+    },
+    "reconnect": {
+      "name": "重新连接账户",
+      "subject": "请重新连接你的 Instagram 账户",
+      "preview": "重新连接账户，以恢复发布权限。",
+      "title": "请重新连接你的账户",
+      "body": "我们目前无法访问你的 Instagram 账户。请重新连接，以恢复发布权限。",
+      "cta": "重新连接 Instagram",
+      "note": "重新连接后，请检查受影响的帖子。此前发布失败的帖子可能需要另外处理。"
+    },
+    "failed": {
+      "name": "帖子未能发布",
+      "subject": "你的 Instagram 帖子未能发布",
+      "preview": "媒体文件不可用，帖子内容仍然保留。",
+      "title": "你的帖子未能发布",
+      "body": "由于媒体文件已不可用，你的 Instagram 定时帖子未能发布。帖子内容仍然保留。",
+      "cta": "检查并修复帖子",
+      "note": "请替换媒体、检查帖子，并选择新的发布时间。打开这封邮件不会重新发布帖子。"
+    },
+    "uncertain": {
+      "name": "发布结果未确认",
+      "subject": "请检查你的 Instagram 帖子是否已发布",
+      "preview": "我们未能确认结果，请在重试前先检查。",
+      "title": "未能确认发布结果",
+      "body": "平台没有返回明确结果，帖子可能已经发布。请先检查账户，再决定是否重新发布。",
+      "cta": "查看发布状态",
+      "callout": "为避免重复发布，请先在 Instagram 检查原帖，再选择合适的处理方式。"
+    },
+    "deletion": {
+      "name": "删除账户请求",
+      "subject": "你的 SosoAPI 账户删除请求",
+      "preview": "你仍可在以下截止时间前恢复账户。",
+      "title": "已收到你的删除账户请求",
+      "body": "你的账户访问权限现已暂停。你仍可在以下截止时间前恢复账户。",
+      "cta": "登录并恢复账户",
+      "callout": "尚未开始的个人定时帖子会被取消，订阅续订也会停止。恢复账户不会自动重新安排帖子或恢复续订。",
+      "note": "如果这不是你提出的请求，请恢复账户、更改密码，并检查已连接的应用。恢复期结束后将开始永久删除。"
+    }
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "ui": {
+    "scenario": "Viktigt e-postmeddelande",
+    "language": "Språk",
+    "preview": "Förhandsvisning",
+    "desktop": "Dator",
+    "mobile": "Mobil",
+    "previewLabel": "Viktiga e-postmeddelanden · Designförhandsvisning",
+    "demoNotice": "Designförhandsvisning med exempeldata. Knapparna skickar inga e-postmeddelanden och ändrar inte ditt konto.",
+    "actionNotice": "Endast förhandsvisning. Inga e-postmeddelanden har skickats och inga ändringar har gjorts i ditt konto.",
+    "greeting": "Hej {{name}},",
+    "team": "SosoAPI-teamet",
+    "help": "Behöver du hjälp?",
+    "contact": "Kontakta oss",
+    "footer": "Det här e-postmeddelandet gäller ditt SosoAPI-konto eller en åtgärd som du har begärt.",
+    "secureLink": "Öppna säker länk",
+    "fallback": "Om knappen inte fungerar kan du öppna den säkra länken nedan.",
+    "codeLabel": "Engångskod för inloggning",
+    "samplePost": "En ny säsong av idéer, inspirerad av de små ögonblicken omkring oss.",
+    "mediaUnavailable": "Mediefilen är inte tillgänglig",
+    "groups": {
+      "auth": "Inloggning och säkerhet",
+      "billing": "Betalningar och abonnemang",
+      "team": "Teamåtkomst",
+      "publishing": "Anslutningar och publicering",
+      "privacy": "Kontointegritet"
+    }
+  },
+  "fields": {
+    "workspace": "Arbetsyta",
+    "plan": "Abonnemang",
+    "amountPaid": "Betalt belopp",
+    "renewalDate": "Nästa förnyelse",
+    "amountDue": "Belopp att betala",
+    "accessUntil": "Åtkomst kvarstår till",
+    "accessEnd": "Nuvarande åtkomst upphör",
+    "automaticRenewal": "Automatisk förnyelse",
+    "off": "Av",
+    "organization": "Organisation",
+    "role": "Dina behörigheter",
+    "viewer": "Läsbehörighet",
+    "invitationExpiry": "Inbjudan löper ut",
+    "account": "Konto",
+    "affectedPosts": "Berörda schemalagda inlägg",
+    "scheduledFor": "Schemalagt till",
+    "issue": "Åtgärd krävs",
+    "replaceMedia": "Ersätt den otillgängliga mediefilen",
+    "platform": "Plattform",
+    "attemptedAt": "Försök gjordes",
+    "restoreDeadline": "Återställ före",
+    "changedAt": "Ändrat"
+  },
+  "templates": {
+    "verify": {
+      "name": "Bekräfta e-postadress",
+      "subject": "Bekräfta din e-postadress för SosoAPI",
+      "preview": "Bekräfta din e-postadress för att slutföra kontoinställningarna.",
+      "title": "Bekräfta din e-postadress",
+      "body": "Tack för att du har registrerat dig hos SosoAPI. Bekräfta din e-postadress för att slutföra kontoinställningarna.",
+      "cta": "Bekräfta e-postadress",
+      "note": "Den här länken kan användas en gång och löper ut {{verification_expiry}}. Om du inte har registrerat dig hos SosoAPI kan du ignorera det här meddelandet."
+    },
+    "signin": {
+      "name": "Inloggningskod",
+      "subject": "Din inloggningskod för SosoAPI",
+      "preview": "Använd den här engångskoden för att logga in.",
+      "title": "Din inloggningskod",
+      "body": "Ange koden nedan i SosoAPI för att slutföra inloggningen, eller använd inloggningsknappen.",
+      "cta": "Logga in på SosoAPI",
+      "note": "Koden löper ut {{code_expiry}}. Dela inte koden eller länken med andra. Om du inte har begärt den kan du ignorera det här meddelandet."
+    },
+    "reset": {
+      "name": "Återställ lösenord",
+      "subject": "Återställ ditt SosoAPI-lösenord",
+      "preview": "Välj ett nytt lösenord via den här säkra länken.",
+      "title": "Återställ ditt lösenord",
+      "body": "Vi har tagit emot en begäran om att återställa ditt SosoAPI-lösenord. Använd knappen nedan för att välja ett nytt lösenord.",
+      "cta": "Återställ lösenord",
+      "note": "Den här länken kan användas en gång och löper ut {{reset_expiry}}. Om du inte har begärt en återställning kan du ignorera det här meddelandet. Ditt lösenord har inte ändrats."
+    },
+    "security": {
+      "name": "Lösenord ändrat",
+      "subject": "Ditt SosoAPI-lösenord har ändrats",
+      "preview": "Skydda ditt konto om du inte gjorde den här ändringen.",
+      "title": "Ditt lösenord har ändrats",
+      "body": "Lösenordet till ditt SosoAPI-konto har ändrats. Om du gjorde den här ändringen behöver du inte göra något mer.",
+      "cta": "Granska kontosäkerheten",
+      "callout": "Om du inte gjorde den här ändringen ska du återställa ditt lösenord och granska anslutna appar samt åtkomsten till ditt konto."
+    },
+    "activated": {
+      "name": "Abonnemang aktivt",
+      "subject": "Ditt SosoAPI-abonnemang är aktivt",
+      "preview": "Din betalning är bekräftad och ditt abonnemang är aktivt.",
+      "title": "Ditt abonnemang är aktivt",
+      "body": "Din betalning har bekräftats. Ditt uppdaterade abonnemang är nu aktivt för arbetsytan nedan.",
+      "cta": "Öppna arbetsyta",
+      "note": "Vår betalningsleverantör skickar ditt officiella kvitto separat. Du kan granska ditt abonnemang och dina fakturor under Fakturering."
+    },
+    "payment": {
+      "name": "Betalning misslyckades",
+      "subject": "Uppdatera din betalningsmetod för SosoAPI",
+      "preview": "Vi kunde inte ta betalt för förnyelsen av ditt abonnemang.",
+      "title": "Betalningen för din förnyelse misslyckades",
+      "body": "Vi kunde inte ta betalt för förnyelsen av ditt abonnemang. Uppdatera din betalningsmetod för att behålla din nuvarande åtkomst.",
+      "cta": "Uppdatera betalningsmetod",
+      "note": "Om du redan har löst betalningen kan du se aktuell status under Fakturering. Skicka aldrig kortuppgifter via e-post."
+    },
+    "cancel": {
+      "name": "Uppsägning bekräftad",
+      "subject": "Uppsägningen av ditt SosoAPI-abonnemang är bekräftad",
+      "preview": "Ditt nuvarande abonnemang är tillgängligt till datumet nedan.",
+      "title": "Din uppsägning är bekräftad",
+      "body": "Automatisk förnyelse har stängts av. Du kan fortsätta använda ditt nuvarande abonnemang till datumet nedan.",
+      "cta": "Visa abonnemang",
+      "note": "Se under Fakturering vilka ändringar som gäller när den betalda åtkomsten upphör. Ditt konto raderas inte när du säger upp abonnemanget."
+    },
+    "invite": {
+      "name": "Teaminbjudan",
+      "subject": "Du är inbjuden till Studio på SosoAPI",
+      "preview": "Jamie har bjudit in dig till teamet.",
+      "title": "Du är inbjuden till teamet",
+      "body": "Jamie har bjudit in dig att samarbeta i SosoAPI. Acceptera inbjudan för att få tillgång till arbetsytan med behörigheterna som visas nedan.",
+      "cta": "Acceptera inbjudan",
+      "note": "Logga in med e-postadressen som tog emot den här inbjudan. Om du inte förväntade dig den kan du ignorera det här meddelandet."
+    },
+    "reconnect": {
+      "name": "Återanslut konto",
+      "subject": "Återanslut ditt Instagram-konto",
+      "preview": "Återställ anslutningen för att få tillgång till publicering igen.",
+      "title": "Återanslut ditt konto",
+      "body": "Vi har inte längre tillgång till ditt Instagram-konto. Återanslut det för att återställa möjligheten att publicera.",
+      "cta": "Återanslut Instagram",
+      "note": "Granska de berörda inläggen efter återanslutningen. Inlägg som redan har misslyckats kan behöva en separat återställningsåtgärd."
+    },
+    "failed": {
+      "name": "Inlägg inte publicerat",
+      "subject": "Ditt Instagram-inlägg kunde inte publiceras",
+      "preview": "Mediefilen är inte tillgänglig. Innehållet i ditt inlägg är sparat.",
+      "title": "Ditt inlägg kunde inte publiceras",
+      "body": "Ditt schemalagda Instagram-inlägg kunde inte publiceras eftersom mediefilen inte längre är tillgänglig. Innehållet i ditt inlägg är fortfarande sparat.",
+      "cta": "Granska och rätta inlägget",
+      "note": "Ersätt mediefilen, granska inlägget och välj en ny publiceringstid. Inlägget skickas inte igen när du öppnar det här meddelandet."
+    },
+    "uncertain": {
+      "name": "Publicering obekräftad",
+      "subject": "Kontrollera om ditt Instagram-inlägg publicerades",
+      "preview": "Vi kunde inte bekräfta resultatet. Kontrollera innan du försöker igen.",
+      "title": "Publiceringen kunde inte bekräftas",
+      "body": "Plattformen gav inget tydligt resultat. Ditt inlägg kan redan vara publicerat. Kontrollera kontot innan du publicerar det igen.",
+      "cta": "Granska publiceringsstatus",
+      "callout": "Kontrollera det ursprungliga inlägget på Instagram innan du väljer en återställningsåtgärd, så att du undviker ett dubbelt inlägg."
+    },
+    "deletion": {
+      "name": "Radering begärd",
+      "subject": "Din begäran om att radera SosoAPI-kontot",
+      "preview": "Du kan återställa ditt konto före tidsfristen nedan.",
+      "title": "Vi har tagit emot din begäran om radering",
+      "body": "Åtkomsten till ditt konto är nu pausad. Du kan återställa kontot före tidsfristen nedan.",
+      "cta": "Logga in för att återställa kontot",
+      "callout": "Personliga schemalagda inlägg där publiceringen ännu inte har börjat avbryts, och förnyelsen av abonnemanget håller på att stoppas. Att återställa kontot schemalägger inte inläggen på nytt och startar inte förnyelsen automatiskt.",
+      "note": "Om du inte har begärt detta ska du återställa kontot, ändra lösenordet och granska anslutna appar. Permanent radering påbörjas efter återställningsperioden."
+    }
+  }
+}

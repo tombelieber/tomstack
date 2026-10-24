@@ -1,0 +1,164 @@
+{
+  "ui": {
+    "scenario": "Essentiële e-mail",
+    "language": "Taal",
+    "preview": "Voorbeeld",
+    "desktop": "Desktop",
+    "mobile": "Mobiel",
+    "previewLabel": "Essentiële e-mails · Ontwerpvoorbeeld",
+    "demoNotice": "Ontwerpvoorbeeld met voorbeeldgegevens. De knoppen versturen geen e-mails en wijzigen je account niet.",
+    "actionNotice": "Alleen een voorbeeld. Er is geen e-mail verstuurd en er zijn geen wijzigingen in je account aangebracht.",
+    "greeting": "Hallo {{name}},",
+    "team": "Het SosoAPI-team",
+    "help": "Hulp nodig?",
+    "contact": "Neem contact op",
+    "footer": "Deze e-mail gaat over je SosoAPI-account of een actie die je hebt aangevraagd.",
+    "secureLink": "Veilige link openen",
+    "fallback": "Werkt de knop niet? Open dan de veilige link hieronder.",
+    "codeLabel": "Eenmalige inlogcode",
+    "samplePost": "Een nieuw seizoen vol ideeën, geïnspireerd door de kleine momenten om ons heen.",
+    "mediaUnavailable": "Media niet beschikbaar",
+    "groups": {
+      "auth": "Inloggen en beveiliging",
+      "billing": "Betalingen en abonnementen",
+      "team": "Teamtoegang",
+      "publishing": "Verbindingen en publiceren",
+      "privacy": "Accountprivacy"
+    }
+  },
+  "fields": {
+    "workspace": "Werkruimte",
+    "plan": "Abonnement",
+    "amountPaid": "Betaald bedrag",
+    "renewalDate": "Volgende verlenging",
+    "amountDue": "Te betalen bedrag",
+    "accessUntil": "Toegang blijft beschikbaar tot",
+    "accessEnd": "Huidige toegang eindigt op",
+    "automaticRenewal": "Automatische verlenging",
+    "off": "Uit",
+    "organization": "Organisatie",
+    "role": "Je toegangsrechten",
+    "viewer": "Alleen-lezen",
+    "invitationExpiry": "Uitnodiging verloopt op",
+    "account": "Account",
+    "affectedPosts": "Betrokken geplande berichten",
+    "scheduledFor": "Gepland voor",
+    "issue": "Actie nodig",
+    "replaceMedia": "Vervang de niet-beschikbare media",
+    "platform": "Platform",
+    "attemptedAt": "Poging op",
+    "restoreDeadline": "Herstellen vóór",
+    "changedAt": "Gewijzigd op"
+  },
+  "templates": {
+    "verify": {
+      "name": "E-mailadres bevestigen",
+      "subject": "Bevestig je SosoAPI-e-mailadres",
+      "preview": "Bevestig je e-mailadres om je accountinstellingen te voltooien.",
+      "title": "Bevestig je e-mailadres",
+      "body": "Bedankt voor je registratie bij SosoAPI. Bevestig je e-mailadres om je accountinstellingen te voltooien.",
+      "cta": "E-mailadres bevestigen",
+      "note": "Deze link kan één keer worden gebruikt en verloopt op {{verification_expiry}}. Als je je niet bij SosoAPI hebt geregistreerd, kun je deze e-mail negeren."
+    },
+    "signin": {
+      "name": "Inlogcode",
+      "subject": "Je SosoAPI-inlogcode",
+      "preview": "Gebruik deze eenmalige code om in te loggen.",
+      "title": "Je inlogcode",
+      "body": "Voer de onderstaande code in SosoAPI in om het inloggen te voltooien, of gebruik de inlogknop.",
+      "cta": "Inloggen bij SosoAPI",
+      "note": "De code verloopt op {{code_expiry}}. Deel deze code of link niet met anderen. Als je de code niet hebt aangevraagd, kun je deze e-mail negeren."
+    },
+    "reset": {
+      "name": "Wachtwoord opnieuw instellen",
+      "subject": "Stel je SosoAPI-wachtwoord opnieuw in",
+      "preview": "Kies een nieuw wachtwoord via deze veilige link.",
+      "title": "Stel je wachtwoord opnieuw in",
+      "body": "We hebben een verzoek ontvangen om je SosoAPI-wachtwoord opnieuw in te stellen. Gebruik de knop hieronder om een nieuw wachtwoord te kiezen.",
+      "cta": "Wachtwoord opnieuw instellen",
+      "note": "Deze link kan één keer worden gebruikt en verloopt op {{reset_expiry}}. Als je dit niet hebt aangevraagd, kun je deze e-mail negeren. Je wachtwoord is niet gewijzigd."
+    },
+    "security": {
+      "name": "Wachtwoord gewijzigd",
+      "subject": "Je SosoAPI-wachtwoord is gewijzigd",
+      "preview": "Beveilig je account als je deze wijziging niet zelf hebt aangebracht.",
+      "title": "Je wachtwoord is gewijzigd",
+      "body": "Het wachtwoord van je SosoAPI-account is gewijzigd. Als je dit zelf hebt gedaan, hoef je verder niets te doen.",
+      "cta": "Accountbeveiliging controleren",
+      "callout": "Als je deze wijziging niet zelf hebt aangebracht, stel dan je wachtwoord opnieuw in en controleer je gekoppelde apps en de toegangsrechten voor je account."
+    },
+    "activated": {
+      "name": "Abonnement actief",
+      "subject": "Je SosoAPI-abonnement is actief",
+      "preview": "Je betaling is bevestigd en je abonnement is actief.",
+      "title": "Je abonnement is actief",
+      "body": "Je betaling is bevestigd. Je bijgewerkte abonnement is nu actief voor de onderstaande werkruimte.",
+      "cta": "Werkruimte openen",
+      "note": "Onze betalingsprovider stuurt je officiële betalingsbewijs apart. Je kunt je abonnement en facturen bekijken onder Facturering."
+    },
+    "payment": {
+      "name": "Betaling mislukt",
+      "subject": "Werk je SosoAPI-betaalmethode bij",
+      "preview": "We konden de betaling voor de verlenging van je abonnement niet innen.",
+      "title": "De betaling voor je verlenging is mislukt",
+      "body": "We konden de betaling voor de verlenging van je abonnement niet innen. Werk je betaalmethode bij om je huidige toegang te behouden.",
+      "cta": "Betaalmethode bijwerken",
+      "note": "Als je de betaling al hebt geregeld, controleer dan de actuele status onder Facturering. Verstuur nooit kaartgegevens per e-mail."
+    },
+    "cancel": {
+      "name": "Opzegging bevestigd",
+      "subject": "De opzegging van je SosoAPI-abonnement is bevestigd",
+      "preview": "Je huidige abonnement blijft beschikbaar tot de onderstaande datum.",
+      "title": "Je opzegging is bevestigd",
+      "body": "Automatische verlenging is uitgeschakeld. Je kunt je huidige abonnement blijven gebruiken tot de onderstaande datum.",
+      "cta": "Abonnement bekijken",
+      "note": "Bekijk onder Facturering wat er verandert wanneer je betaalde toegang eindigt. Het opzeggen van je abonnement verwijdert je account niet."
+    },
+    "invite": {
+      "name": "Teamuitnodiging",
+      "subject": "Je bent uitgenodigd voor Studio op SosoAPI",
+      "preview": "Jamie heeft je uitgenodigd voor het team.",
+      "title": "Je bent uitgenodigd voor het team",
+      "body": "Jamie heeft je uitgenodigd om samen te werken in SosoAPI. Accepteer de uitnodiging om met de onderstaande rechten toegang te krijgen tot de werkruimte.",
+      "cta": "Uitnodiging accepteren",
+      "note": "Log in met het e-mailadres waarop je deze uitnodiging hebt ontvangen. Als je de uitnodiging niet verwachtte, kun je deze e-mail negeren."
+    },
+    "reconnect": {
+      "name": "Account opnieuw koppelen",
+      "subject": "Koppel je Instagram-account opnieuw",
+      "preview": "Herstel de verbinding om weer te kunnen publiceren.",
+      "title": "Koppel je account opnieuw",
+      "body": "We hebben geen toegang meer tot je Instagram-account. Koppel het opnieuw om weer te kunnen publiceren.",
+      "cta": "Instagram opnieuw koppelen",
+      "note": "Controleer na het opnieuw koppelen de betrokken berichten. Voor berichten die al zijn mislukt, kan een aparte herstelactie nodig zijn."
+    },
+    "failed": {
+      "name": "Bericht niet gepubliceerd",
+      "subject": "Je Instagram-bericht kon niet worden gepubliceerd",
+      "preview": "Het mediabestand is niet beschikbaar. De inhoud van je bericht is opgeslagen.",
+      "title": "Je bericht kon niet worden gepubliceerd",
+      "body": "Je geplande Instagram-bericht kon niet worden gepubliceerd omdat het mediabestand niet meer beschikbaar is. De inhoud van je bericht is nog steeds opgeslagen.",
+      "cta": "Bericht controleren en herstellen",
+      "note": "Vervang de media, controleer het bericht en kies een nieuw publicatietijdstip. Het openen van deze e-mail verstuurt het bericht niet opnieuw."
+    },
+    "uncertain": {
+      "name": "Publicatie onbevestigd",
+      "subject": "Controleer of je Instagram-bericht is gepubliceerd",
+      "preview": "We konden het resultaat niet bevestigen. Controleer dit voordat je het opnieuw probeert.",
+      "title": "Publicatie kon niet worden bevestigd",
+      "body": "Het platform heeft geen duidelijk resultaat teruggegeven. Je bericht staat mogelijk al online. Controleer het account voordat je het opnieuw publiceert.",
+      "cta": "Publicatiestatus controleren",
+      "callout": "Controleer het oorspronkelijke bericht op Instagram voordat je een herstelactie kiest, om een dubbel bericht te voorkomen."
+    },
+    "deletion": {
+      "name": "Verwijdering aangevraagd",
+      "subject": "Je verzoek om je SosoAPI-account te verwijderen",
+      "preview": "Je kunt je account herstellen vóór de onderstaande deadline.",
+      "title": "Je verwijderingsverzoek is ontvangen",
+      "body": "De toegang tot je account is nu gepauzeerd. Je kunt je account herstellen vóór de onderstaande deadline.",
+      "cta": "Inloggen om account te herstellen",
+      "callout": "Persoonlijke geplande berichten waarvan de publicatie nog niet is begonnen, worden geannuleerd. De verlenging van je abonnement wordt stopgezet. Het herstellen van je account plant berichten niet automatisch opnieuw in en schakelt de verlenging niet automatisch weer in.",
+      "note": "Als je dit niet hebt aangevraagd, herstel dan je account, wijzig je wachtwoord en controleer de gekoppelde apps. De definitieve verwijdering begint na de herstelperiode."
+    }
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "ui": {
+    "scenario": "必要電郵",
+    "language": "語言",
+    "preview": "預覽",
+    "desktop": "桌面版",
+    "mobile": "手機版",
+    "previewLabel": "必要電郵 · 設計預覽",
+    "demoNotice": "此為使用示範資料的設計預覽。按鈕不會寄送電郵或更改帳戶。",
+    "actionNotice": "僅供預覽，未有寄送電郵或更改帳戶。",
+    "greeting": "{{name}}，你好：",
+    "team": "SosoAPI 團隊",
+    "help": "需要協助？",
+    "contact": "聯絡我們",
+    "footer": "這封電郵與你的 SosoAPI 帳戶或你要求的操作有關。",
+    "secureLink": "開啟安全連結",
+    "fallback": "如果按鈕無法使用，請開啟下方的安全連結。",
+    "codeLabel": "一次性登入驗證碼",
+    "samplePost": "新一季的創作靈感，來自生活中值得細心欣賞的小事。",
+    "mediaUnavailable": "媒體無法使用",
+    "groups": {
+      "auth": "登入與安全",
+      "billing": "付款與訂閱",
+      "team": "團隊存取權限",
+      "publishing": "連接與發佈",
+      "privacy": "帳戶私隱"
+    }
+  },
+  "fields": {
+    "workspace": "工作空間",
+    "plan": "方案",
+    "amountPaid": "已付金額",
+    "renewalDate": "下次續訂日期",
+    "amountDue": "應付金額",
+    "accessUntil": "現有權限保留至",
+    "accessEnd": "現有權限結束日期",
+    "automaticRenewal": "自動續訂",
+    "off": "已關閉",
+    "organization": "機構",
+    "role": "你的權限",
+    "viewer": "檢視者",
+    "invitationExpiry": "邀請到期時間",
+    "account": "帳戶",
+    "affectedPosts": "受影響的排程帖文",
+    "scheduledFor": "原定發佈時間",
+    "issue": "需要處理",
+    "replaceMedia": "更換無法使用的媒體",
+    "platform": "平台",
+    "attemptedAt": "嘗試發佈時間",
+    "restoreDeadline": "還原期限",
+    "changedAt": "更改時間"
+  },
+  "templates": {
+    "verify": {
+      "name": "確認電郵地址",
+      "subject": "請確認你的 SosoAPI 電郵地址",
+      "preview": "確認電郵地址，完成帳戶設定。",
+      "title": "請確認你的電郵地址",
+      "body": "多謝你註冊 SosoAPI。請確認你的電郵地址，完成帳戶設定。",
+      "cta": "確認電郵地址",
+      "note": "這條連結只可使用一次，並會於 {{verification_expiry}} 到期。如果你沒有註冊 SosoAPI，可以忽略這封電郵。"
+    },
+    "signin": {
+      "name": "登入驗證碼",
+      "subject": "你的 SosoAPI 登入驗證碼",
+      "preview": "使用這個一次性驗證碼登入。",
+      "title": "你的登入驗證碼",
+      "body": "在 SosoAPI 輸入以下驗證碼，或按下登入按鈕，即可完成登入。",
+      "cta": "登入 SosoAPI",
+      "note": "驗證碼會於 {{code_expiry}} 到期。請勿與他人分享驗證碼或連結。如果你沒有提出要求，可以忽略這封電郵。"
+    },
+    "reset": {
+      "name": "重設密碼",
+      "subject": "重設你的 SosoAPI 密碼",
+      "preview": "透過安全連結設定新密碼。",
+      "title": "重設你的密碼",
+      "body": "我們收到重設你的 SosoAPI 帳戶密碼的要求。請按下方按鈕，設定新密碼。",
+      "cta": "重設密碼",
+      "note": "這條連結只可使用一次，並會於 {{reset_expiry}} 到期。如果你沒有要求重設密碼，可以忽略這封電郵。你的密碼尚未更改。"
+    },
+    "security": {
+      "name": "密碼已更改",
+      "subject": "你的 SosoAPI 密碼已更改",
+      "preview": "如果這不是你的操作，請立即保護帳戶。",
+      "title": "你的密碼已更改",
+      "body": "你的 SosoAPI 帳戶密碼已更改。如果這是你的操作，便不需要採取其他行動。",
+      "cta": "檢查帳戶安全",
+      "callout": "如果這不是你的操作，請重設密碼，並檢查已連接的應用程式及帳戶存取權限。"
+    },
+    "activated": {
+      "name": "訂閱已生效",
+      "subject": "你的 SosoAPI 訂閱已生效",
+      "preview": "付款已確認，訂閱現已生效。",
+      "title": "你的訂閱已生效",
+      "body": "你的付款已確認。更新後的訂閱已於以下工作空間生效。",
+      "cta": "開啟工作空間",
+      "note": "付款服務商會另外寄送正式收據。你可以在帳單頁查看方案及發票。"
+    },
+    "payment": {
+      "name": "付款未成功",
+      "subject": "請更新你的 SosoAPI 付款方式",
+      "preview": "我們未能收取本次訂閱續費。",
+      "title": "續訂付款未成功",
+      "body": "我們未能收取本次訂閱續費。請更新付款方式，以保留現有使用權限。",
+      "cta": "更新付款方式",
+      "note": "如果你已處理付款，請到帳單頁查看最新狀態。請勿透過電郵提供信用卡資料。"
+    },
+    "cancel": {
+      "name": "取消訂閱已確認",
+      "subject": "你的 SosoAPI 訂閱取消已確認",
+      "preview": "你仍可使用現有方案至以下日期。",
+      "title": "取消訂閱已確認",
+      "body": "自動續訂已關閉。你仍可使用現有方案至以下日期。",
+      "cta": "查看訂閱",
+      "note": "付費權限結束後的變更，請到帳單頁查看。取消訂閱並不會刪除帳戶。"
+    },
+    "invite": {
+      "name": "團隊邀請",
+      "subject": "你獲邀加入 SosoAPI 上的 Studio 團隊",
+      "preview": "Jamie 邀請你加入團隊。",
+      "title": "你獲邀加入團隊",
+      "body": "Jamie 邀請你在 SosoAPI 上一起協作。接受邀請後，你便可按以下權限存取工作空間。",
+      "cta": "接受邀請",
+      "note": "請使用收到邀請的電郵地址登入。如果你沒有預期收到此邀請，可以忽略這封電郵。"
+    },
+    "reconnect": {
+      "name": "重新連接帳戶",
+      "subject": "請重新連接你的 Instagram 帳戶",
+      "preview": "重新連接帳戶，以恢復發佈權限。",
+      "title": "請重新連接你的帳戶",
+      "body": "我們目前無法存取你的 Instagram 帳戶。請重新連接，以恢復發佈權限。",
+      "cta": "重新連接 Instagram",
+      "note": "重新連接後，請檢查受影響的帖文。先前發佈失敗的帖文可能需要另外處理。"
+    },
+    "failed": {
+      "name": "帖文未能發佈",
+      "subject": "你的 Instagram 帖文未能發佈",
+      "preview": "媒體檔案無法使用，帖文內容仍然保留。",
+      "title": "你的帖文未能發佈",
+      "body": "由於媒體檔案已無法使用，你的 Instagram 排程帖文未能發佈。帖文內容仍然保留。",
+      "cta": "檢查並修正帖文",
+      "note": "請更換媒體、檢查帖文，並選擇新的發佈時間。開啟這封電郵不會重新發佈帖文。"
+    },
+    "uncertain": {
+      "name": "發佈結果未確認",
+      "subject": "請檢查你的 Instagram 帖文是否已發佈",
+      "preview": "我們未能確認結果，請在重試前先檢查。",
+      "title": "未能確認發佈結果",
+      "body": "平台未有回傳明確結果，帖文可能已經發佈。請先檢查帳戶，再決定是否重新發佈。",
+      "cta": "查看發佈狀態",
+      "callout": "為避免重複發佈，請先在 Instagram 檢查原帖，再選擇合適的處理方法。"
+    },
+    "deletion": {
+      "name": "刪除帳戶申請",
+      "subject": "你的 SosoAPI 帳戶刪除申請",
+      "preview": "你仍可在以下期限前還原帳戶。",
+      "title": "已收到你的刪除帳戶申請",
+      "body": "你的帳戶存取權現已暫停。你仍可在以下期限前還原帳戶。",
+      "cta": "登入並還原帳戶",
+      "callout": "尚未開始的個人排程帖文會被取消，訂閱續訂亦會停止。還原帳戶不會自動重新排程帖文或恢復續訂。",
+      "note": "如果這不是你提出的申請，請還原帳戶、更改密碼，並檢查已連接的應用程式。還原期結束後會開始永久刪除。"
+    }
+  }
+}

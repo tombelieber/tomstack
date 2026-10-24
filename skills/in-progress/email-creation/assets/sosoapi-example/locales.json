@@ -1,0 +1,113 @@
+{
+  "defaultLocale": "zh-Hant",
+  "locales": [
+    {
+      "code": "en",
+      "label": "English",
+      "dir": "ltr",
+      "tag": "en"
+    },
+    {
+      "code": "zh-Hant",
+      "label": "繁體中文（香港）",
+      "dir": "ltr",
+      "tag": "zh-HK"
+    },
+    {
+      "code": "zh-TW",
+      "label": "繁體中文（台灣）",
+      "dir": "ltr",
+      "tag": "zh-TW"
+    },
+    {
+      "code": "zh-Hans",
+      "label": "简体中文",
+      "dir": "ltr",
+      "tag": "zh-CN"
+    },
+    {
+      "code": "ja",
+      "label": "日本語",
+      "dir": "ltr",
+      "tag": "ja"
+    },
+    {
+      "code": "ko",
+      "label": "한국어",
+      "dir": "ltr",
+      "tag": "ko"
+    },
+    {
+      "code": "de",
+      "label": "Deutsch",
+      "dir": "ltr",
+      "tag": "de"
+    },
+    {
+      "code": "fr",
+      "label": "Français",
+      "dir": "ltr",
+      "tag": "fr"
+    },
+    {
+      "code": "es",
+      "label": "Español",
+      "dir": "ltr",
+      "tag": "es"
+    },
+    {
+      "code": "pt-BR",
+      "label": "Português (Brasil)",
+      "dir": "ltr",
+      "tag": "pt-BR"
+    },
+    {
+      "code": "ar",
+      "label": "العربية",
+      "dir": "rtl",
+      "tag": "ar"
+    },
+    {
+      "code": "he",
+      "label": "עברית",
+      "dir": "rtl",
+      "tag": "he"
+    },
+    {
+      "code": "nl",
+      "label": "Nederlands",
+      "dir": "ltr",
+      "tag": "nl"
+    },
+    {
+      "code": "hi",
+      "label": "हिन्दी",
+      "dir": "ltr",
+      "tag": "hi"
+    },
+    {
+      "code": "id",
+      "label": "Bahasa Indonesia",
+      "dir": "ltr",
+      "tag": "id"
+    },
+    {
+      "code": "nb",
+      "label": "Norsk bokmål",
+      "dir": "ltr",
+      "tag": "nb"
+    },
+    {
+      "code": "sv",
+      "label": "Svenska",
+      "dir": "ltr",
+      "tag": "sv"
+    },
+    {
+      "code": "hu",
+      "label": "Magyar",
+      "dir": "ltr",
+      "tag": "hu"
+    }
+  ]
+}

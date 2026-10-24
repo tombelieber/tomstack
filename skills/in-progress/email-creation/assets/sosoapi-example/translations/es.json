@@ -1,0 +1,164 @@
+{
+  "ui": {
+    "scenario": "Correo esencial",
+    "language": "Idioma",
+    "preview": "Vista previa",
+    "desktop": "Ordenador",
+    "mobile": "Móvil",
+    "previewLabel": "Correos esenciales · Vista previa del diseño",
+    "demoNotice": "Vista previa del diseño con datos de ejemplo. Los botones no envían correos ni modifican tu cuenta.",
+    "actionNotice": "Solo es una vista previa. No se ha enviado ningún correo ni se ha modificado tu cuenta.",
+    "greeting": "Hola, {{name}}:",
+    "team": "El equipo de SosoAPI",
+    "help": "¿Necesitas ayuda?",
+    "contact": "Contacta con nosotros",
+    "footer": "Este correo está relacionado con tu cuenta de SosoAPI o con una acción que has solicitado.",
+    "secureLink": "Abrir enlace seguro",
+    "fallback": "Si el botón no funciona, abre el enlace seguro que aparece a continuación.",
+    "codeLabel": "Código de acceso de un solo uso",
+    "samplePost": "Una nueva temporada de ideas, inspirada en los pequeños momentos que nos rodean.",
+    "mediaUnavailable": "Archivo multimedia no disponible",
+    "groups": {
+      "auth": "Acceso y seguridad",
+      "billing": "Pagos y suscripciones",
+      "team": "Acceso al equipo",
+      "publishing": "Conexiones y publicación",
+      "privacy": "Privacidad de la cuenta"
+    }
+  },
+  "fields": {
+    "workspace": "Espacio de trabajo",
+    "plan": "Plan",
+    "amountPaid": "Importe pagado",
+    "renewalDate": "Próxima renovación",
+    "amountDue": "Importe pendiente",
+    "accessUntil": "Acceso disponible hasta",
+    "accessEnd": "Fin del acceso actual",
+    "automaticRenewal": "Renovación automática",
+    "off": "Desactivada",
+    "organization": "Organización",
+    "role": "Tus permisos",
+    "viewer": "Solo lectura",
+    "invitationExpiry": "La invitación caduca",
+    "account": "Cuenta",
+    "affectedPosts": "Publicaciones programadas afectadas",
+    "scheduledFor": "Programada para",
+    "issue": "Acción necesaria",
+    "replaceMedia": "Sustituir el archivo multimedia no disponible",
+    "platform": "Plataforma",
+    "attemptedAt": "Intento realizado",
+    "restoreDeadline": "Restaurar antes de",
+    "changedAt": "Modificado el"
+  },
+  "templates": {
+    "verify": {
+      "name": "Confirmar correo",
+      "subject": "Confirma tu dirección de correo de SosoAPI",
+      "preview": "Confirma tu dirección de correo para completar la configuración de tu cuenta.",
+      "title": "Confirma tu dirección de correo",
+      "body": "Gracias por registrarte en SosoAPI. Confirma tu dirección de correo para completar la configuración de tu cuenta.",
+      "cta": "Confirmar dirección de correo",
+      "note": "Este enlace solo se puede utilizar una vez y caduca el {{verification_expiry}}. Si no te has registrado en SosoAPI, puedes ignorar este correo."
+    },
+    "signin": {
+      "name": "Código de acceso",
+      "subject": "Tu código de acceso a SosoAPI",
+      "preview": "Utiliza este código de un solo uso para iniciar sesión.",
+      "title": "Tu código de acceso",
+      "body": "Introduce el siguiente código en SosoAPI para completar el inicio de sesión o utiliza el botón de acceso.",
+      "cta": "Iniciar sesión en SosoAPI",
+      "note": "El código caduca el {{code_expiry}}. No compartas este código ni el enlace. Si no lo has solicitado, puedes ignorar este correo."
+    },
+    "reset": {
+      "name": "Restablecer contraseña",
+      "subject": "Restablece tu contraseña de SosoAPI",
+      "preview": "Elige una nueva contraseña mediante este enlace seguro.",
+      "title": "Restablece tu contraseña",
+      "body": "Hemos recibido una solicitud para restablecer tu contraseña de SosoAPI. Utiliza el botón que aparece a continuación para elegir una nueva contraseña.",
+      "cta": "Restablecer contraseña",
+      "note": "Este enlace solo se puede utilizar una vez y caduca el {{reset_expiry}}. Si no has solicitado el restablecimiento, puedes ignorar este correo. Tu contraseña no ha cambiado."
+    },
+    "security": {
+      "name": "Contraseña modificada",
+      "subject": "Tu contraseña de SosoAPI se ha modificado",
+      "preview": "Si no has realizado este cambio, protege tu cuenta.",
+      "title": "Tu contraseña se ha modificado",
+      "body": "La contraseña de tu cuenta de SosoAPI se ha modificado. Si has realizado este cambio, no necesitas hacer nada más.",
+      "cta": "Revisar la seguridad de la cuenta",
+      "callout": "Si no has realizado este cambio, restablece tu contraseña y revisa las aplicaciones conectadas y los permisos de acceso a tu cuenta."
+    },
+    "activated": {
+      "name": "Suscripción activa",
+      "subject": "Tu suscripción de SosoAPI está activa",
+      "preview": "Tu pago está confirmado y tu suscripción está activa.",
+      "title": "Tu suscripción está activa",
+      "body": "Tu pago se ha confirmado. Tu suscripción actualizada ya está activa para el siguiente espacio de trabajo.",
+      "cta": "Abrir espacio de trabajo",
+      "note": "Nuestro proveedor de pagos te enviará el recibo oficial por separado. Puedes consultar tu plan y tus facturas en Facturación."
+    },
+    "payment": {
+      "name": "Pago fallido",
+      "subject": "Actualiza tu método de pago de SosoAPI",
+      "preview": "No hemos podido cobrar la renovación de tu suscripción.",
+      "title": "El pago de tu renovación ha fallado",
+      "body": "No hemos podido cobrar la renovación de tu suscripción. Actualiza tu método de pago para mantener tu acceso actual.",
+      "cta": "Actualizar método de pago",
+      "note": "Si ya has resuelto el pago, consulta el estado más reciente en Facturación. Nunca envíes datos de tu tarjeta por correo."
+    },
+    "cancel": {
+      "name": "Cancelación confirmada",
+      "subject": "La cancelación de tu suscripción de SosoAPI está confirmada",
+      "preview": "Tu plan actual seguirá disponible hasta la fecha que aparece a continuación.",
+      "title": "Tu cancelación está confirmada",
+      "body": "La renovación automática se ha desactivado. Puedes seguir utilizando tu plan actual hasta la fecha que aparece a continuación.",
+      "cta": "Ver suscripción",
+      "note": "Consulta en Facturación los cambios que se aplicarán cuando termine el acceso de pago. Cancelar tu suscripción no elimina tu cuenta."
+    },
+    "invite": {
+      "name": "Invitación al equipo",
+      "subject": "Te han invitado a unirte a Studio en SosoAPI",
+      "preview": "Jamie te ha invitado a unirte al equipo.",
+      "title": "Te han invitado a unirte al equipo",
+      "body": "Jamie te ha invitado a colaborar en SosoAPI. Acepta la invitación para acceder al espacio de trabajo con los permisos que se muestran a continuación.",
+      "cta": "Aceptar invitación",
+      "note": "Inicia sesión con la dirección de correo que ha recibido esta invitación. Si no la esperabas, puedes ignorar este correo."
+    },
+    "reconnect": {
+      "name": "Volver a conectar la cuenta",
+      "subject": "Vuelve a conectar tu cuenta de Instagram",
+      "preview": "Restablece la conexión para recuperar el acceso a la publicación.",
+      "title": "Vuelve a conectar tu cuenta",
+      "body": "Ya no podemos acceder a tu cuenta de Instagram. Vuelve a conectarla para recuperar el acceso a la publicación.",
+      "cta": "Volver a conectar Instagram",
+      "note": "Después de volver a conectar la cuenta, revisa las publicaciones afectadas. Las publicaciones que ya hayan fallado pueden necesitar una acción de recuperación aparte."
+    },
+    "failed": {
+      "name": "Publicación no realizada",
+      "subject": "No se ha podido publicar tu publicación de Instagram",
+      "preview": "El archivo multimedia no está disponible. El contenido de tu publicación está guardado.",
+      "title": "No se ha podido publicar tu contenido",
+      "body": "Tu publicación programada de Instagram no se ha podido publicar porque el archivo multimedia ya no está disponible. El contenido de tu publicación sigue guardado.",
+      "cta": "Revisar y corregir publicación",
+      "note": "Sustituye el archivo multimedia, revisa la publicación y elige una nueva fecha y hora de publicación. Abrir este correo no volverá a enviar la publicación."
+    },
+    "uncertain": {
+      "name": "Publicación sin confirmar",
+      "subject": "Comprueba si tu publicación de Instagram se ha publicado",
+      "preview": "No hemos podido confirmar el resultado. Compruébalo antes de volver a intentarlo.",
+      "title": "No se ha podido confirmar la publicación",
+      "body": "La plataforma no ha devuelto un resultado claro. Es posible que tu publicación ya esté visible. Revisa la cuenta antes de volver a publicarla.",
+      "cta": "Revisar estado de publicación",
+      "callout": "Para evitar una publicación duplicada, comprueba la publicación original en Instagram antes de elegir una acción de recuperación."
+    },
+    "deletion": {
+      "name": "Eliminación solicitada",
+      "subject": "Tu solicitud de eliminación de cuenta de SosoAPI",
+      "preview": "Puedes restaurar tu cuenta antes del plazo que aparece a continuación.",
+      "title": "Hemos recibido tu solicitud de eliminación",
+      "body": "El acceso a tu cuenta está ahora suspendido. Puedes restaurar tu cuenta antes del plazo que aparece a continuación.",
+      "cta": "Iniciar sesión para restaurar la cuenta",
+      "callout": "Las publicaciones personales programadas cuyo envío aún no ha comenzado se cancelan, y se está deteniendo la renovación de la suscripción. Restaurar la cuenta no vuelve a programar las publicaciones ni reactiva la renovación de forma automática.",
+      "note": "Si no has solicitado esto, restaura tu cuenta, cambia tu contraseña y revisa las aplicaciones conectadas. La eliminación permanente comienza al terminar el periodo de restauración."
+    }
+  }
+}

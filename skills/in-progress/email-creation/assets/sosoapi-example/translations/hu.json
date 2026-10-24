@@ -1,0 +1,164 @@
+{
+  "ui": {
+    "scenario": "Fontos e-mail",
+    "language": "Nyelv",
+    "preview": "Előnézet",
+    "desktop": "Asztali nézet",
+    "mobile": "Mobilnézet",
+    "previewLabel": "Fontos e-mailek · Tervelőnézet",
+    "demoNotice": "Tervelőnézet mintaadatokkal. A gombok nem küldenek e-mailt, és nem módosítják a fiókot.",
+    "actionNotice": "Csak előnézet. Nem küldtünk e-mailt, és a fiók nem módosult.",
+    "greeting": "Kedves {{name}}!",
+    "team": "A SosoAPI csapata",
+    "help": "Segítségre van szüksége?",
+    "contact": "Lépjen kapcsolatba velünk",
+    "footer": "Ez az e-mail a SosoAPI-fiókjához vagy egy Ön által kért művelethez kapcsolódik.",
+    "secureLink": "Biztonságos hivatkozás megnyitása",
+    "fallback": "Ha a gomb nem működik, nyissa meg az alábbi biztonságos hivatkozást.",
+    "codeLabel": "Egyszer használatos bejelentkezési kód",
+    "samplePost": "Új ötletek szezonja, amelyet a körülöttünk lévő apró pillanatok ihlettek.",
+    "mediaUnavailable": "A médiafájl nem érhető el",
+    "groups": {
+      "auth": "Bejelentkezés és biztonság",
+      "billing": "Fizetések és előfizetések",
+      "team": "Csapathozzáférés",
+      "publishing": "Kapcsolatok és közzététel",
+      "privacy": "A fiók adatvédelme"
+    }
+  },
+  "fields": {
+    "workspace": "Munkaterület",
+    "plan": "Csomag",
+    "amountPaid": "Kifizetett összeg",
+    "renewalDate": "Következő megújítás",
+    "amountDue": "Fizetendő összeg",
+    "accessUntil": "Hozzáférés eddig",
+    "accessEnd": "A jelenlegi hozzáférés vége",
+    "automaticRenewal": "Automatikus megújítás",
+    "off": "Kikapcsolva",
+    "organization": "Szervezet",
+    "role": "Az Ön jogosultságai",
+    "viewer": "Megtekintő",
+    "invitationExpiry": "A meghívó lejárata",
+    "account": "Fiók",
+    "affectedPosts": "Érintett ütemezett bejegyzések",
+    "scheduledFor": "Ütemezett időpont",
+    "issue": "Szükséges teendő",
+    "replaceMedia": "A nem elérhető médiafájl cseréje",
+    "platform": "Platform",
+    "attemptedAt": "A kísérlet időpontja",
+    "restoreDeadline": "Visszaállítási határidő",
+    "changedAt": "Módosítás időpontja"
+  },
+  "templates": {
+    "verify": {
+      "name": "E-mail-cím megerősítése",
+      "subject": "Erősítse meg a SosoAPI-hoz használt e-mail-címét",
+      "preview": "Erősítse meg az e-mail-címét a fiók beállításának befejezéséhez.",
+      "title": "Erősítse meg az e-mail-címét",
+      "body": "Köszönjük, hogy regisztrált a SosoAPI-ra. Kérjük, erősítse meg az e-mail-címét a fiók beállításának befejezéséhez.",
+      "cta": "E-mail-cím megerősítése",
+      "note": "Ez a hivatkozás egyszer használható. Lejárati idő: {{verification_expiry}}. Ha nem regisztrált a SosoAPI-ra, figyelmen kívül hagyhatja ezt az e-mailt."
+    },
+    "signin": {
+      "name": "Bejelentkezési kód",
+      "subject": "Az Ön SosoAPI-bejelentkezési kódja",
+      "preview": "A bejelentkezéshez használja ezt az egyszer használatos kódot.",
+      "title": "Az Ön bejelentkezési kódja",
+      "body": "A bejelentkezés befejezéséhez adja meg az alábbi kódot a SosoAPI-ban, vagy használja a bejelentkezési gombot.",
+      "cta": "Bejelentkezés a SosoAPI-ba",
+      "note": "A kód lejárati ideje: {{code_expiry}}. Ne ossza meg másokkal sem a kódot, sem a hivatkozást. Ha nem Ön kérte, figyelmen kívül hagyhatja ezt az e-mailt."
+    },
+    "reset": {
+      "name": "Jelszó visszaállítása",
+      "subject": "Állítsa vissza SosoAPI-jelszavát",
+      "preview": "Válasszon új jelszót ezen a biztonságos hivatkozáson keresztül.",
+      "title": "Állítsa vissza jelszavát",
+      "body": "Kérelmet kaptunk SosoAPI-jelszavának visszaállítására. Az alábbi gombbal választhat új jelszót.",
+      "cta": "Jelszó visszaállítása",
+      "note": "Ez a hivatkozás egyszer használható. Lejárati idő: {{reset_expiry}}. Ha nem Ön kérte a visszaállítást, figyelmen kívül hagyhatja ezt az e-mailt. A jelszava nem változott meg."
+    },
+    "security": {
+      "name": "Jelszó módosítva",
+      "subject": "SosoAPI-jelszava megváltozott",
+      "preview": "Ha nem Ön módosította, gondoskodjon fiókja biztonságáról.",
+      "title": "A jelszava megváltozott",
+      "body": "SosoAPI-fiókjának jelszava megváltozott. Ha Ön végezte a módosítást, nincs további teendője.",
+      "cta": "Fiókbiztonság ellenőrzése",
+      "callout": "Ha nem Ön végezte a módosítást, állítsa vissza jelszavát, és ellenőrizze a csatlakoztatott alkalmazásokat, valamint a fiókjához tartozó hozzáféréseket."
+    },
+    "activated": {
+      "name": "Aktív előfizetés",
+      "subject": "SosoAPI-előfizetése aktív",
+      "preview": "Fizetését megerősítettük, és előfizetése aktív.",
+      "title": "Az előfizetése aktív",
+      "body": "Fizetését megerősítettük. Frissített előfizetése mostantól aktív az alábbi munkaterületen.",
+      "cta": "Munkaterület megnyitása",
+      "note": "Fizetési szolgáltatónk külön küldi el a hivatalos fizetési bizonylatot. Csomagját és számláit a Számlázás menüpontban tekintheti meg."
+    },
+    "payment": {
+      "name": "Sikertelen fizetés",
+      "subject": "Frissítse a SosoAPI fizetési módját",
+      "preview": "Nem sikerült levonnunk az előfizetés megújításának díját.",
+      "title": "Az előfizetés megújításának kifizetése sikertelen",
+      "body": "Nem sikerült levonnunk az előfizetés megújításának díját. Jelenlegi hozzáférésének megőrzéséhez frissítse a fizetési módját.",
+      "cta": "Fizetési mód frissítése",
+      "note": "Ha már rendezte a fizetést, a Számlázás menüpontban ellenőrizheti az aktuális állapotot. Soha ne küldjön bankkártyaadatokat e-mailben."
+    },
+    "cancel": {
+      "name": "Lemondás megerősítve",
+      "subject": "SosoAPI-előfizetésének lemondását megerősítettük",
+      "preview": "Jelenlegi csomagja az alábbi dátumig elérhető marad.",
+      "title": "A lemondását megerősítettük",
+      "body": "Az automatikus megújítást kikapcsoltuk. Jelenlegi csomagját az alábbi dátumig továbbra is használhatja.",
+      "cta": "Előfizetés megtekintése",
+      "note": "A Számlázás menüpontban megtekintheti, mi változik a fizetős hozzáférés lejártakor. Az előfizetés lemondása nem törli a fiókját."
+    },
+    "invite": {
+      "name": "Csapatmeghívó",
+      "subject": "Meghívást kapott a Studio csapatába a SosoAPI-n",
+      "preview": "Jamie meghívta Önt a csapatba.",
+      "title": "Meghívást kapott a csapatba",
+      "body": "Jamie együttműködésre hívta Önt a SosoAPI-ban. Fogadja el a meghívást, hogy az alábbi jogosultságokkal hozzáférjen a munkaterülethez.",
+      "cta": "Meghívás elfogadása",
+      "note": "Jelentkezzen be azzal az e-mail-címmel, amelyre a meghívót kapta. Ha nem számított a meghívásra, figyelmen kívül hagyhatja ezt az e-mailt."
+    },
+    "reconnect": {
+      "name": "Fiók újracsatlakoztatása",
+      "subject": "Csatlakoztassa újra Instagram-fiókját",
+      "preview": "Állítsa helyre a kapcsolatot, hogy újra közzétehessen bejegyzéseket.",
+      "title": "Csatlakoztassa újra a fiókját",
+      "body": "Már nem férünk hozzá Instagram-fiókjához. Csatlakoztassa újra, hogy helyreálljon a közzétételi hozzáférés.",
+      "cta": "Instagram újracsatlakoztatása",
+      "note": "Az újracsatlakoztatás után ellenőrizze az érintett bejegyzéseket. A korábban sikertelen bejegyzésekhez külön helyreállítási műveletre lehet szükség."
+    },
+    "failed": {
+      "name": "Nem közzétett bejegyzés",
+      "subject": "Instagram-bejegyzését nem sikerült közzétenni",
+      "preview": "A médiafájl nem érhető el. A bejegyzés tartalmát megőriztük.",
+      "title": "A bejegyzését nem sikerült közzétenni",
+      "body": "Ütemezett Instagram-bejegyzését nem sikerült közzétenni, mert a médiafájl már nem érhető el. A bejegyzés tartalma továbbra is mentve van.",
+      "cta": "Bejegyzés ellenőrzése és javítása",
+      "note": "Cserélje ki a médiafájlt, ellenőrizze a bejegyzést, és válasszon új közzétételi időpontot. Az e-mail megnyitása nem küldi el újra a bejegyzést."
+    },
+    "uncertain": {
+      "name": "Nem megerősített közzététel",
+      "subject": "Ellenőrizze, hogy megjelent-e Instagram-bejegyzése",
+      "preview": "Nem tudtuk megerősíteni az eredményt. Ellenőrizze, mielőtt újra próbálkozik.",
+      "title": "A közzétételt nem sikerült megerősíteni",
+      "body": "A platform nem adott egyértelmű eredményt. Lehet, hogy a bejegyzése már megjelent. Ellenőrizze a fiókot, mielőtt újra közzéteszi.",
+      "cta": "Közzétételi állapot ellenőrzése",
+      "callout": "A duplikált bejegyzés elkerüléséhez ellenőrizze az eredeti bejegyzést az Instagramon, mielőtt helyreállítási műveletet választ."
+    },
+    "deletion": {
+      "name": "Törlés kérelmezve",
+      "subject": "Kérelme a SosoAPI-fiók törlésére",
+      "preview": "Az alábbi határidő előtt visszaállíthatja a fiókját.",
+      "title": "Megkaptuk a törlési kérelmét",
+      "body": "Fiókjához jelenleg szünetel a hozzáférés. Az alábbi határidő előtt visszaállíthatja a fiókját.",
+      "cta": "Bejelentkezés a fiók visszaállításához",
+      "callout": "A személyes ütemezett bejegyzések, amelyek közzététele még nem kezdődött el, törlődnek az ütemezésből, és az előfizetés megújításának leállítása folyamatban van. A fiók visszaállítása nem ütemezi újra automatikusan a bejegyzéseket, és nem indítja újra a megújítást.",
+      "note": "Ha nem Ön kérte ezt, állítsa vissza fiókját, módosítsa jelszavát, és ellenőrizze a csatlakoztatott alkalmazásokat. A végleges eltávolítás a visszaállítási időszak után kezdődik."
+    }
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "ui": {
+    "scenario": "Essential email",
+    "language": "Language",
+    "preview": "Preview",
+    "desktop": "Desktop",
+    "mobile": "Mobile",
+    "previewLabel": "Essential emails · Design preview",
+    "demoNotice": "Design preview with sample data. Buttons do not send email or change your account.",
+    "actionNotice": "Preview only. No email was sent and no account changes were made.",
+    "greeting": "Hello {{name}},",
+    "team": "The SosoAPI team",
+    "help": "Need help?",
+    "contact": "Contact us",
+    "footer": "This email relates to your SosoAPI account or an action you requested.",
+    "secureLink": "Open secure link",
+    "fallback": "If the button does not work, open the secure link below.",
+    "codeLabel": "One-time sign-in code",
+    "samplePost": "A new season of ideas, inspired by the small moments around us.",
+    "mediaUnavailable": "Media unavailable",
+    "groups": {
+      "auth": "Login and security",
+      "billing": "Payments and subscriptions",
+      "team": "Team access",
+      "publishing": "Connections and publishing",
+      "privacy": "Account privacy"
+    }
+  },
+  "fields": {
+    "workspace": "Workspace",
+    "plan": "Plan",
+    "amountPaid": "Amount paid",
+    "renewalDate": "Next renewal",
+    "amountDue": "Amount due",
+    "accessUntil": "Access continues until",
+    "accessEnd": "Current access ends",
+    "automaticRenewal": "Automatic renewal",
+    "off": "Off",
+    "organization": "Organization",
+    "role": "Your access",
+    "viewer": "Viewer",
+    "invitationExpiry": "Invitation expires",
+    "account": "Account",
+    "affectedPosts": "Affected scheduled posts",
+    "scheduledFor": "Scheduled for",
+    "issue": "Action needed",
+    "replaceMedia": "Replace the unavailable media",
+    "platform": "Platform",
+    "attemptedAt": "Attempted at",
+    "restoreDeadline": "Restore before",
+    "changedAt": "Changed at"
+  },
+  "templates": {
+    "verify": {
+      "name": "Confirm email",
+      "subject": "Please confirm your SosoAPI email address",
+      "preview": "Confirm your email address to complete your account setup.",
+      "title": "Please confirm your email address",
+      "body": "Thank you for registering with SosoAPI. Please confirm your email address to complete your account setup.",
+      "cta": "Confirm email address",
+      "note": "This link can be used once and expires at {{verification_expiry}}. If you did not register for SosoAPI, you can ignore this email."
+    },
+    "signin": {
+      "name": "Sign-in code",
+      "subject": "Your SosoAPI sign-in code",
+      "preview": "Use this one-time code to sign in.",
+      "title": "Your sign-in code",
+      "body": "Enter the code below in SosoAPI to finish signing in, or use the sign-in button.",
+      "cta": "Sign in to SosoAPI",
+      "note": "The code expires at {{code_expiry}}. Do not share this code or link. If you did not request it, you can ignore this email."
+    },
+    "reset": {
+      "name": "Reset password",
+      "subject": "Reset your SosoAPI password",
+      "preview": "Choose a new password using this secure link.",
+      "title": "Reset your password",
+      "body": "We received a request to reset your SosoAPI password. Use the button below to choose a new password.",
+      "cta": "Reset password",
+      "note": "This link can be used once and expires at {{reset_expiry}}. If you did not request a reset, you can ignore this email. Your password has not changed."
+    },
+    "security": {
+      "name": "Password changed",
+      "subject": "Your SosoAPI password has been changed",
+      "preview": "If you did not make this change, secure your account.",
+      "title": "Your password has been changed",
+      "body": "The password for your SosoAPI account has been changed. If you made this change, no further action is needed.",
+      "cta": "Review account security",
+      "callout": "If you did not make this change, reset your password and review your connected apps and account access."
+    },
+    "activated": {
+      "name": "Subscription active",
+      "subject": "Your SosoAPI subscription is active",
+      "preview": "Your payment is confirmed and your subscription is active.",
+      "title": "Your subscription is active",
+      "body": "Your payment has been confirmed. Your updated subscription is now active for the workspace below.",
+      "cta": "Open workspace",
+      "note": "Our payment provider sends your official receipt separately. You can review your plan and invoices in Billing."
+    },
+    "payment": {
+      "name": "Payment unsuccessful",
+      "subject": "Please update your SosoAPI payment method",
+      "preview": "We could not collect your subscription renewal payment.",
+      "title": "Your renewal payment was unsuccessful",
+      "body": "We could not collect your subscription renewal payment. Please update your payment method to keep your current access.",
+      "cta": "Update payment method",
+      "note": "If you have already resolved the payment, check Billing for the latest status. Never send card details by email."
+    },
+    "cancel": {
+      "name": "Cancellation confirmed",
+      "subject": "Your SosoAPI subscription cancellation is confirmed",
+      "preview": "Your current plan remains available until the date below.",
+      "title": "Your cancellation is confirmed",
+      "body": "Automatic renewal has been turned off. You can continue using your current plan until the date below.",
+      "cta": "View subscription",
+      "note": "See Billing for the changes that apply when paid access ends. Cancelling your subscription does not delete your account."
+    },
+    "invite": {
+      "name": "Team invitation",
+      "subject": "You are invited to join Studio on SosoAPI",
+      "preview": "Jamie has invited you to join the team.",
+      "title": "You are invited to join the team",
+      "body": "Jamie has invited you to collaborate in SosoAPI. Accept the invitation to access the workspace with the permissions shown below.",
+      "cta": "Accept invitation",
+      "note": "Sign in with the email address that received this invitation. If you were not expecting it, you can ignore this email."
+    },
+    "reconnect": {
+      "name": "Reconnect account",
+      "subject": "Please reconnect your Instagram account",
+      "preview": "Restore the connection to resume publishing access.",
+      "title": "Please reconnect your account",
+      "body": "We can no longer access your Instagram account. Please reconnect it to restore publishing access.",
+      "cta": "Reconnect Instagram",
+      "note": "After reconnecting, review the affected posts. Posts that already failed may need a separate recovery action."
+    },
+    "failed": {
+      "name": "Post not published",
+      "subject": "Your Instagram post could not be published",
+      "preview": "The media file is unavailable. Your post content is saved.",
+      "title": "Your post could not be published",
+      "body": "Your scheduled Instagram post could not be published because the media file is no longer available. Your post content is still saved.",
+      "cta": "Review and fix post",
+      "note": "Replace the media, review the post and choose a new publishing time. Opening this email will not resend the post."
+    },
+    "uncertain": {
+      "name": "Publication unconfirmed",
+      "subject": "Please check whether your Instagram post was published",
+      "preview": "We could not confirm the result. Check before retrying.",
+      "title": "Publication could not be confirmed",
+      "body": "The platform did not return a clear result. Your post may already be live. Check the account before publishing it again.",
+      "cta": "Review publishing status",
+      "callout": "To avoid a duplicate post, check the original post on Instagram before choosing a recovery action."
+    },
+    "deletion": {
+      "name": "Deletion requested",
+      "subject": "Your SosoAPI account deletion request",
+      "preview": "You can restore your account before the deadline below.",
+      "title": "Your deletion request has been received",
+      "body": "Your account access is now paused. You can restore your account before the deadline below.",
+      "cta": "Sign in to restore account",
+      "callout": "Personal scheduled posts that have not started are cancelled, and subscription renewal is being stopped. Restoring the account does not automatically reschedule posts or restart renewal.",
+      "note": "If you did not request this, restore your account, change your password and review connected apps. Permanent removal starts after the restore period."
+    }
+  }
+}

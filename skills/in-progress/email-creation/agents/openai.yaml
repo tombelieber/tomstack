@@ -1,0 +1,4 @@
+interface:
+  display_name: "Email Creation"
+  short_description: "Design branded, localized product email previews"
+  default_prompt: "Use $email-creation to design essential product email examples using our actual logo and website language options."

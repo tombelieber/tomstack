@@ -1,0 +1,164 @@
+{
+  "ui": {
+    "scenario": "E-mail essentiel",
+    "language": "Langue",
+    "preview": "Aperçu",
+    "desktop": "Ordinateur",
+    "mobile": "Mobile",
+    "previewLabel": "E-mails essentiels · Aperçu du design",
+    "demoNotice": "Aperçu du design avec des données fictives. Les boutons ne permettent ni d’envoyer des e-mails ni de modifier votre compte.",
+    "actionNotice": "Aperçu uniquement. Aucun e-mail n’a été envoyé et aucune modification n’a été apportée à votre compte.",
+    "greeting": "Bonjour {{name}},",
+    "team": "L’équipe SosoAPI",
+    "help": "Besoin d’aide ?",
+    "contact": "Contactez-nous",
+    "footer": "Cet e-mail concerne votre compte SosoAPI ou une action que vous avez demandée.",
+    "secureLink": "Ouvrir le lien sécurisé",
+    "fallback": "Si le bouton ne fonctionne pas, ouvrez le lien sécurisé ci-dessous.",
+    "codeLabel": "Code de connexion à usage unique",
+    "samplePost": "Une nouvelle saison d’idées, inspirée par les petits moments du quotidien.",
+    "mediaUnavailable": "Média indisponible",
+    "groups": {
+      "auth": "Connexion et sécurité",
+      "billing": "Paiements et abonnements",
+      "team": "Accès à l’équipe",
+      "publishing": "Connexions et publication",
+      "privacy": "Confidentialité du compte"
+    }
+  },
+  "fields": {
+    "workspace": "Espace de travail",
+    "plan": "Offre",
+    "amountPaid": "Montant payé",
+    "renewalDate": "Prochain renouvellement",
+    "amountDue": "Montant dû",
+    "accessUntil": "Accès maintenu jusqu’au",
+    "accessEnd": "Fin de l’accès actuel",
+    "automaticRenewal": "Renouvellement automatique",
+    "off": "Désactivé",
+    "organization": "Organisation",
+    "role": "Vos droits d’accès",
+    "viewer": "Lecture seule",
+    "invitationExpiry": "Expiration de l’invitation",
+    "account": "Compte",
+    "affectedPosts": "Publications programmées concernées",
+    "scheduledFor": "Programmée pour le",
+    "issue": "Action requise",
+    "replaceMedia": "Remplacer le média indisponible",
+    "platform": "Plateforme",
+    "attemptedAt": "Tentative le",
+    "restoreDeadline": "À restaurer avant le",
+    "changedAt": "Modifié le"
+  },
+  "templates": {
+    "verify": {
+      "name": "Confirmer l’adresse e-mail",
+      "subject": "Veuillez confirmer votre adresse e-mail SosoAPI",
+      "preview": "Confirmez votre adresse e-mail pour terminer la configuration de votre compte.",
+      "title": "Veuillez confirmer votre adresse e-mail",
+      "body": "Merci de vous être inscrit à SosoAPI. Veuillez confirmer votre adresse e-mail pour terminer la configuration de votre compte.",
+      "cta": "Confirmer mon adresse e-mail",
+      "note": "Ce lien est à usage unique et expire le {{verification_expiry}}. Si vous ne vous êtes pas inscrit à SosoAPI, vous pouvez ignorer cet e-mail."
+    },
+    "signin": {
+      "name": "Code de connexion",
+      "subject": "Votre code de connexion SosoAPI",
+      "preview": "Utilisez ce code à usage unique pour vous connecter.",
+      "title": "Votre code de connexion",
+      "body": "Saisissez le code ci-dessous dans SosoAPI pour terminer votre connexion, ou utilisez le bouton de connexion.",
+      "cta": "Se connecter à SosoAPI",
+      "note": "Le code expire le {{code_expiry}}. Ne communiquez ni ce code ni ce lien à qui que ce soit. Si vous ne l’avez pas demandé, vous pouvez ignorer cet e-mail."
+    },
+    "reset": {
+      "name": "Réinitialiser le mot de passe",
+      "subject": "Réinitialisez votre mot de passe SosoAPI",
+      "preview": "Choisissez un nouveau mot de passe à l’aide de ce lien sécurisé.",
+      "title": "Réinitialisez votre mot de passe",
+      "body": "Nous avons reçu une demande de réinitialisation de votre mot de passe SosoAPI. Utilisez le bouton ci-dessous pour choisir un nouveau mot de passe.",
+      "cta": "Réinitialiser mon mot de passe",
+      "note": "Ce lien est à usage unique et expire le {{reset_expiry}}. Si vous n’avez pas demandé cette réinitialisation, vous pouvez ignorer cet e-mail. Votre mot de passe n’a pas été modifié."
+    },
+    "security": {
+      "name": "Mot de passe modifié",
+      "subject": "Votre mot de passe SosoAPI a été modifié",
+      "preview": "Si vous n’êtes pas à l’origine de cette modification, sécurisez votre compte.",
+      "title": "Votre mot de passe a été modifié",
+      "body": "Le mot de passe de votre compte SosoAPI a été modifié. Si vous êtes à l’origine de cette modification, aucune autre action n’est nécessaire.",
+      "cta": "Vérifier la sécurité du compte",
+      "callout": "Si vous n’êtes pas à l’origine de cette modification, réinitialisez votre mot de passe et vérifiez les applications connectées ainsi que les accès à votre compte."
+    },
+    "activated": {
+      "name": "Abonnement actif",
+      "subject": "Votre abonnement SosoAPI est actif",
+      "preview": "Votre paiement est confirmé et votre abonnement est actif.",
+      "title": "Votre abonnement est actif",
+      "body": "Votre paiement a été confirmé. Votre abonnement mis à jour est désormais actif pour l’espace de travail ci-dessous.",
+      "cta": "Ouvrir l’espace de travail",
+      "note": "Notre prestataire de paiement vous envoie votre reçu officiel séparément. Vous pouvez consulter votre offre et vos factures dans la rubrique Facturation."
+    },
+    "payment": {
+      "name": "Échec du paiement",
+      "subject": "Veuillez mettre à jour votre moyen de paiement SosoAPI",
+      "preview": "Nous n’avons pas pu prélever le paiement du renouvellement de votre abonnement.",
+      "title": "Le paiement de votre renouvellement a échoué",
+      "body": "Nous n’avons pas pu prélever le paiement du renouvellement de votre abonnement. Veuillez mettre à jour votre moyen de paiement pour conserver votre accès actuel.",
+      "cta": "Mettre à jour le moyen de paiement",
+      "note": "Si vous avez déjà réglé le problème de paiement, consultez la rubrique Facturation pour connaître le statut actuel. N’envoyez jamais vos coordonnées de carte bancaire par e-mail."
+    },
+    "cancel": {
+      "name": "Résiliation confirmée",
+      "subject": "La résiliation de votre abonnement SosoAPI est confirmée",
+      "preview": "Votre offre actuelle reste disponible jusqu’à la date ci-dessous.",
+      "title": "Votre résiliation est confirmée",
+      "body": "Le renouvellement automatique a été désactivé. Vous pouvez continuer à utiliser votre offre actuelle jusqu’à la date ci-dessous.",
+      "cta": "Consulter l’abonnement",
+      "note": "Consultez la rubrique Facturation pour connaître les changements applicables à la fin de votre accès payant. La résiliation de votre abonnement ne supprime pas votre compte."
+    },
+    "invite": {
+      "name": "Invitation à rejoindre une équipe",
+      "subject": "Vous êtes invité à rejoindre Studio sur SosoAPI",
+      "preview": "Jamie vous a invité à rejoindre l’équipe.",
+      "title": "Vous êtes invité à rejoindre l’équipe",
+      "body": "Jamie vous a invité à collaborer sur SosoAPI. Acceptez l’invitation pour accéder à l’espace de travail avec les autorisations indiquées ci-dessous.",
+      "cta": "Accepter l’invitation",
+      "note": "Connectez-vous avec l’adresse e-mail qui a reçu cette invitation. Si vous ne vous attendiez pas à la recevoir, vous pouvez ignorer cet e-mail."
+    },
+    "reconnect": {
+      "name": "Reconnecter le compte",
+      "subject": "Veuillez reconnecter votre compte Instagram",
+      "preview": "Rétablissez la connexion pour pouvoir publier à nouveau.",
+      "title": "Veuillez reconnecter votre compte",
+      "body": "Nous ne pouvons plus accéder à votre compte Instagram. Veuillez le reconnecter pour rétablir l’accès à la publication.",
+      "cta": "Reconnecter Instagram",
+      "note": "Après la reconnexion, vérifiez les publications concernées. Les publications ayant déjà échoué peuvent nécessiter une action de récupération distincte."
+    },
+    "failed": {
+      "name": "Publication non publiée",
+      "subject": "Votre publication Instagram n’a pas pu être publiée",
+      "preview": "Le fichier média est indisponible. Le contenu de votre publication est enregistré.",
+      "title": "Votre publication n’a pas pu être publiée",
+      "body": "Votre publication Instagram programmée n’a pas pu être publiée, car le fichier média n’est plus disponible. Le contenu de votre publication est toujours enregistré.",
+      "cta": "Vérifier et corriger la publication",
+      "note": "Remplacez le média, vérifiez la publication et choisissez une nouvelle date et heure de publication. L’ouverture de cet e-mail ne renverra pas la publication."
+    },
+    "uncertain": {
+      "name": "Publication non confirmée",
+      "subject": "Veuillez vérifier si votre publication Instagram a été publiée",
+      "preview": "Nous n’avons pas pu confirmer le résultat. Vérifiez avant de réessayer.",
+      "title": "La publication n’a pas pu être confirmée",
+      "body": "La plateforme n’a pas renvoyé de résultat clair. Votre publication est peut-être déjà en ligne. Vérifiez le compte avant de la publier à nouveau.",
+      "cta": "Vérifier le statut de publication",
+      "callout": "Pour éviter un doublon, vérifiez la publication d’origine sur Instagram avant de choisir une action de récupération."
+    },
+    "deletion": {
+      "name": "Suppression demandée",
+      "subject": "Votre demande de suppression de compte SosoAPI",
+      "preview": "Vous pouvez restaurer votre compte avant la date limite ci-dessous.",
+      "title": "Votre demande de suppression a été reçue",
+      "body": "L’accès à votre compte est désormais suspendu. Vous pouvez restaurer votre compte avant la date limite ci-dessous.",
+      "cta": "Se connecter pour restaurer le compte",
+      "callout": "Les publications personnelles programmées dont l’envoi n’a pas encore commencé sont annulées, et le renouvellement de l’abonnement est en cours d’arrêt. La restauration du compte ne reprogramme pas automatiquement les publications et ne réactive pas le renouvellement.",
+      "note": "Si vous n’êtes pas à l’origine de cette demande, restaurez votre compte, modifiez votre mot de passe et vérifiez les applications connectées. La suppression définitive commence après la période de restauration."
+    }
+  }
+}

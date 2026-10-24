@@ -1,0 +1,217 @@
+{
+  "name": "SosoAPI",
+  "website": "sosoapi.ai",
+  "logo": "logo.png",
+  "colors": {
+    "paper": "#f8f8f2",
+    "surface": "#fffefb",
+    "ink": "#12332d",
+    "muted": "#49625a",
+    "line": "#dce3d7",
+    "accent": "#b9eb9e",
+    "soft": "#eaf2e2"
+  },
+  "catalog": [
+    {
+      "id": "verify",
+      "group": "auth",
+      "fallback": true,
+      "details": []
+    },
+    {
+      "id": "signin",
+      "group": "auth",
+      "code": true,
+      "details": []
+    },
+    {
+      "id": "reset",
+      "group": "auth",
+      "fallback": true,
+      "details": []
+    },
+    {
+      "id": "security",
+      "group": "auth",
+      "details": [
+        {
+          "label": "changedAt",
+          "value": "{{changed_at}}"
+        }
+      ]
+    },
+    {
+      "id": "activated",
+      "group": "billing",
+      "details": [
+        {
+          "label": "workspace",
+          "value": "{{workspace}}"
+        },
+        {
+          "label": "plan",
+          "value": "{{plan_name}}"
+        },
+        {
+          "label": "amountPaid",
+          "value": "{{amount_paid}} {{currency}}"
+        },
+        {
+          "label": "renewalDate",
+          "value": "{{renewal_date}}"
+        }
+      ]
+    },
+    {
+      "id": "payment",
+      "group": "billing",
+      "tone": "warning",
+      "details": [
+        {
+          "label": "workspace",
+          "value": "{{workspace}}"
+        },
+        {
+          "label": "amountDue",
+          "value": "{{amount_due}} {{currency}}"
+        },
+        {
+          "label": "accessUntil",
+          "value": "{{grace_end}}"
+        }
+      ]
+    },
+    {
+      "id": "cancel",
+      "group": "billing",
+      "details": [
+        {
+          "label": "workspace",
+          "value": "{{workspace}}"
+        },
+        {
+          "label": "accessEnd",
+          "value": "{{access_end}}"
+        },
+        {
+          "label": "automaticRenewal",
+          "field": "off"
+        }
+      ]
+    },
+    {
+      "id": "invite",
+      "group": "team",
+      "details": [
+        {
+          "label": "organization",
+          "value": "{{organization}}"
+        },
+        {
+          "label": "workspace",
+          "value": "{{workspace}}"
+        },
+        {
+          "label": "role",
+          "field": "viewer"
+        },
+        {
+          "label": "invitationExpiry",
+          "value": "{{invitation_expiry}}"
+        }
+      ],
+      "fixtures": {
+        "name": "Alex"
+      }
+    },
+    {
+      "id": "reconnect",
+      "group": "publishing",
+      "tone": "warning",
+      "details": [
+        {
+          "label": "account",
+          "value": "{{account}}"
+        },
+        {
+          "label": "workspace",
+          "value": "{{workspace}}"
+        },
+        {
+          "label": "affectedPosts",
+          "value": "{{affected_post_count}}"
+        }
+      ]
+    },
+    {
+      "id": "failed",
+      "group": "publishing",
+      "tone": "warning",
+      "post": {
+        "account": "{{account}}",
+        "platform": "{{platform}}",
+        "avatar": "S"
+      },
+      "details": [
+        {
+          "label": "account",
+          "value": "{{account}}"
+        },
+        {
+          "label": "scheduledFor",
+          "value": "{{scheduled_for}}"
+        },
+        {
+          "label": "issue",
+          "field": "replaceMedia"
+        }
+      ]
+    },
+    {
+      "id": "uncertain",
+      "group": "publishing",
+      "tone": "warning",
+      "details": [
+        {
+          "label": "account",
+          "value": "{{account}}"
+        },
+        {
+          "label": "platform",
+          "value": "{{platform}}"
+        },
+        {
+          "label": "attemptedAt",
+          "value": "{{attempted_at}}"
+        }
+      ]
+    },
+    {
+      "id": "deletion",
+      "group": "privacy",
+      "tone": "danger",
+      "details": [
+        {
+          "label": "restoreDeadline",
+          "value": "{{restore_deadline}}"
+        }
+      ]
+    }
+  ],
+  "groups": [
+    "auth",
+    "billing",
+    "team",
+    "publishing",
+    "privacy"
+  ],
+  "defaultScenario": "verify",
+  "fixtures": {
+    "name": "Jamie",
+    "sign_in_code": "123 456",
+    "workspace": "Studio",
+    "organization": "Studio",
+    "account": "@studio.example",
+    "platform": "Instagram"
+  }
+}
